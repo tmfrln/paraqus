@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Paraqus ODB to VTK converter.
+Export simulation results to vtk format.
 
-@author: Jonathan Stollberg
 """
