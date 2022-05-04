@@ -38,10 +38,10 @@ class ODBReader():
 
     Attributes
     ----------
-    odb_name : str
-        Name of the underlying odb.
+    odb_path : str
+        Path to the underlying odb.
     model_name : str
-        Name of the model returned by the reader.
+        Name of the model returned by the reader. 
     field_export_requests : list
         Contains one request per field that will be exported to vtk format.
     set_export_requests : list
@@ -54,15 +54,19 @@ class ODBReader():
 
     Parameters
     ----------
-    odb_name : str
+    odb_path : str
         Name of the underlying odb.
-    model_name : str
-        Name of the model returned by the reader.
-    instance_names : list
-        Instances that will be exported to individual models.
-    time_offset : float
+    model_name : str, optional
+        Name of the model returned by the reader. When `model_name` is omitted,
+        it is set based on `odb_path`. Default: None.
+    instance_names : list, optional
+        Instances that will be exported to individual models. If
+        `instance_names` is omitted, all instances in the odb will be exported.
+        Default: None.
+    time_offset : float, optional
         Assume the simulation started at this time when exporting. Useful to
-        create vtk files that are ordered in time from multiple odbs.
+        create vtk files that are ordered in time from multiple odbs. 
+        Default: 0.0
 
     Methods
     -------
@@ -74,12 +78,12 @@ class ODBReader():
     """
 
     def __init__(self,
-                 odb_name,
+                 odb_path,
                  model_name=None,
                  instance_names=None,
                  time_offset=0.0):
 
-        self.odb_name = odb_name
+        self.odb_path = odb_path
         self.model_name = model_name
         self.field_export_requests = []
         self.set_export_requests = []
@@ -148,7 +152,7 @@ class ODBReader():
         float
 
         """
-        with ODBObject(self.odb_name) as odb:
+        with ODBObject(self.odb_path) as odb:
 
             odb_time = np.sum([step.timePeriod for step in odb.steps.values()])
 
@@ -178,11 +182,11 @@ class ODBReader():
 
         """
         if self.model_name is None:
-            model_name =  os.path.splitext(os.path.basename(self.odb_name))[0]
+            model_name =  os.path.splitext(os.path.basename(self.odb_path))[0]
         else:
             model_name = self.model_name
 
-        with ODBObject(self.odb_name) as odb:
+        with ODBObject(self.odb_path) as odb:
             # TODO: Input checking
             step = odb.steps[step_name]
             frame = step.frames[frame_index]
@@ -350,7 +354,7 @@ class ODBReader():
                 field_out = field_out.getSubset(position=abaqusConstants.CENTROID)
             else:
                 raise ValueError("Position not implemented.")
-
+                
         return field_out
 
 
@@ -382,6 +386,7 @@ class ODBReader():
 
         """
         blocks = field_out.bulkDataBlocks
+        
         position = blocks[0].position
 
         assert all([b.position == position for b in blocks]), \
