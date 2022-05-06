@@ -159,10 +159,10 @@ class WriterBaseClass(object):
     write
         Export a paraqus model to .vtu file format. If number_of_pieces
         > 1, also a .pvtu file is created. In case a collection has
-        been initialised, the exported files will be added to this
+        been initialized, the exported files will be added to this
         collection.
-    initialise_collection
-        Initialise a collection of multiple paraqus models, e.g. in
+    initialize_collection
+        Initialize a collection of multiple paraqus models, e.g. in
         case of multiple parts or time steps.
     finalize_collection
         Export the created collection of .vtu or .pvtu files as a .pvd
@@ -402,9 +402,9 @@ class WriterBaseClass(object):
 
         return file_path
 
-    def initialise_collection(self):
+    def initialize_collection(self):
         """
-        Initialise a new collection of ParaqusModels exported to .vtu files.
+        Initialize a new collection of ParaqusModels exported to .vtu files.
 
         A .pvd file that combines multiple .vtu or .pvtu files is
         generated from the collection when ``finalize_collection()``
@@ -462,7 +462,7 @@ class WriterBaseClass(object):
 
         # Some input checking
         if not self._collection:
-            raise RuntimeError("Collection has not been initialised.")
+            raise RuntimeError("Collection has not been initialized.")
         if path.splitext(file_path)[1] not in [".vtu", ".pvtu"]:
             raise ValueError("File is neither a .vtu file nor a .pvtu file.")
         if not path.isfile(abspath):
@@ -561,10 +561,10 @@ class BinaryWriter(WriterBaseClass):
     write
         Export a paraqus model to .vtu file format. If number_of_pieces
         > 1, also a .pvtu file is created. In case a collection has
-        been initialised, the exported files will be added to this
+        been initialized, the exported files will be added to this
         collection.
-    initialise_collection
-        Initialise a collection of multiple paraqus models, e.g. in
+    initialize_collection
+        Initialize a collection of multiple paraqus models, e.g. in
         case of multiple parts or time steps.
     finalize_collection
         Export the created collection of .vtu or .pvtu files as a .pvd
@@ -575,7 +575,7 @@ class BinaryWriter(WriterBaseClass):
     >>> from constants import RAW
     >>> from writers import BinaryWriter
     >>> writer = BinaryWriter(number_of_pieces=2, encoding=RAW)
-    >>> writer.initialise_collection()
+    >>> writer.initialize_collection()
     >>> writer.write(random_paraqus_model_frame_1)
     >>> writer.write(random_paraqus_model_frame_2)
     >>> writer.write(random_paraqus_model_frame_3)
@@ -718,7 +718,7 @@ class BinaryWriter(WriterBaseClass):
                 xml.finish_element()
                 xml.finish_element()  # Finish definition of time data
 
-                # Initialise model geometry
+                # Initialize model geometry
                 xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
 
                 # Add nodes
@@ -845,7 +845,7 @@ class BinaryWriter(WriterBaseClass):
                 byte_offset = update_byte_offset(time_array)
                 xml.finish_element()
 
-                # Initialise model geometry
+                # Initialize model geometry
                 xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
 
                 # Add nodes
@@ -1011,10 +1011,10 @@ class AsciiWriter(WriterBaseClass):
     write
         Export a paraqus model to .vtu file format. If number_of_pieces
         > 1, also a .pvtu file is created. In case a collection has
-        been initialised, the exported files will be added to this
+        been initialized, the exported files will be added to this
         collection.
-    initialise_collection
-        Initialise a collection of multiple paraqus models, e.g. in
+    initialize_collection
+        Initialize a collection of multiple paraqus models, e.g. in
         case of multiple parts or time steps.
     finalize_collection
         Export the created collection of .vtu or .pvtu files as a .pvd
@@ -1024,7 +1024,7 @@ class AsciiWriter(WriterBaseClass):
     -------
     >>> from writers import AsciiWriter
     >>> writer = AsciiWriter(number_of_pieces=2)
-    >>> writer.initialise_collection()
+    >>> writer.initialize_collection()
     >>> writer.write(random_paraqus_model_frame_1)
     >>> writer.write(random_paraqus_model_frame_2)
     >>> writer.write(random_paraqus_model_frame_3)
@@ -1120,7 +1120,7 @@ class AsciiWriter(WriterBaseClass):
             xml.finish_element()
             xml.finish_element()  # Finish definition of time data
 
-            # Initialise model geometry
+            # Initialize model geometry
             xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
 
             # Add nodes
