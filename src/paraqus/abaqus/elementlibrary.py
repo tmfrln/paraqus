@@ -346,6 +346,11 @@ ABQ_ELEMENT_LIBRARY = Mapper({
 "EMC3D6": 13,
 "EMC3D8": 12,
 
+# Coupled Eulerian Lagrangian elements - mechanical only
+"EC3D8R": 12,
+
+# Coupled Eulerian Lagrangian elements - thermomechanical
+"EC3D8RT": 12,
 
 #%% Axisymmetric solid elements
 
