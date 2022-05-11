@@ -226,6 +226,9 @@ class ODBReader():
                     fo = self._get_field_output(request,
                                                 frame,
                                                 instance=instance)
+                    
+                    if fo is None:
+                        continue
 
                     (field_tags,
                      field_data,
@@ -354,6 +357,10 @@ class ODBReader():
                 field_out = field_out.getSubset(position=abaqusConstants.CENTROID)
             else:
                 raise ValueError("Position not implemented.")
+                
+        if len(field_out.values) == 0:
+            # no data for the field at this position
+            return None
                 
         return field_out
 
