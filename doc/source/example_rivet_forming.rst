@@ -55,6 +55,7 @@ The visualisation pipeline looks as follows:
 - Coloring according to the variable ``PEEQVAVG`` (choose in the menu for the last filter)
 
 Output looks like this:
+
 .. image:: images/screenshot_rivet_forming_example.png
   :width: 800
   :alt: Screenshot of the deformed rivet from paraview
