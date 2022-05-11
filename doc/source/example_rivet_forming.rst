@@ -56,7 +56,7 @@ The visualisation pipeline looks as follows:
 
 Output looks like this:
 
-.. image:: /images/screenshot_rivet_forming_example.png
+.. image:: /images/screenshot_example_rivet_forming.png
   :width: 800
   :alt: Screenshot of the deformed rivet from paraview
 
