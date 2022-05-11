@@ -37,7 +37,7 @@ This also means that at any point in time, there exists only one ``ParaqusModel`
 
 **Note**: Paraview supports parallel files for *pieces* of a model. We are setting the attribute ``number_of_pieces`` of the writer to four, generating four separate files for each part instance. Each file contains a fourth of the instance.
 
-The model has roughly 200,000 degrees of freedom - exporting should take about one minute.
+The model has roughly 200,000 nodes - exporting should take about one minute.
 
 
 Look at what you have done!
