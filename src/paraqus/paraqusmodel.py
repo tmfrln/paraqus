@@ -1139,7 +1139,7 @@ class FieldOutput(object):
         self.field_name = field_name
         self.field_position = field_position
         self.field_type = field_type
-        self.field_values = np.array(field_values)
+        self.field_values = field_values
 
 
     # Properties
@@ -1150,7 +1150,19 @@ class FieldOutput(object):
     @field_values.setter
     def field_values(self, field_values):
         self._field_values = np.array(field_values)
-
+        
+        # Always store vectors with three components, otherwise the
+        # warpbyvector filter in paraview would not work
+        if self.field_type == VECTOR:
+            vals = self._field_values
+            if len(field_values[0]) == 2:
+                self._field_values = np.hstack((vals, 
+                                                np.zeros((len(vals),1))))
+            elif len(field_values[0]) == 1:
+                self._field_values = np.hstack((vals, 
+                                                np.zeros((len(vals),1)),
+                                                np.zeros((len(vals),1))))
+            
         if self.field_type == SCALAR:
             self._field_values = self._field_values.reshape((-1,1))
 
