@@ -53,3 +53,7 @@ The visualisation pipeline looks as follows:
 - Mapping of the volume fraction from element centers to nodes (*CellDatatoPointData* filter)
 - Extraction of the isosurface representing the boundary of the rivet (*Countour* filter)
 - Coloring according to the variable ``PEEQVAVG`` (choose in the menu for the last filter)
+
+Output looks like this:
+![output for rivet forming examples](images/screenshot_example_rivet_forming.png)
+
