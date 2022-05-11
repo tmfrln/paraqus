@@ -2,9 +2,9 @@
 Export selected results from the rivet forming example output database.
 
 Run this file in the Abaqus python interpreter. It is assumed that the
-output dabase 'Rivet-Forming-CEL.odb' is located in the vurrent work
+output dabase 'Rivet-Forming-CEL.odb' is located in the current work
 directory. Visit the paraqus documentation for a full description on how to
-run the example before using this scrip to export results.
+run the example before using this script to export results.
 
 
 """

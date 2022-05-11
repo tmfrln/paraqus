@@ -2,9 +2,9 @@
 Export selected results from the cylindrical billet example output database.
 
 Run this file in the Abaqus python interpreter. It is assumed that the 
-output dabase 'cylbillet_cax4rt_slow_dense.odb' is located in the vurrent
+output dabase 'cylbillet_cax4rt_slow_dense.odb' is located in the current
 work directory. Visit the paraqus documentation for a full description on 
-how to run the example before using this scrip to export results.
+how to run the example before using this script to export results.
 
 """
 # TODO: Add link to docs
