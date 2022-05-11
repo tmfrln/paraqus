@@ -1,7 +1,7 @@
 """
 Export selected results from the rivet forming example output database.
 
-Run this file in the Abaqus python interpreter. It is assumed that the 
+Run this file in the Abaqus python interpreter. It is assumed that the
 output dabase 'Rivet-Forming-CEL.odb' is located in the vurrent work
 directory. Visit the paraqus documentation for a full description on how to
 run the example before using this scrip to export results.
@@ -37,7 +37,7 @@ vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
 vtu_writer.number_of_pieces = 4
 
 # loop over all instances and export the results
-vtu_writer.initialise_collection()
+vtu_writer.initialize_collection()
 
 for frame_index in FRAME_INDICES:
     for instance_model in reader.read(step_name=STEP_NAME,
