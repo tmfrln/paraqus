@@ -16,3 +16,4 @@ Contents
    installation
    usage
    api
+   limitations
