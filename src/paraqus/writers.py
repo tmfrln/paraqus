@@ -344,7 +344,7 @@ class WriterBaseClass(object):
             xml.add_element("PPointData")
             for nf in model.node_field_outputs:
                 name = nf.field_name
-                values = nf.field_values
+                values = nf.get_3d_field_values()
                 components = len(values[0])
                 dtype = values.dtype.name
                 xml.add_and_finish_element("PDataArray",
@@ -775,8 +775,9 @@ class BinaryWriter(WriterBaseClass):
                 # Add node fields
                 xml.add_element("PointData")
                 for nf in piece.node_field_outputs:
-                    components = len(nf.field_values[0])
-                    dtype = nf.field_values.dtype.name
+                    field_vals = nf.get_3d_field_values()
+                    components = len(field_vals[0])
+                    dtype = field_vals.dtype.name
 
                     xml.add_element("DataArray",
                                     Name=nf.field_name,
@@ -784,8 +785,7 @@ class BinaryWriter(WriterBaseClass):
                                     type=VTK_TYPE_MAPPER[dtype],
                                     format="binary")
 
-                    xml.add_array_data_to_element(nf.field_values,
-                                                  field_type=nf.field_type)
+                    xml.add_array_data_to_element(field_vals)
                     xml.finish_element()
 
                 # Add node fields based on groups
@@ -809,8 +809,9 @@ class BinaryWriter(WriterBaseClass):
                 # Add element fields
                 xml.add_element("CellData")
                 for ef in piece.element_field_outputs:
-                    components = len(ef.field_values[0])
-                    dtype=ef.field_values.dtype.name
+                    field_vals = ef.get_3d_field_values()
+                    components = len(field_vals[0])
+                    dtype=field_vals.dtype.name
 
                     xml.add_element("DataArray",
                                     Name=ef.field_name,
@@ -818,8 +819,7 @@ class BinaryWriter(WriterBaseClass):
                                     type=VTK_TYPE_MAPPER[dtype],
                                     format="binary")
 
-                    xml.add_array_data_to_element(ef.field_values,
-                                                  field_type=ef.field_type)
+                    xml.add_array_data_to_element(field_vals)
                     xml.finish_element()
 
                 for group_name, group_elems in piece.elements.groups.items():
@@ -860,7 +860,8 @@ class BinaryWriter(WriterBaseClass):
                 time_array = np.array([piece.frame_time])
                 dtype = time_array.dtype.name
                 xml.add_element("FieldData")
-                xml.add_and_finish_element("DataArray", Name="TimeValue",
+                xml.add_and_finish_element("DataArray",
+                                           Name="TimeValue",
                                            NumberOfTuples=1,
                                            type=VTK_TYPE_MAPPER[dtype],
                                            format="appended",
@@ -896,7 +897,8 @@ class BinaryWriter(WriterBaseClass):
                 dtype = element_offsets.dtype.name
                 xml.add_and_finish_element("DataArray",
                                            type=VTK_TYPE_MAPPER[dtype],
-                                           Name="offsets", format="appended",
+                                           Name="offsets",
+                                           format="appended",
                                            offset=byte_offset)
                 byte_offset = update_byte_offset(element_offsets)
 
@@ -904,7 +906,8 @@ class BinaryWriter(WriterBaseClass):
                 dtype = element_types.dtype.name
                 xml.add_and_finish_element("DataArray",
                                            type=VTK_TYPE_MAPPER[dtype],
-                                           Name="types", format="appended",
+                                           Name="types",
+                                           format="appended",
                                            offset=byte_offset)
                 byte_offset = update_byte_offset(element_types)
                 xml.finish_element()
@@ -912,15 +915,16 @@ class BinaryWriter(WriterBaseClass):
                 # Add node fields
                 xml.add_element("PointData")
                 for nf in piece.node_field_outputs:
-                    components = len(nf.field_values[0])
-                    dtype = nf.field_values.dtype.name
+                    field_vals = nf.get_3d_field_values()
+                    components = len(field_vals[0])
+                    dtype = field_vals.dtype.name
 
                     xml.add_and_finish_element("DataArray", Name=nf.field_name,
                                                NumberOfComponents=components,
                                                type=VTK_TYPE_MAPPER[dtype],
                                                format="appended",
                                                offset=byte_offset)
-                    byte_offset = update_byte_offset(nf.field_values)
+                    byte_offset = update_byte_offset(field_vals)
 
                 # node fields for groups
                 for group_name, group_nodes in piece.nodes.groups.items():
@@ -945,7 +949,8 @@ class BinaryWriter(WriterBaseClass):
                     components = len(ef.field_values[0])
                     dtype = ef.field_values.dtype.name
 
-                    xml.add_and_finish_element("DataArray", Name=ef.field_name,
+                    xml.add_and_finish_element("DataArray", 
+                                               Name=ef.field_name,
                                                NumberOfComponents=components,
                                                type=VTK_TYPE_MAPPER[dtype],
                                                format="appended",
@@ -978,8 +983,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append node field data
                 for nf in piece.node_field_outputs:
-                    xml.add_array_data_to_element(nf.field_values,
-                                                  field_type=nf.field_type,
+                    xml.add_array_data_to_element(field_vals,
                                                   break_line=False)
 
                 # Append node group data
@@ -1155,16 +1159,17 @@ class AsciiWriter(WriterBaseClass):
             xml.add_element("PointData")
 
             for nf in piece.node_field_outputs:
-                components = len(nf.field_values[0])
-                dtype = nf.field_values.dtype.name
+                field_vals = nf.get_3d_field_values()
+                components = len(field_vals[0])
+                dtype = field_vals.dtype.name
 
-                xml.add_element("DataArray", Name=nf.field_name,
+                xml.add_element("DataArray",
+                                Name=nf.field_name,
                                 NumberOfComponents=components,
                                 type=VTK_TYPE_MAPPER[dtype],
                                 format="ascii")
 
-                xml.add_array_data_to_element(nf.field_values,
-                                              field_type=nf.field_type)
+                xml.add_array_data_to_element(field_vals)
                 xml.finish_element()
 
             # Add node fields based on groups
@@ -1174,7 +1179,8 @@ class AsciiWriter(WriterBaseClass):
                                      group_nodes).astype(np.uint8)
                 dtype = field_vals.dtype.name
 
-                xml.add_element("DataArray", Name="_group " + group_name,
+                xml.add_element("DataArray",
+                                Name="_group " + group_name,
                                 NumberOfComponents=1,
                                 type=VTK_TYPE_MAPPER[dtype],
                                 format="ascii")
@@ -1188,15 +1194,17 @@ class AsciiWriter(WriterBaseClass):
             xml.add_element("CellData")
 
             for ef in piece.element_field_outputs:
-                components = len(ef.field_values[0])
-                dtype=ef.field_values.dtype.name
+                field_vals = ef.get_3d_field_values()
+                components = len(field_vals[0])
+                dtype=field_vals.dtype.name
 
-                xml.add_element("DataArray", Name=ef.field_name,
+                xml.add_element("DataArray",
+                                Name=ef.field_name,
                                 NumberOfComponents=components,
-                                type=VTK_TYPE_MAPPER[dtype], format="ascii")
+                                type=VTK_TYPE_MAPPER[dtype],
+                                format="ascii")
 
-                xml.add_array_data_to_element(ef.field_values,
-                                              field_type=ef.field_type)
+                xml.add_array_data_to_element(field_vals)
                 xml.finish_element()
 
             # Add element fields based on groups
@@ -1206,7 +1214,8 @@ class AsciiWriter(WriterBaseClass):
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
-                    xml.add_element("DataArray", Name="_goup " + group_name,
+                    xml.add_element("DataArray",
+                                    Name="_goup " + group_name,
                                     NumberOfComponents=1,
                                     type= VTK_TYPE_MAPPER[dtype],
                                     format="ascii")
@@ -1413,10 +1422,7 @@ class XmlFactory(object):
         self._stream.write(content)
 
 
-    def add_array_data_to_element(self,
-                                  array,
-                                  field_type=None,
-                                  break_line=True):
+    def add_array_data_to_element(self, array, break_line=True):
         """
         Add array data to the XML file.
 
@@ -1424,8 +1430,6 @@ class XmlFactory(object):
         ----------
         array : numpy.ndarray
             The array data to add.
-        field_type : ParaqusConstant
-            If `field_type` is VECTOR or TENSOR, `array` is padded to 3d shape.
         break_line : bool, optional
             If True, a linebreak will be inserted after the array data.
             The default is True.
@@ -1435,26 +1439,6 @@ class XmlFactory(object):
         None.
 
         """
-        if field_type is not None:
-            if field_type == SCALAR:
-                if array.ndim < 1:
-                    array = array.reshape(-1,1)
-                    
-            elif field_type == VECTOR:
-                nvals, ndim = array.shape
-                if ndim < 3:
-                    array = np.hstack((array, np.zeros((nvals, 3-ndim))))
-                    
-            elif field_type == TENSOR:
-                nvals, ndim = array.shape
-                if ndim < 6:
-                    array = np.hstack((array, np.zeros((nvals, 6-ndim))))
-                    
-            else:
-                raise NotImplementedError(
-                    "Only VECTOR or TENSOR are supported."
-                    )
-        
         if self._active_element is None:
             raise RuntimeError("No XML element is open.")
 
