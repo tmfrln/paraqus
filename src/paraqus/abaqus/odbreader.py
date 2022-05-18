@@ -27,10 +27,13 @@ import abaqusConstants
 ABAQUS_INVARIANTS = {"mises": MISES,
                      "magnitude": MAGNITUDE}
 
+# remark: surface tensors are not yet supported
 PARAQUS_FIELD_TYPES = {abaqusConstants.SCALAR: SCALAR,
                        abaqusConstants.VECTOR: VECTOR,
                        abaqusConstants.TENSOR_3D_FULL: TENSOR,
-                       abaqusConstants.TENSOR_3D_PLANAR: TENSOR}
+                       abaqusConstants.TENSOR_3D_PLANAR: TENSOR,
+                       abaqusConstants.TENSOR_2D_PLANAR: TENSOR}
+
 
 class ODBReader():
     """
@@ -423,6 +426,10 @@ class ODBReader():
                                                               instance_mesh)
         else:
             raise ValueError("Position not implemented.")
+            
+        # change 5th and 6th component to be compatible to vtk element order
+        if field_type == TENSOR and data.shape[1] == 6:
+            data = data[:,[0,1,2,3,5,4]]
 
         return labels, data, paraqus_position, field_type
 
