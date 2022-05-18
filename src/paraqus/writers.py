@@ -18,7 +18,7 @@ import struct
 import base64
 
 from constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER, BASE64, RAW,
-                       UINT64, UINT32)
+                       UINT64, UINT32, SCALAR, VECTOR, TENSOR)
 from mapping import (BINARY_TYPE_MAPPER, VTK_TYPE_MAPPER,
                      BINARY_HEADER_SIZE_MAPPER)
 from version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
@@ -517,7 +517,48 @@ class WriterBaseClass(object):
                                                part=i, file=rel_path)
 
             xml.finish_all_elements()
+            
+    def _prepare_to_write_vtu_file(self, piece, piece_tag):
+        # Create a storage folder if there isn't one already
+        folder_name = path.join(self.output_dir,
+                                piece.model_name,
+                                "vtu")
+        self._create_folder(folder_name)
 
+        # Generate a virtual frame number, so that frames are consecutive
+        key = (piece.model_name, piece.part_name, piece_tag)
+        virtual_frame = self._part_frame_counter.get(key, 0)
+
+        # Define a name for the vtu file
+        file_path = path.join(folder_name,
+                              (piece.part_name
+                               + "_{}_{}.vtu".format(piece_tag, virtual_frame))
+                              )
+
+        # Update the virtual frame
+        self._part_frame_counter.update({key: virtual_frame + 1})
+
+        # Number of elements and nodes
+        nel = len(piece.elements.tags)
+        nnp = len(piece.nodes.tags)
+
+        # Extract some relevant arrays for the vtu output
+        node_coords = piece.nodes.coordinates
+        tag_based_conn = piece.elements.connectivity
+        element_types = piece.elements.types
+        element_offsets = np.cumsum([len(c) for c in tag_based_conn],
+                                    dtype=tag_based_conn[0].dtype)
+
+        # The connectivity is needed as one flattened array that is
+        # expressed in terms of the node indices. One big 1d array
+        # will be fine for binary output.
+        node_index_mapper = piece.nodes.index_mapper
+        connectivity = np.array([node_index_mapper[i]
+                                 for conn in tag_based_conn for i in conn],
+                                dtype=tag_based_conn[0].dtype)
+
+        return (file_path, nel, nnp, node_coords, element_types,
+                element_offsets, connectivity)
 
 class BinaryWriter(WriterBaseClass):
     """
@@ -650,43 +691,13 @@ class BinaryWriter(WriterBaseClass):
             The path to the exported .vtu file.
 
         """
-        # Create a storage folder if there isn't one already
-        folder_name = path.join(self.output_dir,
-                                piece.model_name,
-                                "vtu")
-        self._create_folder(folder_name)
-
-        # Generate a virtual frame number, so that frames are consecutive
-        key = (piece.model_name, piece.part_name, piece_tag)
-        virtual_frame = self._part_frame_counter.get(key, 0)
-
-        # Define a name for the vtu file
-        file_path = path.join(folder_name,
-                              (piece.part_name
-                               + "_{}_{}.vtu".format(piece_tag, virtual_frame))
-                              )
-
-        # Update the virtual frame
-        self._part_frame_counter.update({key: virtual_frame + 1})
-
-        # Number of elements and nodes
-        nel = len(piece.elements.tags)
-        nnp = len(piece.nodes.tags)
-
-        # Extract some relevant arrays for the vtu output
-        node_coords = piece.nodes.coordinates
-        tag_based_conn = piece.elements.connectivity
-        element_types = piece.elements.types
-        element_offsets = np.cumsum([len(c) for c in tag_based_conn],
-                                    dtype=tag_based_conn[0].dtype)
-
-        # The connectivity is needed as one flattened array that is
-        # expressed in terms of the node indices. One big 1d array
-        # will be fine for binary output.
-        node_index_mapper = piece.nodes.index_mapper
-        connectivity = np.array([node_index_mapper[i]
-                                 for conn in tag_based_conn for i in conn],
-                                dtype=tag_based_conn[0].dtype)
+        (file_path,
+         nel,
+         nnp,
+         node_coords,
+         element_types,
+         element_offsets,
+         connectivity) = self._prepare_to_write_vtu_file(piece, piece_tag)
 
         # Write the file
         with VtkFileManager(file_path, BINARY) as vtu_file:
@@ -735,22 +746,28 @@ class BinaryWriter(WriterBaseClass):
                 # Add connectivity
                 xml.add_element("Cells")
                 dtype = connectivity.dtype.name
-                xml.add_element("DataArray", type=VTK_TYPE_MAPPER[dtype],
-                                Name="connectivity", format="binary")
+                xml.add_element("DataArray",
+                                type=VTK_TYPE_MAPPER[dtype],
+                                Name="connectivity",
+                                format="binary")
                 xml.add_array_data_to_element(connectivity)
                 xml.finish_element()
 
                 # Add element offsets
                 dtype = element_offsets.dtype.name
-                xml.add_element("DataArray", type=VTK_TYPE_MAPPER[dtype],
-                                Name="offsets", format="binary")
+                xml.add_element("DataArray",
+                                type=VTK_TYPE_MAPPER[dtype],
+                                Name="offsets",
+                                format="binary")
                 xml.add_array_data_to_element(element_offsets)
                 xml.finish_element()
 
                 # Add element types
                 dtype = element_types.dtype.name
-                xml.add_element("DataArray", type=VTK_TYPE_MAPPER[dtype],
-                                Name="types", format="binary")
+                xml.add_element("DataArray",
+                                type=VTK_TYPE_MAPPER[dtype],
+                                Name="types",
+                                format="binary")
                 xml.add_array_data_to_element(element_types)
                 xml.finish_element()
                 xml.finish_element()  # Finish cell definitions
@@ -761,12 +778,14 @@ class BinaryWriter(WriterBaseClass):
                     components = len(nf.field_values[0])
                     dtype = nf.field_values.dtype.name
 
-                    xml.add_element("DataArray", Name=nf.field_name,
+                    xml.add_element("DataArray",
+                                    Name=nf.field_name,
                                     NumberOfComponents=components,
                                     type=VTK_TYPE_MAPPER[dtype],
                                     format="binary")
 
-                    xml.add_array_data_to_element(nf.field_values)
+                    xml.add_array_data_to_element(nf.field_values,
+                                                  field_type=nf.field_type)
                     xml.finish_element()
 
                 # Add node fields based on groups
@@ -776,7 +795,8 @@ class BinaryWriter(WriterBaseClass):
                                          group_nodes).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
-                    xml.add_element("DataArray", Name="_group " + group_name,
+                    xml.add_element("DataArray",
+                                    Name="_group " + group_name,
                                     NumberOfComponents=1,
                                     type=VTK_TYPE_MAPPER[dtype],
                                     format="binary")
@@ -792,12 +812,14 @@ class BinaryWriter(WriterBaseClass):
                     components = len(ef.field_values[0])
                     dtype=ef.field_values.dtype.name
 
-                    xml.add_element("DataArray", Name=ef.field_name,
+                    xml.add_element("DataArray",
+                                    Name=ef.field_name,
                                     NumberOfComponents=components,
                                     type=VTK_TYPE_MAPPER[dtype],
                                     format="binary")
 
-                    xml.add_array_data_to_element(ef.field_values)
+                    xml.add_array_data_to_element(ef.field_values,
+                                                  field_type=ef.field_type)
                     xml.finish_element()
 
                 for group_name, group_elems in piece.elements.groups.items():
@@ -806,7 +828,8 @@ class BinaryWriter(WriterBaseClass):
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
-                    xml.add_element("DataArray", Name="_group " + group_name,
+                    xml.add_element("DataArray",
+                                    Name="_group " + group_name,
                                     NumberOfComponents=1,
                                     type=VTK_TYPE_MAPPER[dtype],
                                     format="binary")
@@ -951,22 +974,26 @@ class BinaryWriter(WriterBaseClass):
                 xml.add_content_to_element("_", False)
                 for array in [time_array, node_coords, connectivity,
                               element_offsets, element_types]:
-                    xml.add_array_data_to_element(array, False)
+                    xml.add_array_data_to_element(array, break_line=False)
 
                 # Append node field data
                 for nf in piece.node_field_outputs:
-                    xml.add_array_data_to_element(nf.field_values, False)
+                    xml.add_array_data_to_element(nf.field_values,
+                                                  field_type=nf.field_type,
+                                                  break_line=False)
 
                 # Append node group data
                 for group_name, group_nodes in piece.nodes.groups.items():
                     # TODO: Check if there is a smaller possible data type than int8
                     field_vals = np.isin(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
-                    xml.add_array_data_to_element(field_vals, False)
+                    xml.add_array_data_to_element(field_vals, break_line=False)
 
                 # Append element field data
                 for ef in piece.element_field_outputs:
-                    xml.add_array_data_to_element(ef.field_values, False)
+                    xml.add_array_data_to_element(ef.field_values,
+                                                  field_type=ef.field_type,
+                                                  break_line=False)
 
                 # Append element group data
                 for group_name, group_elems in piece.elements.groups.items():
@@ -1062,44 +1089,13 @@ class AsciiWriter(WriterBaseClass):
             The path to the exported .vtu file.
 
         """
-        # Create a storage folder if there isn't one already
-        folder_name = path.join(self.output_dir,
-                                piece.model_name,
-                                "vtu")
-        self._create_folder(folder_name)
-
-        # Generate a virtual frame number, so that frames are consecutive
-        key = (piece.model_name, piece.part_name, piece_tag)
-        virtual_frame = self._part_frame_counter.get(key, 0)
-
-        # Define a name for the vtu file
-        file_path = path.join(folder_name,
-                              piece.part_name
-                              + "_{}_{}.vtu".format(piece_tag,
-                                                    virtual_frame)
-                              )
-
-        # Update the virtual frame
-        self._part_frame_counter.update({key: virtual_frame + 1})
-
-        # Number of elements and nodes
-        nel = len(piece.elements.tags)
-        nnp = len(piece.nodes.tags)
-
-        # Extract some relevant arrays for the vtu output
-        node_coords = piece.nodes.coordinates
-        tag_based_conn = piece.elements.connectivity
-        element_types = piece.elements.types
-        element_offsets = np.cumsum([len(c) for c in tag_based_conn],
-                                    dtype=tag_based_conn[0].dtype)
-
-        # The connectivity is needed as one flattened array that is
-        # expressed in terms of the node indices
-        node_index_mapper = piece.nodes.index_mapper
-        connectivity = []
-        for conn in tag_based_conn:  # For better readability create a 2d list
-            connectivity.append(np.array([node_index_mapper[i] for i in conn],
-                                    dtype=tag_based_conn[0].dtype))
+        (file_path,
+         nel,
+         nnp,
+         node_coords,
+         element_types,
+         element_offsets,
+         connectivity) = self._prepare_to_write_vtu_file(piece, piece_tag)
 
         # Write the file
         with VtkFileManager(file_path, ASCII) as vtu_file:
@@ -1167,7 +1163,8 @@ class AsciiWriter(WriterBaseClass):
                                 type=VTK_TYPE_MAPPER[dtype],
                                 format="ascii")
 
-                xml.add_array_data_to_element(nf.field_values)
+                xml.add_array_data_to_element(nf.field_values,
+                                              field_type=nf.field_type)
                 xml.finish_element()
 
             # Add node fields based on groups
@@ -1198,7 +1195,8 @@ class AsciiWriter(WriterBaseClass):
                                 NumberOfComponents=components,
                                 type=VTK_TYPE_MAPPER[dtype], format="ascii")
 
-                xml.add_array_data_to_element(ef.field_values)
+                xml.add_array_data_to_element(ef.field_values,
+                                              field_type=ef.field_type)
                 xml.finish_element()
 
             # Add element fields based on groups
@@ -1415,7 +1413,10 @@ class XmlFactory(object):
         self._stream.write(content)
 
 
-    def add_array_data_to_element(self, array, break_line=True):
+    def add_array_data_to_element(self,
+                                  array,
+                                  field_type=None,
+                                  break_line=True):
         """
         Add array data to the XML file.
 
@@ -1423,6 +1424,8 @@ class XmlFactory(object):
         ----------
         array : numpy.ndarray
             The array data to add.
+        field_type : ParaqusConstant
+            If `field_type` is VECTOR or TENSOR, `array` is padded to 3d shape.
         break_line : bool, optional
             If True, a linebreak will be inserted after the array data.
             The default is True.
@@ -1432,7 +1435,26 @@ class XmlFactory(object):
         None.
 
         """
-
+        if field_type is not None:
+            if field_type == SCALAR:
+                if array.ndim < 1:
+                    array = array.reshape(-1,1)
+                    
+            elif field_type == VECTOR:
+                nvals, ndim = array.shape
+                if ndim < 3:
+                    array = np.hstack((array, np.zeros((nvals, 3-ndim))))
+                    
+            elif field_type == TENSOR:
+                nvals, ndim = array.shape
+                if ndim < 6:
+                    array = np.hstack((array, np.zeros((nvals, 6-ndim))))
+                    
+            else:
+                raise NotImplementedError(
+                    "Only VECTOR or TENSOR are supported."
+                    )
+        
         if self._active_element is None:
             raise RuntimeError("No XML element is open.")
 

@@ -30,6 +30,7 @@ reader = ODBReader(odb_path=ODB_PATH,
 reader.add_field_export_request("U", field_position="nodes")
 reader.add_field_export_request("PEEQ", field_position="elements")
 reader.add_field_export_request("TEMP", field_position="elements")
+reader.add_field_export_request("PE", field_position="elements")
 
 reader.add_set_export_request("ESID", set_type="elements", 
                               instance_name="PART-1-1")
