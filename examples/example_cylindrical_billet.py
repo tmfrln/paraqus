@@ -19,7 +19,7 @@ ODB_PATH = "cylbillet_cax4rt_slow_dense.odb" # path to the odb
 MODEL_NAME = "Cylindrical-Billet" # can be chosen freely
 INSTANCE_NAMES = ["Part-1-1"] # which instances will be exported
 STEP_NAME = "Step-1" # name of the step that will be exported
-FRAME_INDICES = [0, -1] # export the last frame of the step
+FRAME_INDICES = [0, -1] # export the first and last frame of the step
 
 # create the reader - this will not yet perform any "reading"
 reader = ODBReader(odb_path=ODB_PATH,
