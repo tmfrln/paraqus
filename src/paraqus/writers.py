@@ -11,6 +11,7 @@ import os
 import sys
 from os import path
 import shutil
+import itertools
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -366,7 +367,7 @@ class WriterBaseClass(object):
             xml.add_element("PCellData")
             for ef in model.element_field_outputs:
                 name = ef.field_name
-                values = ef.field_values
+                values = ef.get_3d_field_values()
                 components = len(values[0])
                 dtype=values.dtype.name
                 xml.add_and_finish_element("PDataArray",
@@ -517,8 +518,37 @@ class WriterBaseClass(object):
                                                part=i, file=rel_path)
 
             xml.finish_all_elements()
-            
+
     def _prepare_to_write_vtu_file(self, piece, piece_tag):
+        """
+        Prepare a ParaqusModel for the .vtu export.
+
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The model or model piece to prepare for the export.
+        piece_tag : int
+            The piece identifier tag.
+
+        Returns
+        -------
+        file_path : str
+            The path to the resulting .vtu file.
+        nel : int
+            Number of elements.
+        nnp : int
+            Number of node points.
+        node_coords : numpy.ndarray
+            Nodal coordinates in shape (nnp,3).
+        element_types : numpy.ndarray
+            The VTK cell types.
+        element_offsets : numpy.ndarray
+            The offsets between the elements regarding the node points
+            in order of the element types.
+        connectivity : list of numpy.ndarray
+            The connectivity list in order of the element types.
+
+        """
         # Create a storage folder if there isn't one already
         folder_name = path.join(self.output_dir,
                                 piece.model_name,
@@ -549,13 +579,12 @@ class WriterBaseClass(object):
         element_offsets = np.cumsum([len(c) for c in tag_based_conn],
                                     dtype=tag_based_conn[0].dtype)
 
-        # The connectivity is needed as one flattened array that is
-        # expressed in terms of the node indices. One big 1d array
-        # will be fine for binary output.
+        # Create connectivity expressed in terms of the node indices
         node_index_mapper = piece.nodes.index_mapper
-        connectivity = np.array([node_index_mapper[i]
-                                 for conn in tag_based_conn for i in conn],
-                                dtype=tag_based_conn[0].dtype)
+        connectivity = []
+        for conn in tag_based_conn:
+            connectivity.append(np.array([node_index_mapper[i] for i in conn],
+                                    dtype=tag_based_conn[0].dtype))
 
         return (file_path, nel, nnp, node_coords, element_types,
                 element_offsets, connectivity)
@@ -698,6 +727,12 @@ class BinaryWriter(WriterBaseClass):
          element_types,
          element_offsets,
          connectivity) = self._prepare_to_write_vtu_file(piece, piece_tag)
+
+        # The connectivity is needed as one flattened array that is
+        # expressed in terms of the node indices. One big 1d array
+        # will be fine for binary output.
+        connectivity = np.array(list(itertools.chain(*connectivity)),
+                                dtype=piece.elements.connectivity[0].dtype)
 
         # Write the file
         with VtkFileManager(file_path, BINARY) as vtu_file:
@@ -946,16 +981,17 @@ class BinaryWriter(WriterBaseClass):
                 # Add element fields
                 xml.add_element("CellData")
                 for ef in piece.element_field_outputs:
-                    components = len(ef.field_values[0])
-                    dtype = ef.field_values.dtype.name
+                    field_vals = ef.get_3d_field_values()
+                    components = len(field_vals[0])
+                    dtype = field_vals.dtype.name
 
-                    xml.add_and_finish_element("DataArray", 
+                    xml.add_and_finish_element("DataArray",
                                                Name=ef.field_name,
                                                NumberOfComponents=components,
                                                type=VTK_TYPE_MAPPER[dtype],
                                                format="appended",
                                                offset=byte_offset)
-                    byte_offset = update_byte_offset(ef.field_values)
+                    byte_offset = update_byte_offset(field_vals)
 
                 # element_fields for groups
                 for group_name, group_elems in piece.elements.groups.items():
@@ -983,6 +1019,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append node field data
                 for nf in piece.node_field_outputs:
+                    field_vals = nf.get_3d_field_values()
                     xml.add_array_data_to_element(field_vals,
                                                   break_line=False)
 
@@ -995,8 +1032,8 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append element field data
                 for ef in piece.element_field_outputs:
-                    xml.add_array_data_to_element(ef.field_values,
-                                                  field_type=ef.field_type,
+                    field_vals = ef.get_3d_field_values()
+                    xml.add_array_data_to_element(field_vals,
                                                   break_line=False)
 
                 # Append element group data
