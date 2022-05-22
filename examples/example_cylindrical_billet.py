@@ -2,16 +2,16 @@
 Export selected results from the cylindrical billet example output database.
 
 Run this file in the Abaqus python interpreter. It is assumed that the 
-output dabase 'cylbillet_cax4rt_slow_dense.odb' is located in the vurrent
+output dabase 'cylbillet_cax4rt_slow_dense.odb' is located in the current
 work directory. Visit the paraqus documentation for a full description on 
-how to run the example before using this scrip to export results.
+how to run the example before using this script to export results.
 
 """
 # TODO: Add link to docs
 
 # we will use the ODBReader class to extract information from the odb
 from paraqus.abaqus import ODBReader
-from paraqus.writers import BinaryWriter
+from paraqus.writers import BinaryWriter, AsciiWriter
 
 print("EXPORT RUNNING...")
 
@@ -30,6 +30,7 @@ reader = ODBReader(odb_path=ODB_PATH,
 reader.add_field_export_request("U", field_position="nodes")
 reader.add_field_export_request("PEEQ", field_position="elements")
 reader.add_field_export_request("TEMP", field_position="elements")
+reader.add_field_export_request("PE", field_position="elements")
 
 reader.add_set_export_request("ESID", set_type="elements", 
                               instance_name="PART-1-1")
@@ -37,7 +38,8 @@ reader.add_set_export_request("ETOP", set_type="elements",
                               instance_name="PART-1-1")
 
 # create a writer that will write the exported results to a vtk file
-vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
+# vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
+vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
 
 # loop over all instances and export the results
 vtu_writer.initialize_collection()

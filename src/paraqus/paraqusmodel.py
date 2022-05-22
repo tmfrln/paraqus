@@ -1149,23 +1149,12 @@ class FieldOutput(object):
 
     @field_values.setter
     def field_values(self, field_values):
+        
+        if self.field_type == SCALAR:
+            field_values = field_values.reshape((-1,1))
+
         self._field_values = np.array(field_values)
         
-        # Always store vectors with three components, otherwise the
-        # warpbyvector filter in paraview would not work
-        if self.field_type == VECTOR:
-            vals = self._field_values
-            if len(field_values[0]) == 2:
-                self._field_values = np.hstack((vals, 
-                                                np.zeros((len(vals),1))))
-            elif len(field_values[0]) == 1:
-                self._field_values = np.hstack((vals, 
-                                                np.zeros((len(vals),1)),
-                                                np.zeros((len(vals),1))))
-            
-        if self.field_type == SCALAR:
-            self._field_values = self._field_values.reshape((-1,1))
-
     @property
     def field_position(self):
         return self._field_position
@@ -1194,6 +1183,38 @@ class FieldOutput(object):
 
 
     # Methods
+    def get_3d_field_values(self):
+        """
+        Get a copy of the field values in 3d representation.
+
+        Raises
+        ------
+        NotImplementedError
+            If the field type is unknown.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.field_type == SCALAR:
+            return self.field_values
+                
+        elif self.field_type == VECTOR:
+            nvals, ndim = self.field_values.shape
+            if ndim < 3:
+                return np.hstack((self.field_values, np.zeros((nvals, 3-ndim))))
+                
+        elif self.field_type == TENSOR:
+            nvals, ndim = self.field_values.shape
+            if ndim < 6:
+                return np.hstack((self.field_values, np.zeros((nvals, 6-ndim))))
+
+        else:
+            raise NotImplementedError(
+                "Only VECTOR or TENSOR are supported."
+                )
+    
     def __repr__(self):
         descr = "Field '{}' of type '{}' at position '{}'".format(
             self.field_name, self.field_type, self.field_position)
