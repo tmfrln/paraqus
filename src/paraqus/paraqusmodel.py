@@ -136,7 +136,7 @@ class ParaqusModel(object):
     >>> writer.finalize_collection()
 
     """
-    
+
     model_counter = 0
 
     def __init__(self,
@@ -1149,12 +1149,12 @@ class FieldOutput(object):
 
     @field_values.setter
     def field_values(self, field_values):
-        
+
         if self.field_type == SCALAR:
             field_values = field_values.reshape((-1,1))
 
         self._field_values = np.array(field_values)
-        
+
     @property
     def field_position(self):
         return self._field_position
@@ -1183,38 +1183,6 @@ class FieldOutput(object):
 
 
     # Methods
-    def get_3d_field_values(self):
-        """
-        Get a copy of the field values in 3d representation.
-
-        Raises
-        ------
-        NotImplementedError
-            If the field type is unknown.
-
-        Returns
-        -------
-        None.
-
-        """
-        if self.field_type == SCALAR:
-            return self.field_values
-                
-        elif self.field_type == VECTOR:
-            nvals, ndim = self.field_values.shape
-            if ndim < 3:
-                return np.hstack((self.field_values, np.zeros((nvals, 3-ndim))))
-                
-        elif self.field_type == TENSOR:
-            nvals, ndim = self.field_values.shape
-            if ndim < 6:
-                return np.hstack((self.field_values, np.zeros((nvals, 6-ndim))))
-
-        else:
-            raise NotImplementedError(
-                "Only VECTOR or TENSOR are supported."
-                )
-    
     def __repr__(self):
         descr = "Field '{}' of type '{}' at position '{}'".format(
             self.field_name, self.field_type, self.field_position)
@@ -1223,6 +1191,32 @@ class FieldOutput(object):
     def __len__(self):
         return len(self.field_values)
 
+    def get_3d_field_values(self):
+        """
+        Get a copy of the field values in 3d representation.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.field_type == SCALAR:
+            return self.field_values
+
+        elif self.field_type == VECTOR:
+            nvals, ndim = self.field_values.shape
+            if ndim < 3:
+                return np.hstack((self.field_values, np.zeros((nvals, 3-ndim))))
+
+        elif self.field_type == TENSOR:
+            nvals, ndim = self.field_values.shape
+            if ndim < 6:
+                return np.hstack((self.field_values, np.zeros((nvals, 6-ndim))))
+
+        else:
+            raise NotImplementedError(
+                "Only SCALAR, VECTOR and TENSOR are supported."
+                )
 
 #------------------------------------------------------------------
 # Short test
@@ -1237,7 +1231,7 @@ if __name__ == "__main__":
     element_tags = [1,2,3,4,5]
     connectivity = [[1,2,5,4],[2,3,6,5],[4,5,7],[5,6,8],[5,8,7]]
     element_types = [9,9,5,5,5]
-    
+
     # Create four element base model
     model_name = "2D_TEST_MODEL"
     part_name = "2D_TEST_PART"
@@ -1249,20 +1243,10 @@ if __name__ == "__main__":
                            model_name=model_name,
                            part_name=part_name)
 
-    # Check some geometry related stuff
-    # assert np.array_equal(model.get_elements_by_type(9).connectivity[0], [1,2,3,4])
-    # assert np.array_equal(model.get_elements_by_tag(1,2).connectivity[0], [1,2,3,4])
-    # assert np.array_equal(model.get_nodes_by_connectivity(connectivity).tags, node_tags)
-
-    # Field outputs
-    # scalar_node_field = [0,2,4,6,8]
-    # tensor_element_field = [[0,1,2,3],[4,5,6,7]]
-    # model.add_field_output("scalar_node_field", node_tags, scalar_node_field, NODES, SCALAR)
-    # model.add_field_output("tensor_element_field", element_tags, tensor_element_field, ELEMENTS, TENSOR)
-
-    # Check some output related stuff
-    # assert np.array_equal(model.get_field_outputs_by_type(SCALAR, NODES)[0].field_values,
-    #                       np.array(scalar_node_field).reshape((-1,1)))
+    # Add some field outputs
+    tensor_field_vals = [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4],[5,5,5,5]]
+    model_1.add_field_output("tensor_field", [1,2,3,4,5], tensor_field_vals,
+                             "elements", "tensor")
 
     # Test writer class
     vtu_writer = BinaryWriter(clear_output_dir=True)
@@ -1270,9 +1254,8 @@ if __name__ == "__main__":
     # vtu_writer = AsciiWriter()
     vtu_writer.number_of_pieces = 2
 
-    vtu_writer.initialise_collection()
+    vtu_writer.initialize_collection()
     vtu_writer.write(model_1)
-    # vtu_writer.write(model_2)
     vtu_writer.finalize_collection()
 
     print("*** FINISHED SUCCESFULLY ***")
