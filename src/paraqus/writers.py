@@ -20,9 +20,38 @@ import base64
 
 from constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER, BASE64, RAW,
                        UINT64, UINT32)
-from mapping import (BINARY_TYPE_MAPPER, VTK_TYPE_MAPPER,
-                     BINARY_HEADER_SIZE_MAPPER)
 from version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
+
+
+# Mapper for data types used in vtk files
+VTK_TYPE_MAPPER = {"int8":    "Int8",
+                   "uint8":   "UInt8",
+                   "int16":   "Int16",
+                   "uint16":  "UInt16",
+                   "int32":   "Int32",
+                   "uint32":  "UInt32",
+                   "int64":   "Int64",
+                   "uint64":  "UInt64",
+                   "float32": "Float32",
+                   "float64": "Float64",
+                   }
+
+# Mapper for binary data types
+BINARY_TYPE_MAPPER = {"int8": "b",
+                      "uint8": "B",
+                      "int16": "h",
+                      "uint16": "H",
+                      "int32": "i",
+                      "uint32": "I",
+                      "int64": "q",
+                      "uint64": "Q",
+                      "float32": "f",
+                      "float64": "d",
+                      }
+
+# Mapper for the header size in case of packed binary data
+BINARY_HEADER_SIZE_MAPPER = {"uint32": 4,
+                             "uint64": 8}
 
 
 class VtkFileManager(object):

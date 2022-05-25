@@ -57,34 +57,34 @@ ABQ_CONN_MAPPER = Mapper({3:  [1,2],
                           })
 
 
-# Mapper for data types used in vtk files
-VTK_TYPE_MAPPER = Mapper({"int8":    "Int8",
-                          "uint8":   "UInt8",
-                          "int16":   "Int16",
-                          "uint16":  "UInt16",
-                          "int32":   "Int32",
-                          "uint32":  "UInt32",
-                          "int64":   "Int64",
-                          "uint64":  "UInt64",
-                          "float32": "Float32",
-                          "float64": "Float64"
-                          })
+# # Mapper for data types used in vtk files
+# VTK_TYPE_MAPPER = Mapper({"int8":    "Int8",
+#                           "uint8":   "UInt8",
+#                           "int16":   "Int16",
+#                           "uint16":  "UInt16",
+#                           "int32":   "Int32",
+#                           "uint32":  "UInt32",
+#                           "int64":   "Int64",
+#                           "uint64":  "UInt64",
+#                           "float32": "Float32",
+#                           "float64": "Float64"
+#                           })
 
 
-# Mapper for binary data types
-BINARY_TYPE_MAPPER = Mapper({"int8": "b",
-                             "uint8": "B",
-                             "int16": "h",
-                             "uint16": "H",
-                             "int32": "i",
-                             "uint32": "I",
-                             "int64": "q",
-                             "uint64": "Q",
-                             "float32": "f",
-                             "float64": "d"
-                             })
+# # Mapper for binary data types
+# BINARY_TYPE_MAPPER = Mapper({"int8": "b",
+#                              "uint8": "B",
+#                              "int16": "h",
+#                              "uint16": "H",
+#                              "int32": "i",
+#                              "uint32": "I",
+#                              "int64": "q",
+#                              "uint64": "Q",
+#                              "float32": "f",
+#                              "float64": "d"
+#                              })
 
 
-# Mapper for the header size in case of packed binary data
-BINARY_HEADER_SIZE_MAPPER = Mapper({"uint32": 4,
-                                    "uint64": 8})
+# # Mapper for the header size in case of packed binary data
+# BINARY_HEADER_SIZE_MAPPER = Mapper({"uint32": 4,
+#                                     "uint64": 8})
