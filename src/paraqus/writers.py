@@ -19,7 +19,7 @@ import struct
 import base64
 
 from constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER, BASE64, RAW,
-                       UINT64, UINT32, SCALAR, VECTOR, TENSOR)
+                       UINT64, UINT32)
 from mapping import (BINARY_TYPE_MAPPER, VTK_TYPE_MAPPER,
                      BINARY_HEADER_SIZE_MAPPER)
 from version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
@@ -1309,6 +1309,7 @@ class XmlFactory(object):
 
         self._stream = stream
         self._lvl = 0
+        self._add_tabs = True
         self._elements = []
         self._active_element = None
         self._header_type = header_type
@@ -1342,12 +1343,14 @@ class XmlFactory(object):
         if break_line:
             to_write += '\n'
 
-        to_write = self._lvl * '    ' + to_write
+        if self._add_tabs:
+            to_write = self._lvl * '    ' + to_write
         self._stream.write(to_write)
 
         self._elements.append(name)
         self._active_element = name
-        self._lvl += 1
+        self._lvl += 1 if break_line else 0
+        self._add_tabs = break_line
 
     def finish_element(self, break_line=True):
         """
@@ -1374,9 +1377,12 @@ class XmlFactory(object):
         if break_line:
             to_write += '\n'
 
-        to_write = (self._lvl - 1) * '    ' + to_write
+        if self._add_tabs:
+            to_write = (self._lvl - 1) * '    ' + to_write
         self._stream.write(to_write)
-        self._lvl -= 1
+
+        self._lvl -= 1 if break_line else 0
+        self._add_tabs = break_line
 
         if len(self._elements) > 0:
             self._active_element = self._elements[-1]
@@ -1429,7 +1435,8 @@ class XmlFactory(object):
         if break_line:
             to_write += '\n'
 
-        to_write = self._lvl * '    ' + to_write
+        if self._add_tabs:
+            to_write = self._lvl * '    ' + to_write
         self._stream.write(to_write)
 
     def add_content_to_element(self, content, break_line=True):
@@ -1452,10 +1459,11 @@ class XmlFactory(object):
         if self._active_element is None:
             raise RuntimeError("No XML element is open.")
 
-        content = self._lvl * '    ' + content
         if break_line:
             content += '\n'
 
+        if self._add_tabs:
+            content = self._lvl * '    ' + content
         self._stream.write(content)
 
 
@@ -1485,7 +1493,7 @@ class XmlFactory(object):
         elif self._stream.fmt == ASCII:
             self._write_ascii_array_data(array, break_line)
 
-    def _write_binary_array_data(self, array, line_break=True):
+    def _write_binary_array_data(self, array, break_line=True):
         """
         Add binary encoded array data to the XML file.
 
@@ -1493,7 +1501,7 @@ class XmlFactory(object):
         ----------
         array : numpy.ndarray
             The array to add to the output file.
-        line_break : bool, optional
+        break_line : bool, optional
             If True, a linebreak will be inserted after the array data
             has been written.
 
@@ -1526,7 +1534,8 @@ class XmlFactory(object):
             b64_header = base64.b64encode(header)
             b64_data = base64.b64encode(data)
 
-            self._stream.write(self._lvl * '    ')
+            if self._add_tabs:
+                self._stream.write(self._lvl * '    ')
             self._stream.write(b64_header)
             self._stream.write(b64_data)
 
@@ -1534,8 +1543,10 @@ class XmlFactory(object):
             self._stream.write(header)
             self._stream.write(data)
 
-        if line_break:
+        if break_line:
             self._stream.write("\n")
+
+        self._add_tabs = break_line
 
 
     def _write_ascii_array_data(self, array, break_line=True):
@@ -1555,17 +1566,29 @@ class XmlFactory(object):
         None.
 
         """
-        for line in array:
+        # Check if the array is 1d
+        # AttributeError must be catched in case of a list as input,
+        # e.g. in case of the connectivity
+        try:
+            if 1 in array.shape or len(array.shape) == 1:
+                array = array.reshape(1,-1)
+        except AttributeError:
+            pass
+
+        for i, line in enumerate(array):
 
             try:
                 data_string = ''.join(str(val) + '    ' for val in line)[0:-4]
             except TypeError:  # In case of only one value per line
                 data_string = str(line)
 
-            data_string = self._lvl * '    ' + data_string
             if break_line:
                 data_string += '\n'
-            else:
+            if not break_line and i == len(array):
                 data_string += '    '
 
+            if self._add_tabs:
+                data_string = self._lvl * '    ' + data_string
             self._stream.write(data_string)
+
+            self._add_tabs = break_line
