@@ -1031,7 +1031,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
         """
         if field.field_position == ELEMENTS:
 
-            if self.fields.get(field.field_name) != None:
+            if self.fields.get(field.field_name, None) != None:
                 msg = ("Element field '{}'".format(field.field_name)
                        + " has already been stored and will be overwritten.")
                 warnings.warn(msg)
@@ -1189,11 +1189,13 @@ class FieldOutput(object):
             nvals, ndim = self.field_values.shape
             if ndim < 3:
                 return np.hstack((self.field_values, np.zeros((nvals, 3-ndim))))
+            return self.field_values
 
         elif self.field_type == TENSOR:
             nvals, ndim = self.field_values.shape
             if ndim < 6:
                 return np.hstack((self.field_values, np.zeros((nvals, 6-ndim))))
+            return self.field_values
 
         else:
             raise NotImplementedError(
@@ -1227,8 +1229,11 @@ if __name__ == "__main__":
 
     # Add some field outputs
     tensor_field_vals = [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4],[5,5,5,5]]
+    vector_field_vals = [[1,1,1],[2,2,2],[3,3,3],[4,4,4],[5,5,5]]
     model_1.add_field_output("tensor_field", [1,2,3,4,5], tensor_field_vals,
                              "elements", "tensor")
+    model_1.add_field_output("vector_field", [1,2,3,4,5], vector_field_vals,
+                             "elements", "vector")
 
     # Test writer class
     vtu_writer = BinaryWriter(clear_output_dir=True)
