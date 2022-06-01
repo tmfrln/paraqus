@@ -10,7 +10,6 @@ import warnings
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-from mapping import Mapper
 from constants import USER, NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
 
 
@@ -466,7 +465,7 @@ class ElementRepository(object):
         Connectivity list of all elements in the same order as the tags.
     types : numpy.ndarray
         Types of all elements in the same order as the tags.
-    index_mapper : Mapper
+    index_mapper : dict
         Mapping element tag -> index in list of tags.
     groups : dict
         Mapping group name -> element tags.
@@ -511,8 +510,7 @@ class ElementRepository(object):
     def tags(self, element_tags):
 
         self._tags = np.array(element_tags).reshape(-1)
-        self._index_mapper = Mapper(zip(element_tags,
-                                        range(len(element_tags))))
+        self.index_mapper = dict(zip(element_tags, range(len(element_tags))))
 
     @property
     def connectivity(self):
@@ -530,18 +528,6 @@ class ElementRepository(object):
     def types(self, element_types):
         self._types = np.array(element_types,
                                dtype=np.uint8).reshape(-1)
-
-    @property
-    def index_mapper(self):
-        return self._index_mapper
-
-    @index_mapper.setter
-    def index_mapper(self, index_mapper):
-
-        if isinstance(index_mapper, Mapper):
-            self._index_mapper = index_mapper
-        else:
-            self._index_mapper = Mapper(index_mapper)
 
 
     # Methods
@@ -623,7 +609,7 @@ class ElementRepository(object):
         return_repo = ElementRepository(tags, connectivity, types)
 
         # Make sure the indices are coherent with the original model
-        return_repo.index_mapper = Mapper(zip(tags, indices))
+        return_repo.index_mapper = dict(zip(tags, indices))
 
         # Extract group elements that are present in the subset
         for group_name, group_tags in self.groups.items():
@@ -668,7 +654,7 @@ class ElementRepository(object):
         types = self.types[indices]
 
         return_repo = ElementRepository(tags, connectivity, types)
-        return_repo.index_mapper = Mapper(zip(tags, indices))
+        return_repo.index_mapper = dict(zip(tags, indices))
 
         return return_repo
 
@@ -706,7 +692,7 @@ class NodeRepository(object):
         Tags of all nodes stored in the repository.
     coordinates : numpy.ndarray
         Coordinates of all nodes in order of the node tags.
-    index_mapper : Mapper
+    index_mapper : dict
         Mapping node tag -> index in list of tags.
     groups : dict
         Mapping group name -> node tags.
@@ -740,19 +726,7 @@ class NodeRepository(object):
     def tags(self, node_tags):
 
         self._tags = np.array(node_tags).reshape(-1)
-        self._index_mapper = Mapper(zip(node_tags, range(len(node_tags))))
-
-    @property
-    def index_mapper(self):
-        return self._index_mapper
-
-    @index_mapper.setter
-    def index_mapper(self, index_mapper):
-
-        if isinstance(index_mapper, Mapper):
-            self._index_mapper = index_mapper
-        else:
-            self._index_mapper = Mapper(index_mapper)
+        self.index_mapper = dict(zip(node_tags, range(len(node_tags))))
 
     @property
     def coordinates(self):
@@ -850,7 +824,7 @@ class NodeRepository(object):
         return_repo = NodeRepository(tags, coords)
 
         # make sure the indices are coherent with the original model
-        return_repo.index_mapper = Mapper(zip(tags, indices))
+        return_repo.index_mapper = dict(zip(tags, indices))
 
         # extract group elements that are present in the subset
         for group_name, group_tags in self.groups.items():
@@ -1128,6 +1102,11 @@ class FieldOutput(object):
     field_values : numpy.ndarray
         Field values of the field output.
 
+    Methods
+    -------
+    get_3d_field_values
+        Get a copy of the field values in 3d representation.
+
     """
 
     def __init__(self,
@@ -1194,6 +1173,9 @@ class FieldOutput(object):
     def get_3d_field_values(self):
         """
         Get a copy of the field values in 3d representation.
+
+        Vectors are in order (x, y, z) and tensors are in order
+        (xx, yy, zz, xy, yz, xz).
 
         Returns
         -------
