@@ -22,39 +22,6 @@ class Mapper(dict):
         msg = "Key '{}' is missing in mapper.".format(key)
         raise KeyError(msg)
         
-# TODO: shouldnt the ABQ_CONN_MAPPER live in the abaqus submodule?
-
-# Mapper for Abaqus connectivity lists
-# 3:  First-order line (2-node)
-# 4:  Second-order line (3-node)
-# 5:  First-order tri (3-node)
-# 9:  First-order quad (4-node)
-# 10: First-order tet (4-node)
-# 12: First-order hex (8-node)
-# 13: First-order prism (6-node)
-# 14: First-order pyramid (5-node)
-# 22: Second-order tri (6-node)
-# 23: Second-order quad (8-node)
-# 24: Second-order tet (10-node)
-# 25: Second-order hex (20-node)
-# 26: Second-order prism (15-node)
-# 28: Bi-quadratic quad (9-node)
-ABQ_CONN_MAPPER = Mapper({3:  [1,2],
-                          4:  [1,3,2],
-                          5:  [1,2,3],
-                          9:  [1,2,3,4],
-                          10: [1,2,3,4],
-                          12: [1,2,3,4,5,6,7,8],
-                          13: [1,2,3,4,5,6],
-                          14: [1,2,3,4,5],
-                          22: [1,2,3,4,5,6],
-                          23: [1,2,3,4,5,6,7,8],
-                          24: [1,2,3,4,5,6,7,8,9,10],
-                          25: [1,2,3,4,5,6,7,8,9,10,11,12,
-                               13,14,15,16,17,18,19,20],
-                          26: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-                          28: [1,2,3,4,5,6,7,8,9]
-                          })
 
 
 # # Mapper for data types used in vtk files
