@@ -6,9 +6,11 @@ instantiated based on an abaqus odb.
 One model instance is created for each time frame that is exported.
 
 """
-# TODO: Deal with different types of tensor output (plane stress/strain)
+# TODO: Make sure invariants are dealt with before section points
 
 import os.path
+import warnings
+
 import numpy as np
 
 from paraqus.paraqusmodel import ParaqusModel
@@ -231,17 +233,19 @@ class ODBReader():
                                                 instance=instance)
                     
                     if fo is None:
+                        # skip empty outputs when exporting
+                        msg = ("Field output {} ".format(request.field_name)
+                              + "not available in instance "
+                              + "{}. ".format(instance_name)
+                              + "Export skipped." )
+                        warnings.warn(msg)
                         continue
 
                     (field_tags,
                      field_data,
                      field_position,
-                     field_type) = self._read_field_output(request, fo, mesh)
-
-                    export_name = request.field_name
-
-                    if request.invariant is not None:
-                        export_name += "_{}".format(request.invariant)
+                     field_type,
+                     export_name) = self._read_field_output(request, fo, mesh)
 
                     model.add_field_output(export_name,
                                            field_tags,
@@ -414,16 +418,24 @@ class ODBReader():
         # NODAL, CENTROID, WHOLE_ELEMENT
         if position == abaqusConstants.NODAL:
             paraqus_position = NODES
-            labels, data, field_type = self._get_node_data(request,
-                                                           field_out,
-                                                           instance_mesh)
+            
+            (labels,
+             data,
+             field_type,
+             field_description) = self._get_node_data(request,
+                                                      field_out,
+                                                      instance_mesh)
 
         elif position in (abaqusConstants.CENTROID,
                           abaqusConstants.WHOLE_ELEMENT):
             paraqus_position = ELEMENTS
-            labels, data, field_type = self._get_element_data(request,
-                                                              field_out,
-                                                              instance_mesh)
+            
+            (labels,
+             data,
+             field_type,
+             field_description) = self._get_element_data(request,
+                                                         field_out,
+                                                         instance_mesh)
         else:
             raise ValueError("Position not implemented.")
             
@@ -431,7 +443,7 @@ class ODBReader():
         if field_type == TENSOR and data.shape[1] == 6:
             data = data[:,[0,1,2,3,5,4]]
 
-        return labels, data, paraqus_position, field_type
+        return labels, data, paraqus_position, field_type, field_description
 
 
     def _get_node_data(self, request, field_out, instance_mesh):
@@ -443,7 +455,14 @@ class ODBReader():
         ncomponents = blocks[0].data.shape[1]
         field_type = PARAQUS_FIELD_TYPES[blocks[0].type]
 
+         # initialize data as NaNs
         data = np.ones((len(instance_nodes), ncomponents), dtype=dtype)*np.nan
+
+        # create a description for the field
+        description_str = request.field_name
+
+        if request.invariant is not None:
+            description_str += "_{}".format(request.invariant)
 
         # for each node there is only a single value
         for block in blocks:
@@ -456,7 +475,7 @@ class ODBReader():
 
             data[indices,:] = block_data
 
-        return instance_nodes, data, field_type
+        return instance_nodes, data, field_type, description_str
 
 
     def _get_element_data(self, request, field_out, instance_mesh):
@@ -484,8 +503,23 @@ class ODBReader():
         nel = len(instance_elements)
         nsp = len(section_point_indices)
 
+        # initialize data as NaNs
         data = np.ones((nel, nsp, ncomponents), dtype=dtype)*np.nan
+        
+        # create a description for the field
+        description_str = request.field_name
 
+        if request.invariant is not None:
+            description_str += "_{}".format(request.invariant)
+        
+        if request.section_point_number is not None:
+            description_str += "_sp{}".format(request.section_point_number)  
+        elif nsp > 1:
+            # triggers only if there is no explicit specification of the 
+            # section point
+            description_str += "_{}".format(request.section_point_reduction)
+            
+        # extract the data by looping over the data blocks
         for block, sp_number in zip(blocks, section_points):
             sp_index = section_point_indices[sp_number]
 
@@ -507,11 +541,17 @@ class ODBReader():
                 "Requested section point number not in output."
 
             sp_index = section_point_indices[request.section_point_number]
-            return instance_elements, data[:,sp_index,:], field_type
+            return (instance_elements,
+                    data[:,sp_index,:],
+                    field_type,
+                    description_str)
 
         if nsp == 1:
             # "standard" case where there are not section points (or only 1)
-            return instance_elements, data[:,0,:], field_type
+            return (instance_elements,
+                    data[:,0,:],
+                    field_type,
+                    description_str)
         else:
             # reductions for multiple section points
             if request.section_point_reduction == MEAN:
@@ -522,7 +562,10 @@ class ODBReader():
             else:
                 raise ValueError("Reduction method invalid.")
 
-            return instance_elements, data, field_type
+            return (instance_elements,
+                    data,
+                    field_type,
+                    description_str)
 
 
 class InstanceMesh():
