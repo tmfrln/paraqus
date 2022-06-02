@@ -17,3 +17,4 @@ Contents
    usage
    api
    limitations
+   tests
