@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The main purpose of this file is to implement a model class that is
 instantiated based on an abaqus odb.
@@ -6,7 +5,6 @@ instantiated based on an abaqus odb.
 One model instance is created for each time frame that is exported.
 
 """
-# TODO: Make sure invariants are dealt with before section points
 
 import os.path
 import warnings
@@ -78,7 +76,7 @@ class ODBReader():
     add_field_export_request
     add_set_export_request
     get_end_time
-    read
+    read_instances
 
     """
 
@@ -164,7 +162,7 @@ class ODBReader():
         return self.time_offset + odb_time
 
 
-    def read(self, step_name, frame_index):
+    def read_instances(self, step_name, frame_index):
         """
         Read a frame from the underlying odb.
 
@@ -208,7 +206,7 @@ class ODBReader():
             # loop over the requested instances
             for instance_name in instance_names:
 
-                instance = odb.rootAssembly.instances[instance_name.upper()]
+                instance = odb.rootAssembly.instances[instance_name]
 
                 # extract nodes/elements and instance-level sets
                 mesh = InstanceMesh(instance)

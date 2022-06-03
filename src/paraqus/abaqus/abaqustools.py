@@ -35,6 +35,11 @@ class ODBObject(object):
         # otherwise, open it and return the object
         upgrade_odb(self.file_path)
         odb = session.openOdb(name=self.file_path, readOnly=self.readonly)
+        
+        # deal with silent errors in the readonly status, this happens e.g.
+        # when a lock file prevents write access
+        assert odb.isReadOnly == self.readonly, \
+            "The odb could not be opened with option readonly=%s" % self.readonly
 
         self.odb = odb
 
