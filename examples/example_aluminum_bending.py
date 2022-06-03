@@ -73,10 +73,6 @@ reader.add_set_export_request(set_name="P4_RIGHTSUPPORT",
 vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
 
 # loop over all instances and export the results
-# vtu_writer.initialize_collection()
-
 for instance_model in reader.read(step_name=STEP_NAME,
                                   frame_index=FRAME_INDEX):
         vtu_writer.write(instance_model)
-
-# vtu_writer.finalize_collection()
