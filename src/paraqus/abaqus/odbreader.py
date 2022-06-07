@@ -6,6 +6,12 @@ One model instance is created for each time frame that is exported.
 
 """
 
+# TODO: Looping over instances instead of set export requests makes it hard to
+# check if all requests were executed. Right now, no error is raised when a
+# set does not exist.
+
+# TODO: Add Surface export requests
+
 import os.path
 import warnings
 
@@ -258,11 +264,19 @@ class ODBReader():
                     # do nothing if the request is not for this instance
                     if set_tags is None:
                         continue
+                    
+                    # add the instance to the set name if it was specified to
+                    # avoid naming conflicts between instance and assembly sets
+                    if request.instance_name is not None:
+                        set_name = (request.instance_name 
+                                    + '.' + request.set_name)
+                    else:
+                        set_name = request.set_name
 
                     if request.set_type == NODES:
-                        model.nodes.add_group(request.set_name, set_tags)
+                        model.nodes.add_group(set_name, set_tags)
                     elif request.set_type == ELEMENTS:
-                        model.elements.add_group(request.set_name, set_tags)
+                        model.elements.add_group(set_name, set_tags)
                     else:
                         raise ValueError(
                             "Request type must be 'nodes' or 'elements'.")
@@ -276,6 +290,8 @@ class ODBReader():
 
         # switch between assembly and instance sets
         if request.instance_name is None:
+            # assembly-level sets
+            
             # switch between node and element sets
             if request.set_type == NODES:
                 assert set_name in odb.rootAssembly.nodeSets, \
@@ -309,7 +325,9 @@ class ODBReader():
                 raise ValueError(
                     "Set export request must have type 'nodes' or 'elements'.")
 
-        elif request.instance_name.upper() == instance.name:
+        elif request.instance_name == instance.name:
+            # instance-level sets
+            
              # switch between node and element sets
             if request.set_type == NODES:
                 assert set_name in instance.nodeSets, \
