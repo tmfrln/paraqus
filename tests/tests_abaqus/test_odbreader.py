@@ -203,6 +203,98 @@ class TestElementTestMesh(unittest.TestCase):
         
         assert len(grp_nodes) == 2
         
+    
+    def test_read_instance_surface_nodes(self):
+        """A group is stored in the model for nodes of an instance surface."""
+        self.reader.add_surface_export_request('Right Edge',
+                                               surface_type="nodes",
+                                               instance_name=self.instance_name)
+        
+        instance_models = list(
+            self.reader.read_instances(step_name = self.step_name,
+                                       frame_index = self.frame_index)
+                              )
+    
+        assert len(instance_models) == 1
+            
+        instance_model = instance_models[0]
+        
+        # instance-level sets have the instance name prepended
+        grp_name = 'surface.%s.Right Edge' % self.instance_name
+        
+        grp_nodes = instance_model.nodes.groups[grp_name]
+        
+        assert len(grp_nodes) == 3
+        
+        
+    def test_read_instance_surface_elements(self):
+        """A group is stored in the model for elements of an instance surface."""
+        self.reader.add_surface_export_request('Right Edge',
+                                               surface_type="elements",
+                                               instance_name=self.instance_name)
+        
+        instance_models = list(
+            self.reader.read_instances(step_name = self.step_name,
+                                       frame_index = self.frame_index)
+                              )
+    
+        assert len(instance_models) == 1
+            
+        instance_model = instance_models[0]
+        
+        # instance-level sets have the instance name prepended
+        grp_name = 'surface.%s.Right Edge' % self.instance_name
+        
+        grp_elements = instance_model.elements.groups[grp_name]
+        
+        assert len(grp_elements) == 2
+    
+    
+    def test_read_assembly_surface_nodes(self):
+        """A group is stored in the model for nodes of an assembly surface."""
+        self.reader.add_surface_export_request('Top Surface',
+                                               surface_type="nodes")
+        
+        instance_models = list(
+            self.reader.read_instances(step_name = self.step_name,
+                                       frame_index = self.frame_index)
+                              )
+    
+        assert len(instance_models) == 1
+            
+        instance_model = instance_models[0]
+        
+        grp_name = 'surface.Top Surface'
+        
+        grp_nodes = instance_model.nodes.groups[grp_name]
+        
+        assert len(grp_nodes) == 3
+        
+        
+    def test_read_assembly_surface_elements(self):
+        """A group is stored in the model for elements of an assembly surface."""
+        self.reader.add_surface_export_request('Top Surface',
+                                               surface_type="elements")
+        
+        instance_models = list(
+            self.reader.read_instances(step_name = self.step_name,
+                                       frame_index = self.frame_index)
+                              )
+    
+        assert len(instance_models) == 1
+            
+        instance_model = instance_models[0]
+        
+        grp_name = 'surface.Top Surface'
+        
+        grp_elements = instance_model.elements.groups[grp_name]
+        
+        assert len(grp_elements) == 2
+        
+        
     def test_set_name_conflict(self):
         """Instance and assembly set names..."""
+        assert False
+        
+    def test_multiple_sets_bigger_odb(self):
         assert False
