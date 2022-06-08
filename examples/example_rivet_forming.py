@@ -40,8 +40,8 @@ vtu_writer.number_of_pieces = 4
 vtu_writer.initialize_collection()
 
 for frame_index in FRAME_INDICES:
-    for instance_model in reader.read(step_name=STEP_NAME,
-                                      frame_index=frame_index):
+    for instance_model in reader.read_instances(step_name=STEP_NAME,
+                                                frame_index=frame_index):
         vtu_writer.write(instance_model)
 
 vtu_writer.finalize_collection()
