@@ -9,6 +9,11 @@ how to run the example before using this script to export results.
 """
 # TODO: Add link to docs
 
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append(".../paraqus/src")
+
 # we will use the ODBReader class to extract information from the odb
 from paraqus.abaqus import ODBReader
 from paraqus.writers import BinaryWriter, AsciiWriter
@@ -19,7 +24,7 @@ ODB_PATH = "cylbillet_cax4rt_slow_dense.odb" # path to the odb
 MODEL_NAME = "Cylindrical-Billet" # can be chosen freely
 INSTANCE_NAMES = ["PART-1-1"] # which instances will be exported
 STEP_NAME = "Step-1" # name of the step that will be exported
-FRAME_INDICES = [0, -1] # export the first and last frame of the step
+FRAME_INDICES = -1 # export the last frame of the step
 
 # create the reader - this will not yet perform any "reading"
 reader = ODBReader(odb_path=ODB_PATH,
@@ -41,9 +46,6 @@ reader.add_set_export_request("ETOP", set_type="elements",
 # vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
 vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
 
-# loop over all instances and export the results
-vtu_writer.initialize_collection()
-
 for frame_index in FRAME_INDICES:
     # loop over all instances and export the results
     instance_models = list(reader.read_instances(step_name=STEP_NAME,
@@ -51,7 +53,5 @@ for frame_index in FRAME_INDICES:
     
     # instance_models has length 1, since there is only 1 instance with a mesh
     vtu_writer.write(instance_models[0])
-
-vtu_writer.finalize_collection()
 
 print("*** FINISHED ***")

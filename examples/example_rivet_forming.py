@@ -10,9 +10,14 @@ run the example before using this script to export results.
 """
 # TODO: Add link to docs
 
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append(".../paraqus/src")
+
 # we will use the ODBReader class to extract information from the odb
 from paraqus.abaqus import ODBReader
-from paraqus.writers import AsciiWriter
+from paraqus.writers import AsciiWriter, CollectionWriter
 
 ODB_PATH = "rivet_forming_cel.odb" # path to the odb
 MODEL_NAME = "Rivet-Forming-CEL" # can be chosen freely
@@ -36,15 +41,18 @@ vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
 # paraview
 vtu_writer.number_of_pieces = 4
 
-# loop over all instances and export the results
-vtu_writer.initialize_collection()
 
-for frame_index in FRAME_INDICES:
-    # this is an example for a "large" model (even though it should be far
-    # from filling up your RAM), therefor we demonstrate how to iterate over
-    # the instance models without storing all of them in a list:
-    for instance_model in reader.read_instances(step_name=STEP_NAME,
-                                                frame_index=frame_index):
-        vtu_writer.write(instance_model)
-
-vtu_writer.finalize_collection()
+# we use the CollectionWriter context manager to create a .pvd file for all
+# time steps. This allows us to combine a large number of files, representing
+# different parts of the model at different times, into one representation
+# in paraview. It also makes it possible to export videos based on time
+# instead of just a sequence (useful if time steps are not spaced equally).
+with CollectionWriter(vtu_writer, "Rivet Forming") as writer:
+    for frame_index in FRAME_INDICES:
+        # this is an example for a "large" model (even though it should be far
+        # from filling up your RAM), therefor we demonstrate how to iterate over
+        # the instance models without storing all of them in a list:
+        for instance_model in reader.read_instances(step_name=STEP_NAME,
+                                                    frame_index=frame_index):
+            writer.write(instance_model)
+    

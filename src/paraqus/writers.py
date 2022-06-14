@@ -287,7 +287,10 @@ class WriterBaseClass(object):
 
         Returns
         -------
-        None.
+        file_path : str
+            If the model is exported as one piece, this is the file path of the
+            vtu file. If there are multiple pieces, it is the path to the
+            corresponding pvtu file.
 
         """
         # Split list of element tags regarding the number of pieces
@@ -308,15 +311,20 @@ class WriterBaseClass(object):
             vtu_file_path = self._write_vtu_file(piece, piece_tag)
             vtu_files.append(vtu_file_path)
 
-            if self._collection and self.number_of_pieces == 1:
-                self._add_to_collection(piece, vtu_file_path)
-
+            # if self._collection and self.number_of_pieces == 1:
+                # self._add_to_collection(piece, vtu_file_path)
+            
         # Connect different pieces in a pvtu file
+        if self.number_of_pieces == 1:
+            return vtu_file_path
+        
         if self.number_of_pieces > 1:
             pvtu_file_path = self._write_pvtu_file(model, vtu_files)
-
-            if self._collection:
-                self._add_to_collection(model, pvtu_file_path)
+            # if self._collection:
+                # self._add_to_collection(model, pvtu_file_path)
+            return pvtu_file_path
+                
+        
 
     def _write_pvtu_file(self, model, vtu_files):
         """
@@ -431,122 +439,7 @@ class WriterBaseClass(object):
             xml.finish_all_elements()
 
         return file_path
-
-    def initialize_collection(self):
-        """
-        Initialize a new collection of ParaqusModels exported to .vtu files.
-
-        A .pvd file that combines multiple .vtu or .pvtu files is
-        generated from the collection when ``finalize_collection()``
-        is called.
-
-        Returns
-        -------
-        None.
-
-        """
-        self._collection = True
-        self._collection_items = {}
-
-    def finalize_collection(self):
-        """
-        Export the .pvd file for the current collection and clear it.
-
-        Returns
-        -------
-        None.
-
-        """
-        if not self._collection:
-            return
-
-        if len(self._collection_items) == 0:
-            return
-
-        self._write_pvd_file()
-        self._collection = False
-        self._collection_items = {}
-        self._active_model = None
-
-    def _add_to_collection(self, model, file_path):
-        """
-        Add a model to the current collection.
-
-        Models do not need to be added in the correct order since the
-        frame time is stored as a model attribute.
-
-        Parameters
-        ----------
-        model : ParaqusModel
-            The model that will be added to the collection.
-        file_path : str
-            The path to the .vtu or .pvtu file of the model to add.
-
-        Returns
-        -------
-        None.
-
-        """
-        self._active_model = model
-        abspath = path.abspath(file_path)
-
-        # Some input checking
-        if not self._collection:
-            raise RuntimeError("Collection has not been initialized.")
-        if path.splitext(file_path)[1] not in [".vtu", ".pvtu"]:
-            raise ValueError("File is neither a .vtu file nor a .pvtu file.")
-        if not path.isfile(abspath):
-            raise ValueError("File '{}' does not exist.".format(abspath))
-
-        repo = self._collection_items.get(model.part_name)
-        if repo is None:
-            repo = self._collection_items[model.part_name] = []
-        repo.append((model.frame_time, abspath))
-
-    def _write_pvd_file(self):
-        """
-        Export a collection of multiple .vtu or .pvtu files.
-
-        Returns
-        -------
-        None.
-
-        """
-        # Check if time series items exist and are files of supported
-        # format
-        for part_name in self._collection_items.keys():
-            for (frame_time, file) in self._collection_items[part_name]:
-                if path.splitext(file)[1] not in [".vtu", ".pvtu"]:
-                    raise ValueError("File '{}' is not a .vtu or .pvtu file."
-                                     .format(file))
-                if not path.isfile(path.abspath(file)):
-                    raise ValueError("File '{}' does not exist.")
-
-        # Pvd files will be written into basedir/modelname/
-        pvd_file_path = path.join(self.output_dir,
-                                  self._active_model.model_name,
-                                  self._active_model.model_name + ".pvd")
-        pvd_file_path = path.abspath(pvd_file_path)
-
-        # Since no array data will be written into the pvd file ascii
-        # format is completely fine here
-        with VtkFileManager(pvd_file_path, ASCII) as pvd_file:
-
-            xml = XmlFactory(pvd_file)
-
-            xml.add_element("VTKFile", type="Collection",
-                            version=VTK_VERSION_STRING, byte_order=BYTE_ORDER)
-            xml.add_element("Collection")
-
-            for i, part_name in enumerate(self._collection_items.keys()):
-
-                for frame_time, file in self._collection_items[part_name]:
-
-                    rel_path = path.relpath(file, path.dirname(pvd_file_path))
-                    xml.add_and_finish_element("DataSet", timestep=frame_time,
-                                               part=i, file=rel_path)
-
-            xml.finish_all_elements()
+   
 
     def _prepare_to_write_vtu_file(self, piece, piece_tag):
         """
@@ -1621,3 +1514,140 @@ class XmlFactory(object):
             self._stream.write(data_string)
 
             self._add_tabs = break_line
+            
+            
+class CollectionWriter(object):
+    """
+    TODO
+    """
+    def __init__(self, writer, collection_name):
+        self.collection_name = collection_name
+        self.writer = writer
+
+    def __enter__(self):
+        self._initialize_collection()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self._finalize_collection()
+        
+    def write(self, model):
+            
+        old_model_name = model.model_name
+        model.model_name = self.collection_name
+        
+        vtu_file_path = self.writer.write(model)
+        self._add_to_collection(model, vtu_file_path)
+        
+        model.model_name = old_model_name
+     
+        
+    def _initialize_collection(self):
+        """
+        Initialize a new collection of ParaqusModels exported to .vtu files.
+
+        A .pvd file that combines multiple .vtu or .pvtu files is
+        generated from the collection when ``finalize_collection()``
+        is called.
+
+        Returns
+        -------
+        None.
+
+        """
+        self._collection_items = {}
+        
+
+    def _finalize_collection(self):
+        """
+        Export the .pvd file for the current collection and clear it.
+
+        Returns
+        -------
+        None.
+
+        """
+        if len(self._collection_items) == 0:
+            return
+
+        self._write_pvd_file()
+        
+
+    def _add_to_collection(self, model, file_path):
+        """
+        Add a model to the current collection.
+
+        Models do not need to be added in the correct order since the
+        frame time is stored as a model attribute.
+
+        Parameters
+        ----------
+        model : ParaqusModel
+            The model that will be added to the collection.
+        file_path : str
+            The path to the .vtu or .pvtu file of the model to add.
+
+        Returns
+        -------
+        None.
+
+        """
+        # self._active_model = model
+        abspath = path.abspath(file_path)
+
+        # Some input checking
+        if path.splitext(file_path)[1] not in [".vtu", ".pvtu"]:
+            raise ValueError("File is neither a .vtu file nor a .pvtu file.")
+        if not path.isfile(abspath):
+            raise ValueError("File '{}' does not exist.".format(abspath))
+
+        # for each part, repo is a list of (time, file_path) tuples
+        repo = self._collection_items.get(model.part_name)
+        if repo is None:
+            repo = self._collection_items[model.part_name] = []
+        repo.append((model.frame_time, abspath))
+
+    def _write_pvd_file(self):
+        """
+        Export a collection of multiple .vtu or .pvtu files.
+
+        Returns
+        -------
+        None.
+
+        """
+        # # Check if time series items exist and are files of supported
+        # # format
+        # for part_name in self._collection_items.keys():
+        #     for (frame_time, file) in self._collection_items[part_name]:
+        #         if path.splitext(file)[1] not in [".vtu", ".pvtu"]:
+        #             raise ValueError("File '{}' is not a .vtu or .pvtu file."
+        #                              .format(file))
+        #         if not path.isfile(path.abspath(file)):
+        #             raise ValueError("File '{}' does not exist.")
+
+        # Pvd files will be written into basedir/modelname/
+        pvd_file_path = path.join(self.writer.output_dir,
+                                  self.collection_name,
+                                  self.collection_name + ".pvd")
+        pvd_file_path = path.abspath(pvd_file_path)
+
+        # Since no array data will be written into the pvd file ascii
+        # format is completely fine here
+        with VtkFileManager(pvd_file_path, ASCII) as pvd_file:
+
+            xml = XmlFactory(pvd_file)
+
+            xml.add_element("VTKFile", type="Collection",
+                            version=VTK_VERSION_STRING, byte_order=BYTE_ORDER)
+            xml.add_element("Collection")
+
+            for i, part_name in enumerate(self._collection_items.keys()):
+
+                for frame_time, file in self._collection_items[part_name]:
+
+                    rel_path = path.relpath(file, path.dirname(pvd_file_path))
+                    xml.add_and_finish_element("DataSet", timestep=frame_time,
+                                               part=i, file=rel_path)
+
+            xml.finish_all_elements()

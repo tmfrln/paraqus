@@ -10,6 +10,11 @@ to run the example before using this script to export results.
 """
 # TODO: Add link to docs
 
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append(".../paraqus/src")
+
 # we will use the ODBReader class to extract information from the odb
 from paraqus.abaqus import ODBReader
 from paraqus.writers import BinaryWriter
