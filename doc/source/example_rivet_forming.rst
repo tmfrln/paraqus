@@ -51,7 +51,7 @@ The visualisation pipeline looks as follows:
 
 - Merging of the parallel files (*CleantoGrid* filter)
 - Mapping of the volume fraction from element centers to nodes (*CellDatatoPointData* filter)
-- Extraction of the isosurface representing the boundary of the rivet (*Countour* filter)
+- Extraction of the isosurface representing the boundary of the rivet (*Isovolume* filter)
 - Coloring according to the variable ``PEEQVAVG`` (choose in the menu for the last filter)
 
 Output looks like this:
