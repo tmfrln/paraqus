@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The main purpose of this file is to implement a model class that is
 instantiated based on an abaqus odb.
@@ -6,9 +5,14 @@ instantiated based on an abaqus odb.
 One model instance is created for each time frame that is exported.
 
 """
-# TODO: Deal with different types of tensor output (plane stress/strain)
+
+# TODO: Looping over instances instead of set export requests makes it hard to
+# check if all requests were executed. Right now, no error is raised when a
+# set does not exist.
 
 import os.path
+import warnings
+
 import numpy as np
 
 from paraqus.paraqusmodel import ParaqusModel
@@ -47,7 +51,7 @@ class ODBReader():
         Name of the model returned by the reader. 
     field_export_requests : list
         Contains one request per field that will be exported to vtk format.
-    set_export_requests : list
+    group_export_requests : list
         Contains one request per node or element set that will be exported.
     instance_names : list
         Instances that will be exported to individual models.
@@ -75,8 +79,9 @@ class ODBReader():
     -------
     add_field_export_request
     add_set_export_request
+    add_surface_export_request
     get_end_time
-    read
+    read_instances
 
     """
 
@@ -89,7 +94,7 @@ class ODBReader():
         self.odb_path = odb_path
         self.model_name = model_name
         self.field_export_requests = []
-        self.set_export_requests = []
+        self.group_export_requests = []
         self.instance_names = instance_names
         self.time_offset = time_offset
 
@@ -129,7 +134,7 @@ class ODBReader():
         set_name : str
             Name of the set in the odb
         set_type : str
-            Type of the set. valid values are 'nodes' or 'elements'.
+            Type of the set. Valid values are 'nodes' or 'elements'.
         instance_name : str, optional
             If `instance_name` is not None, look for an instance-level set
             in the odb. Otherwise look for an assembly-level set.
@@ -140,9 +145,41 @@ class ODBReader():
         None
 
         """
-        request = SetExportRequest(set_name, set_type, instance_name)
+        request = GroupExportRequest(set_name, set_type, instance_name)
 
-        self.set_export_requests.append(request)
+        self.group_export_requests.append(request)
+        
+    
+    def add_surface_export_request(self,
+                                   surface_name,
+                                   surface_type,
+                                   instance_name=None):
+        """
+        Request that a node or element set is exported.
+
+        Parameters
+        ----------
+        surface_name : str
+            Name of the surface in the odb
+        surface_type : str
+            Type of the surface. Valid values are 'nodes' or 'elements'.
+        instance_name : str, optional
+            If `instance_name` is not None, look for an instance-level surface
+            in the odb. Otherwise look for an assembly-level surface.
+            Default: None.
+
+        Returns
+        -------
+        None
+
+        """
+        request = GroupExportRequest(surface_name,
+                                     surface_type,
+                                     instance_name,
+                                     surface_set=True)
+
+        self.group_export_requests.append(request)
+        
 
     def get_frame_time(self, step_name, frame_index):
         """
@@ -174,7 +211,7 @@ class ODBReader():
         return frame_time
 
 
-    def read(self, step_name, frame_index):
+    def read_instances(self, step_name, frame_index):
         """
         Read a frame from the underlying odb.
 
@@ -218,7 +255,7 @@ class ODBReader():
             # loop over the requested instances
             for instance_name in instance_names:
 
-                instance = odb.rootAssembly.instances[instance_name.upper()]
+                instance = odb.rootAssembly.instances[instance_name]
 
                 # extract nodes/elements and instance-level sets
                 mesh = InstanceMesh(instance)
@@ -243,17 +280,19 @@ class ODBReader():
                                                 instance=instance)
                     
                     if fo is None:
+                        # skip empty outputs when exporting
+                        msg = ("Field output {} ".format(request.field_name)
+                              + "not available in instance "
+                              + "{}. ".format(instance_name)
+                              + "Export skipped." )
+                        warnings.warn(msg)
                         continue
 
                     (field_tags,
                      field_data,
                      field_position,
-                     field_type) = self._read_field_output(request, fo, mesh)
-
-                    export_name = request.field_name
-
-                    if request.invariant is not None:
-                        export_name += "_{}".format(request.invariant)
+                     field_type,
+                     export_name) = self._read_field_output(request, fo, mesh)
 
                     model.add_field_output(export_name,
                                            field_tags,
@@ -262,17 +301,20 @@ class ODBReader():
                                            field_type)
 
                 # loop to export node/element sets
-                for request in self.set_export_requests:
-                    set_tags = self._get_set_tags(request, odb, instance)
+                for request in self.group_export_requests:
+                    group_tags = self._get_group_tags(request, odb, instance)
 
                     # do nothing if the request is not for this instance
-                    if set_tags is None:
+                    if group_tags is None:
                         continue
-
-                    if request.set_type == NODES:
-                        model.nodes.add_group(request.set_name, set_tags)
-                    elif request.set_type == ELEMENTS:
-                        model.elements.add_group(request.set_name, set_tags)
+                    
+                    # add the actual groups to the model
+                    if request.group_type == NODES:
+                        model.nodes.add_group(request.export_name,
+                                              group_tags)
+                    elif request.group_type == ELEMENTS:
+                        model.elements.add_group(request.export_name,
+                                                 group_tags)
                     else:
                         raise ValueError(
                             "Request type must be 'nodes' or 'elements'.")
@@ -280,62 +322,94 @@ class ODBReader():
                 yield model
 
 
-    def _get_set_tags(self, request, odb, instance):
-        """Return the node/element tags for a node/element set."""
-        set_name = request.set_name
-
-        # switch between assembly and instance sets
+    def _get_group_tags(self, request, odb, instance):
+        """
+        Return the node/element tags for a node/element set.
+        
+        Parameters
+        ----------
+        request : GroupExportRequest
+            Describes a set or surface that will be exported.
+        odb : Abaqus ODB object
+            The open odb.
+        instance : Abaqus part instance object
+            The part instance that is currently exported.
+            
+        Returns
+        -------
+        tags : ArrayLike or None
+            Node/element numbers in the surface or set. If the export request
+            is for another instance, None is returned.
+        
+        """
+        # we will read the attributes based on the group type
+        if request.group_type == NODES:
+            group_type = "nodes"
+            set_type = "nodeSets"
+        elif request.group_type == ELEMENTS:
+            group_type = "elements"
+            set_type = "elementSets"
+        
+        
         if request.instance_name is None:
-            # switch between node and element sets
-            if request.set_type == NODES:
-                assert set_name in odb.rootAssembly.nodeSets, \
-                    "Node set %s not found." % set_name
-                set_obj = odb.rootAssembly.nodeSets[set_name]
-
-                # find the data corresponding to the instance
-                try:
-                    index = set_obj.instanceNames.index(instance.name)
-                except ValueError:
-                    # instance has no nodes in the set
-                    return np.array([], dtype=int)
-
-                return np.array([n.label for n in set_obj.nodes[index]])
-
-            elif request.set_type == ELEMENTS:
-                assert set_name in odb.rootAssembly.elementSets, \
-                    "Element set %s not found." % set_name
-                set_obj = odb.rootAssembly.elementSets[set_name]
-
-                # find the data corresponding to the instance
-                try:
-                    index = set_obj.instanceNames.index(instance.name)
-                except ValueError:
-                    # instance has no elements in the set
-                    return np.array([], dtype=int)
-
-                return np.array([e.label for e in set_obj.elements[index]])
-
+            # assembly-level set/surface
+            
+            # extract an odbSet representing the surface or set
+            if request.surface_set:
+                # the surface returns as an odbSet directly
+                set_object = odb.rootAssembly.surfaces[request.group_name]
             else:
-                raise ValueError(
-                    "Set export request must have type 'nodes' or 'elements'.")
-
-        elif request.instance_name.upper() == instance.name:
-             # switch between node and element sets
-            if request.set_type == NODES:
-                assert set_name in instance.nodeSets, \
-                    "Node set %s not found." % set_name
-                set_obj = instance.nodeSets[set_name]
-                return np.array([n.label for n in set_obj.nodes])
-
-            elif request.set_type == ELEMENTS:
-                assert set_name in instance.elementSets, \
-                    "Element set %s not found." % set_name
-                set_obj = instance.elementSets[set_name]
-                return np.array([e.label for e in set_obj.elements])
-
+                # for node/element sets, we need to take one more step
+                set_repository = odb.rootAssembly.__getattribute__(set_type)
+                set_object = set_repository[request.group_name]
+            
+            # for assembly-level sets or surfaces, the nodes/elements are
+            # stored per instance, so we extract the index for the current
+            # instance
+            try:
+                index = set_object.instances.index(instance)
+            except ValueError:
+                # instance has no nodes/elements in the set
+                return np.array([], dtype=int)
+            
+            # extract the nodes/elements as an odbMeshNodeArray or
+            # odbMeshElementArray. This array has only nodes/elements of
+            # the instance under consideration
+            array_object = set_object.__getattribute__(group_type)[index]
+            
+            labels = np.array([o.label for o in array_object])
+            
+            # sort the array
+            labels.sort()
+            
+            # remove duplicates (these do actually occur)
+            return np.unique(labels)
+            
+        elif request.instance_name == instance.name:
+            # instance-level set/surface
+            
+            # extract an odbSet representing the surface or set
+            if request.surface_set:
+                # the surface returns as an odbSet directly
+                set_object = instance.surfaces[request.group_name] 
             else:
-                raise ValueError(
-                    "Set export request must have type 'nodes' or 'elements'.")
+                # for node/element sets, we need to take one more step
+                set_repository = instance.__getattribute__(set_type)
+                set_object = set_repository[request.group_name]
+            
+            # extract the nodes/elements as an odbMeshNodeArray or
+            # odbMeshElementArray
+            array_object = set_object.__getattribute__(group_type) 
+                        
+            # return an array of node or element labels
+            labels = np.array([o.label for o in array_object])
+            
+            # sort the array
+            labels.sort()
+            
+            # remove duplicates (these do actually occur)
+            return np.unique(labels)
+    
         else:
             # The request was not for this instance
             return None
@@ -426,16 +500,24 @@ class ODBReader():
         # NODAL, CENTROID, WHOLE_ELEMENT
         if position == abaqusConstants.NODAL:
             paraqus_position = NODES
-            labels, data, field_type = self._get_node_data(request,
-                                                           field_out,
-                                                           instance_mesh)
+            
+            (labels,
+             data,
+             field_type,
+             field_description) = self._get_node_data(request,
+                                                      field_out,
+                                                      instance_mesh)
 
         elif position in (abaqusConstants.CENTROID,
                           abaqusConstants.WHOLE_ELEMENT):
             paraqus_position = ELEMENTS
-            labels, data, field_type = self._get_element_data(request,
-                                                              field_out,
-                                                              instance_mesh)
+            
+            (labels,
+             data,
+             field_type,
+             field_description) = self._get_element_data(request,
+                                                         field_out,
+                                                         instance_mesh)
         else:
             raise ValueError("Position not implemented.")
             
@@ -443,7 +525,7 @@ class ODBReader():
         if field_type == TENSOR and data.shape[1] == 6:
             data = data[:,[0,1,2,3,5,4]]
 
-        return labels, data, paraqus_position, field_type
+        return labels, data, paraqus_position, field_type, field_description
 
 
     def _get_node_data(self, request, field_out, instance_mesh):
@@ -455,7 +537,14 @@ class ODBReader():
         ncomponents = blocks[0].data.shape[1]
         field_type = PARAQUS_FIELD_TYPES[blocks[0].type]
 
+         # initialize data as NaNs
         data = np.ones((len(instance_nodes), ncomponents), dtype=dtype)*np.nan
+
+        # create a description for the field
+        description_str = request.field_name
+
+        if request.invariant is not None:
+            description_str += "_{}".format(request.invariant)
 
         # for each node there is only a single value
         for block in blocks:
@@ -468,7 +557,7 @@ class ODBReader():
 
             data[indices,:] = block_data
 
-        return instance_nodes, data, field_type
+        return instance_nodes, data, field_type, description_str
 
 
     def _get_element_data(self, request, field_out, instance_mesh):
@@ -496,8 +585,23 @@ class ODBReader():
         nel = len(instance_elements)
         nsp = len(section_point_indices)
 
+        # initialize data as NaNs
         data = np.ones((nel, nsp, ncomponents), dtype=dtype)*np.nan
+        
+        # create a description for the field
+        description_str = request.field_name
 
+        if request.invariant is not None:
+            description_str += "_{}".format(request.invariant)
+        
+        if request.section_point_number is not None:
+            description_str += "_sp{}".format(request.section_point_number)  
+        elif nsp > 1:
+            # triggers only if there is no explicit specification of the 
+            # section point
+            description_str += "_{}".format(request.section_point_reduction)
+            
+        # extract the data by looping over the data blocks
         for block, sp_number in zip(blocks, section_points):
             sp_index = section_point_indices[sp_number]
 
@@ -519,11 +623,17 @@ class ODBReader():
                 "Requested section point number not in output."
 
             sp_index = section_point_indices[request.section_point_number]
-            return instance_elements, data[:,sp_index,:], field_type
+            return (instance_elements,
+                    data[:,sp_index,:],
+                    field_type,
+                    description_str)
 
         if nsp == 1:
             # "standard" case where there are not section points (or only 1)
-            return instance_elements, data[:,0,:], field_type
+            return (instance_elements,
+                    data[:,0,:],
+                    field_type,
+                    description_str)
         else:
             # reductions for multiple section points
             if request.section_point_reduction == MEAN:
@@ -534,7 +644,10 @@ class ODBReader():
             else:
                 raise ValueError("Reduction method invalid.")
 
-            return instance_elements, data, field_type
+            return (instance_elements,
+                    data,
+                    field_type,
+                    description_str)
 
 
 class InstanceMesh():
@@ -735,9 +848,9 @@ class FieldExportRequest():
         self.section_point_reduction = section_point_reduction
 
 
-class SetExportRequest():
+class GroupExportRequest():
     """
-    Specify a set that will be written to the vtk file.
+    Specify a group of nodes or elements that will be written to the vtk file.
     
     Attributes
     ----------
@@ -745,25 +858,44 @@ class SetExportRequest():
     
     Parameters
     ----------
-    set_name : str
-        Name of the set in the odb
-    set_type : str
+    group_name : str
+        Name of the set or surface in the odb
+    group_type : str
         Type of the set. valid values are 'nodes' or 'elements'.
     instance_name : str, optional
         If `instance_name` is not None, look for an instance-level set
         in the odb. Otherwise look for an assembly-level set.
         Default: None.
+    surface_set : bool, optional
+        If `False`, export a set. If `True`, export nodes/elements of a
+        surface.
         
     """
     
     def __init__(self,
-                 set_name,
-                 set_type,
-                 instance_name=None):
+                 group_name,
+                 group_type,
+                 instance_name=None,
+                 surface_set=False):
 
-        self.set_name = set_name
-        self.set_type = set_type
+        self.group_name = group_name
+        self.group_type = group_type
         self.instance_name = instance_name
+        self.surface_set = surface_set
 
-        assert set_type in (NODES, ELEMENTS), \
-            "Valid values for set_type are 'nodes' or 'elements'."
+        assert group_type in (NODES, ELEMENTS), \
+            "Valid values for group_type are 'nodes' or 'elements'."
+
+    @property
+    def export_name(self):
+        """Return a unique name for the surface/set that is exported."""
+        export_name = ""
+        if self.surface_set:
+            export_name += "surface."
+                        
+        if self.instance_name is not None:
+            export_name += self.instance_name + "."
+            
+        export_name += self.group_name
+        
+        return export_name
