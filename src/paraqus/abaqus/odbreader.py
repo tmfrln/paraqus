@@ -144,22 +144,34 @@ class ODBReader():
 
         self.set_export_requests.append(request)
 
-    def get_end_time(self):
+    def get_frame_time(self, step_name, frame_index):
         """
         Get the highest time value of any frame in the odb.
 
         The `time_offset` specified for the reader is added to the value.
 
+        Parameters
+        ----------
+        step_name : str
+            Name of the step in Abaqus.
+        frame_index : int
+            Index of the frame in the step in Abaqus.
+            
         Returns
         -------
-        float
+        frame_time : float
+            The total time passed (includes time offset).
 
         """
         with ODBObject(self.odb_path) as odb:
+            step = odb.steps[step_name]
+            frame = step.frames[frame_index]
 
-            odb_time = np.sum([step.timePeriod for step in odb.steps.values()])
+            frame_time =  self.time_offset + step.totalTime + frame.frameValue
 
-        return self.time_offset + odb_time
+            # odb_time = np.sum([step.timePeriod for step in odb.steps.values()])
+
+        return frame_time
 
 
     def read(self, step_name, frame_index):
