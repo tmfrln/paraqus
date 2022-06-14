@@ -45,9 +45,12 @@ vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
 vtu_writer.initialize_collection()
 
 for frame_index in FRAME_INDICES:
-    for instance_model in reader.read_instances(step_name=STEP_NAME,
-                                                frame_index=frame_index):
-        vtu_writer.write(instance_model)
+    # loop over all instances and export the results
+    instance_models = list(reader.read_instances(step_name=STEP_NAME,
+                                                 frame_index=frame_index))
+    
+    # instance_models has length 1, since there is only 1 instance with a mesh
+    vtu_writer.write(instance_models[0])
 
 vtu_writer.finalize_collection()
 
