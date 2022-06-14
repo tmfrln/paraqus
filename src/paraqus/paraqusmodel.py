@@ -99,9 +99,6 @@ class ParaqusModel(object):
         Extract a node field output by its name.
     get_element_field
         Extract an element field output by its name.
-    check
-        Check if the model is completely compatible and ready for the
-        VTK export.
 
     Example
     -------
@@ -1175,11 +1172,13 @@ class FieldOutput(object):
         Get a copy of the field values in 3d representation.
 
         Vectors are in order (x, y, z) and tensors are in order
-        (xx, yy, zz, xy, yz, xz).
+        (xx, yy, zz, xy, yz, xz). Non-symmetric tensors are not
+        suppurted.
 
         Returns
         -------
-        None.
+        numpy.ndarray
+            The 3d representation of the field values.
 
         """
         if self.field_type == SCALAR:
@@ -1209,7 +1208,7 @@ if __name__ == "__main__":
     from writers import BinaryWriter, AsciiWriter
 
     # Define geometry consisting of two first-order quad elements and
-    # two first-order tri elements
+    # three first-order tri elements
     node_tags = [1,2,3,4,5,6,7,8]
     node_coords = [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0.5,1.5],[1.5,1.5]]
     element_tags = [1,2,3,4,5]
