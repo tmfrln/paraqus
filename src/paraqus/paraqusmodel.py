@@ -1124,9 +1124,9 @@ class Field(object):
     def field_values(self, field_values):
 
         if self.field_type == SCALAR:
-            field_values = field_values.reshape((-1,1))
-
-        self._field_values = np.array(field_values)
+            self._field_values = np.array(field_values).reshape((-1,1))
+        else:
+            self._field_values = np.array(field_values)
 
     @property
     def field_position(self):
