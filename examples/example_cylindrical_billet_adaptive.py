@@ -57,6 +57,6 @@ with CollectionWriter(vtu_writer, "Compression Test") as writer:
                                                         frame_index=frame_index):
                 writer.write(instance_model)
                 
-        time_offset = reader.get_frame_time(STEP_NAME, frame_index)
+        time_offset = reader.get_frame_time(STEP_NAME, -1)
 
 print("*** FINISHED ***")
