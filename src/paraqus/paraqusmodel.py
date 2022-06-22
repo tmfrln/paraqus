@@ -2,7 +2,7 @@
 """
 This module containts all classes that contribute to paraqus models,
 i.e. not just the model class itself but also repositories for nodes,
-elements and field outputs.
+elements and fields.
 
 """
 import itertools
@@ -77,28 +77,28 @@ class ParaqusModel(object):
     nodes : NodeRepository
         Repository storing all information on nodes, e.g. tags and
         coordinates.
-    node_field_outputs : NodeFieldRepository
-        Repository storing all node field outputs.
-    element_field_outputs : ElementRepository
-        Repository sotring all element field outputs.
+    node_fields : NodeFieldRepository
+        Repository storing all node fields.
+    element_fields : ElementRepository
+        Repository sotring all element fields.
 
     Methods
     -------
-    add_field_output
-        Add a field output to the paraqus model.
+    add_field
+        Add a field to the paraqus model.
     add_node_group
         Add a node group to the model.
     add_element_group
         Add an element group to the model.
     extract_submodel_by_elements
         Extract a submodel based on element tags.
-    get_field_outputs_by_type
-        Extract all stored field outputs of a specific type, e.g. all
-        scalar element field outputs.
+    get_fields_by_type
+        Extract all stored fields of a specific type, e.g. all
+        scalar element fields.
     get_node_field
-        Extract a node field output by its name.
+        Extract a node field by its name.
     get_element_field
-        Extract an element field output by its name.
+        Extract an element field by its name.
 
     Example
     -------
@@ -162,8 +162,8 @@ class ParaqusModel(object):
         self.nodes = NodeRepository(node_tags, node_coords)
 
         # Add field repositories
-        self.node_field_outputs = NodeFieldRepository()
-        self.element_field_outputs = ElementFieldRepository()
+        self.node_fields = NodeFieldRepository()
+        self.element_fields = ElementFieldRepository()
 
         ParaqusModel.model_counter += 1
 
@@ -179,24 +179,23 @@ class ParaqusModel(object):
 
         return description
 
-    def add_field_output(self, field_name, field_tags, field_values,
+    def add_field(self, field_name, field_tags, field_values,
                          field_position, field_type):
         """
-        Add a field output to the model.
+        Add a field to the model.
 
-        The field output will also be part of the exported VTK model.
+        The field will also be part of any exported VTK model.
 
         Parameters
         ----------
         field_name : str
-            Name of the field output.
+            Name of the field.
         field_tags : numpy.ndarray
-            Tags of the nodes or elements at which the field output is
-            stored.
+            Tags of the nodes or elements at which the field is stored.
         field_values : Sequence
-            Values of the field output in order of the field tags. At
-            nodes or elements that are not part of the field tags, the
-            values will be set to NaN automatically.
+            Values of the field in order of the field tags. At nodes or
+            elements that are not part of the field tags, the values will be
+            set to NaN automatically.
         field_position : ParaqusConstant
             A constant defining the storage position of the field, i.e.
             NODES or ELEMENTS.
@@ -212,10 +211,10 @@ class ParaqusModel(object):
         # Create field object
         # An error will be thrown in case of invalid choices
         # of field_position and field_type
-        field = FieldOutput(field_name, field_values,
+        field = Field(field_name, field_values,
                             field_position, field_type)
 
-        # Add a node field output
+        # Add a node field
         if field_position == NODES:
 
             if len(self.nodes.tags) < len(field_tags):
@@ -230,9 +229,9 @@ class ParaqusModel(object):
                                                             field_values,
                                                             self.nodes.tags)
 
-            self.node_field_outputs.add_field(field)
+            self.node_fields.add_field(field)
 
-        # Add an element field output
+        # Add an element field
         elif field_position == ELEMENTS:
 
             if len(self.elements.tags) < len(field_tags):
@@ -247,7 +246,7 @@ class ParaqusModel(object):
                                                             field_values,
                                                             self.elements.tags)
 
-            self.element_field_outputs.add_field(field)
+            self.element_fields.add_field(field)
 
         else:
             msg = "Invalid field position: {}.".format(field_position)
@@ -308,8 +307,7 @@ class ParaqusModel(object):
         Returns
         -------
         submodel : ParaqusModel
-            The resulting submodel including all field outputs and
-            groups.
+            The resulting submodel including all fields and groups.
 
         """
         # Get nodes and elements of the current piece
@@ -330,12 +328,12 @@ class ParaqusModel(object):
                              frame_time=self.frame_time,
                              source=self.source)
 
-        # Add field outputs to the submodel
-        for nf in self.node_field_outputs.get_subset(sub_node_repo):
-            submodel.node_field_outputs.add_field(nf)
+        # Add field to the submodel
+        for nf in self.node_fields.get_subset(sub_node_repo):
+            submodel.node_fields.add_field(nf)
 
-        for ef in self.element_field_outputs.get_subset(sub_element_repo):
-            submodel.element_field_outputs.add_field(ef)
+        for ef in self.element_fields.get_subset(sub_element_repo):
+            submodel.element_fields.add_field(ef)
 
         # Add groups to the submodel
         for group_name, group_elements in sub_element_repo.groups.items():
@@ -346,31 +344,31 @@ class ParaqusModel(object):
 
         return submodel
 
-    def get_field_outputs_by_type(self, field_type, field_position):
+    def get_fields_by_type(self, field_type, field_position):
         """
-        Return all field outputs of a specific type, e.g. of type SCALAR.
+        Return all fields of a specific type, e.g. of type SCALAR.
 
-        Field outputs stored at nodes as well as field outputs stored
-        at elements can be returned.
+        Fields stored at nodes as well as fields stored at elements can be
+        returned.
 
         Parameters
         ----------
         field_type : ParaqusConstant
-            Type of the field output, i.e. TENSOR, VECTOR or SCALAR.
+            Type of the field, i.e. TENSOR, VECTOR or SCALAR.
         field_position : ParaqusConstant
-            Position of the field output, i.e. NODES or ELEMENTS.
+            Position of the field, i.e. NODES or ELEMENTS.
 
         Returns
         -------
-        list of FieldOutput
+        list of Field
             All fields that match the requested type and position.
 
         """
         if field_position == NODES:
-            return self.node_field_outputs.get_fields_by_type(field_type)
+            return self.node_fields.get_fields_by_type(field_type)
 
         elif field_position == ELEMENTS:
-            return self.element_field_outputs.get_fields_by_type(field_type)
+            return self.element_fields.get_fields_by_type(field_type)
 
         else:
             msg = "Invalid field position: {}".format(field_position)
@@ -389,11 +387,11 @@ class ParaqusModel(object):
 
         Returns
         -------
-        FieldOutput
-            The requested field output.
+        Field
+            The requested field.
 
         """
-        return self.node_field_outputs[field_name]
+        return self.node_fields[field_name]
 
     def get_element_field(self, field_name):
         """
@@ -408,11 +406,11 @@ class ParaqusModel(object):
 
         Returns
         -------
-        FieldOutput
-            The requested field output.
+        Field
+            The requested field.
 
         """
-        return self.element_field_outputs[field_name]
+        return self.element_fields[field_name]
 
     def _pad_field_values(self, field_tags, field_values, pad_tags):
         """Extend a field value array with nan values for unset tags."""
@@ -838,14 +836,14 @@ class FieldRepositoryBaseClass(object):
     Attributes
     ----------
     fields : dict
-        Mapping field name -> field output.
+        Mapping field name -> Field.
 
     Methods
     -------
     get_fields_by_type
         Export fields based on the field type.
     add_field
-        Add a new field output to the repository.
+        Add a new field to the repository.
     get_subset
         Export fields for a subset of nodes or elements.
 
@@ -878,8 +876,8 @@ class FieldRepositoryBaseClass(object):
 
         Returns
         -------
-        list of FieldOutput
-            Field outputs that match the requested type.
+        list of Field
+            Fields that match the requested type.
 
         """
         return [f for f in self.fields.values() if f.field_type == field_type]
@@ -907,12 +905,12 @@ class FieldRepositoryBaseClass(object):
 
 class NodeFieldRepository(FieldRepositoryBaseClass):
     """
-    Repository to stored nodal field outputs.
+    Repository to stored nodal fields.
 
     Attributes
     ----------
     fields : dict
-        Mapping field name -> field output.
+        Mapping field name -> Field.
 
     Methods
     -------
@@ -934,8 +932,8 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
 
         Parameters
         ----------
-        field : FieldOutput
-            The field output with position NODES to add to the
+        field : Field
+            The field with position NODES to add to the
             repository.
 
         Returns
@@ -972,15 +970,15 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
 
         Returns
         -------
-        sub_fields : list of FieldOutput
-            The field outputs matching the subset of nodes.
+        sub_fields : list of Field
+            The fields matching the subset of nodes.
 
         """
         tags = node_repository.tags
         index_mapper = node_repository.index_mapper
         indices = np.array([index_mapper[i] for i in tags])
 
-        sub_fields = [FieldOutput(f.field_name,
+        sub_fields = [Field(f.field_name,
                                   f.field_values[indices],
                                   f.field_position,
                                   f.field_type) for f in self.fields.values()]
@@ -990,12 +988,12 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
 
 class ElementFieldRepository(FieldRepositoryBaseClass):
     """
-    Repository to stored elemental field outputs.
+    Repository to stored elemental fields.
 
     Attributes
     ----------
     fields : dict
-        Mapping field name -> field output.
+        Mapping field name -> Field.
 
     Methods
     -------
@@ -1017,8 +1015,8 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
         Parameters
         ----------
-        field : FieldOutput
-            The field output with position ELEMENTS to add to the
+        field : Field
+            The field with position ELEMENTS to add to the
             repository.
 
         Returns
@@ -1055,15 +1053,15 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
         Returns
         -------
-        sub_fields : list of FieldOutput
-            The field outputs matching the subset of elements.
+        sub_fields : list of Field
+            The fields matching the subset of elements.
 
         """
         tags = element_repository.tags
         index_mapper = element_repository.index_mapper
         indices = np.array([index_mapper[i] for i in tags])
 
-        sub_fields = [FieldOutput(f.field_name,
+        sub_fields = [Field(f.field_name,
                                   f.field_values[indices],
                                   f.field_position,
                                   f.field_type) for f in self.fields.values()]
@@ -1071,33 +1069,32 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
         return sub_fields
 
 
-class FieldOutput(object):
+class Field(object):
     """
-    Definition of nodal or elemental field outputs.
+    Definition of nodal or elemental fields.
 
     Parameters
     ----------
     field_name : str
-        Name of the field output.
+        Name of the field.
     field_values : Sequence
-        Field values of the field output. In case the field output will
-        be added to a model, the values must be in order of the
-        respective node or element tags.
+        Values of the field. In case the field will be added to a model, the
+        values must be in order of the respective node or element tags.
     field_position : ParaqusConstant
-        Position of the field output, i.e. NODES or ELEMENTS.
+        Position of the field, i.e. NODES or ELEMENTS.
     field_type : ParaqusConstant
-        Type of the field output, i.e. TENSOR, VECTOR or SCALAR.
+        Type of the field, i.e. TENSOR, VECTOR or SCALAR.
 
     Attributes
     ----------
     field_name : str
-        Name of the field output.
+        Name of the field.
     field_position : ParaqusConstant
-        Position of the field output, i.e. NODES or ELEMENTS.
+        Position of the field, i.e. NODES or ELEMENTS.
     field_type : ParaqusConstant
-        Type of the field output, i.e. TENSOR, VECTOR or SCALAR.
+        Type of the field, i.e. TENSOR, VECTOR or SCALAR.
     field_values : numpy.ndarray
-        Field values of the field output.
+        Field values of the field.
 
     Methods
     -------
@@ -1226,12 +1223,12 @@ if __name__ == "__main__":
                            model_name=model_name,
                            part_name=part_name)
 
-    # Add some field outputs
+    # Add some fields
     tensor_field_vals = [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4],[5,5,5,5]]
     vector_field_vals = [[1,1,1],[2,2,2],[3,3,3],[4,4,4],[5,5,5]]
-    model_1.add_field_output("tensor_field", [1,2,3,4,5], tensor_field_vals,
+    model_1.add_field("tensor_field", [1,2,3,4,5], tensor_field_vals,
                              "elements", "tensor")
-    model_1.add_field_output("vector_field", [1,2,3,4,5], vector_field_vals,
+    model_1.add_field("vector_field", [1,2,3,4,5], vector_field_vals,
                              "elements", "vector")
 
     # Test writer class
@@ -1240,8 +1237,6 @@ if __name__ == "__main__":
     # vtu_writer = AsciiWriter()
     vtu_writer.number_of_pieces = 2
 
-    vtu_writer.initialize_collection()
-    vtu_writer.write(model_1)
-    vtu_writer.finalize_collection()
+    # vtu_writer.write(model_1)
 
     print("*** FINISHED SUCCESFULLY ***")
