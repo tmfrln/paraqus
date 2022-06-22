@@ -203,10 +203,7 @@ class ODBReader():
         with ODBObject(self.odb_path) as odb:
             step = odb.steps[step_name]
             frame = step.frames[frame_index]
-
             frame_time =  self.time_offset + step.totalTime + frame.frameValue
-
-            # odb_time = np.sum([step.timePeriod for step in odb.steps.values()])
 
         return frame_time
 
