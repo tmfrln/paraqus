@@ -24,7 +24,7 @@ ODB_PATH = "cylbillet_cax4rt_slow_dense.odb" # path to the odb
 MODEL_NAME = "Cylindrical-Billet" # can be chosen freely
 INSTANCE_NAMES = ["PART-1-1"] # which instances will be exported
 STEP_NAME = "Step-1" # name of the step that will be exported
-FRAME_INDICES = -1 # export the last frame of the step
+FRAME_INDEX = -1 # export the last frame of the step
 
 # create the reader - this will not yet perform any "reading"
 reader = ODBReader(odb_path=ODB_PATH,
@@ -37,6 +37,7 @@ reader.add_field_export_request("PEEQ", field_position="elements")
 reader.add_field_export_request("TEMP", field_position="elements")
 reader.add_field_export_request("PE", field_position="elements")
 
+# request some element sets, so you can have a closer look on these elements
 reader.add_set_export_request("ESID", set_type="elements", 
                               instance_name="PART-1-1")
 reader.add_set_export_request("ETOP", set_type="elements", 
@@ -46,12 +47,11 @@ reader.add_set_export_request("ETOP", set_type="elements",
 # vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
 vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
 
-for frame_index in FRAME_INDICES:
-    # loop over all instances and export the results
-    instance_models = list(reader.read_instances(step_name=STEP_NAME,
-                                                 frame_index=frame_index))
+# generate a paraqus model from the odb model
+instance_models = list(reader.read_instances(step_name=STEP_NAME,
+                                             frame_index=FRAME_INDEX))
     
-    # instance_models has length 1, since there is only 1 instance with a mesh
-    vtu_writer.write(instance_models[0])
+# instance_models has length 1, since there is only 1 instance with a mesh
+vtu_writer.write(instance_models[0])
 
 print("*** FINISHED ***")
