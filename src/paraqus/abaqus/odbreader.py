@@ -294,11 +294,11 @@ class ODBReader():
                      field_type,
                      export_name) = self._read_field_output(request, fo, mesh)
 
-                    model.add_field_output(export_name,
-                                           field_tags,
-                                           field_data,
-                                           field_position,
-                                           field_type)
+                    model.add_field(export_name,
+                                    field_tags,
+                                    field_data,
+                                    field_position,
+                                    field_type)
 
                 # loop to export node/element sets
                 for request in self.group_export_requests:
