@@ -208,6 +208,8 @@ class ParaqusModel(object):
         None.
 
         """
+        field_values = np.array(field_values)
+        
         # Create field object
         # An error will be thrown in case of invalid choices
         # of field_position and field_type
@@ -224,10 +226,12 @@ class ParaqusModel(object):
 
             # If there are more nodes than field values set the missing
             # value to nan
-            elif len(self.nodes.tags) > len(field_tags):
-                field.field_values = self._pad_field_values(field_tags,
-                                                            field_values,
-                                                            self.nodes.tags)
+            # elif len(self.nodes.tags) > len(field_tags):
+            # Always call pad method so that values will be sorted
+            # regarding the order of node tags
+            field.field_values = self._pad_field_values(field_tags,
+                                                        field_values,
+                                                        self.nodes.tags)
 
             self.node_fields.add_field(field)
 
@@ -241,10 +245,12 @@ class ParaqusModel(object):
 
             # If there are more elements than field values set the
             # missing value to nan
-            elif len(self.elements.tags) > len(field_tags):
-                field.field_values = self._pad_field_values(field_tags,
-                                                            field_values,
-                                                            self.elements.tags)
+            # elif len(self.elements.tags) > len(field_tags):
+            # Always call pad method so that values will be sorted
+            # regarding the order of element tags
+            field.field_values = self._pad_field_values(field_tags,
+                                                        field_values,
+                                                        self.elements.tags)
 
             self.element_fields.add_field(field)
 
