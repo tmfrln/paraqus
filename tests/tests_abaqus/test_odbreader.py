@@ -292,9 +292,45 @@ class TestElementTestMesh(unittest.TestCase):
         assert len(grp_elements) == 2
         
         
-    def test_set_name_conflict(self):
-        """Instance and assembly set names..."""
-        assert False
+    def test_multiple_sets(self):
+        """Multiple sets and surfaces can be exported."""
+        self.reader.add_set_export_request('Bottom Edge',
+                                           set_type="nodes")
         
-    def test_multiple_sets_bigger_odb(self):
-        assert False
+        self.reader.add_set_export_request('Bottom Edge',
+                                           set_type="elements")
+        
+        self.reader.add_set_export_request('Left Edge',
+                                           set_type="nodes",
+                                           instance_name=self.instance_name)
+        
+        self.reader.add_set_export_request('Left Edge',
+                                           set_type="elements",
+                                           instance_name=self.instance_name)
+        
+        self.reader.add_surface_export_request('Top Surface',
+                                               surface_type="nodes")
+        
+        self.reader.add_surface_export_request('Top Surface',
+                                               surface_type="elements")
+        
+        self.reader.add_surface_export_request('Right Edge',
+                                               surface_type="nodes",
+                                               instance_name=self.instance_name)
+        
+        self.reader.add_surface_export_request('Right Edge',
+                                               surface_type="elements",
+                                               instance_name=self.instance_name)
+        
+        instance_models = list(
+            self.reader.read_instances(step_name = self.step_name,
+                                       frame_index = self.frame_index)
+                              )
+    
+        assert len(instance_models) == 1
+            
+        instance_model = instance_models[0]
+        
+        assert len(instance_model.nodes.groups) == 4
+        assert len(instance_model.elements.groups) == 4
+        
