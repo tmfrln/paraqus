@@ -30,7 +30,7 @@ Exporting the results to the vtk format
 
 Start Abaqus CAE, and set the work directory to the folder where the simulation output database files are located. Then execute the script ``example_cylindrical_billet_adaptive.py`` (located in the ``examples`` folder). 
 First we initialize a ``BinaryWriter``. If you prefer your vtu-files in ASCII format, you can easily switch to an ``AsciiWriter``. Since we want to merge multiple frames of multiple odb-files into one new file, we need a ``CollectionWriter`` in addition here, that works just like a context manager.
-By looping over the different ODB-files we initialize an individual ``ODBReader`` for each of them. The parameter ``time_offset`` is needed to have a consecutive simulation time over all exported frames.
+By looping over the different odb-files we initialize an individual ``ODBReader`` for each of them. The parameter ``time_offset`` is needed to have a consecutive simulation time over all exported frames.
 Now, as done in other tutorials before, we can generate our models and export them. Don't forget to update the ``time_offset`` after one odb-file has been processed.
 
 Look at what you have done!
@@ -47,7 +47,7 @@ The visualisation pipeline looks as follows:
 - Create a surface (*Extract Surface* filter)
 - Revolve around z-axis (*Rotational Extrusion* filter)
 - Extrapolate data from cells to point (*Cell Data to Point Data* filter)
-- Coloring according to the variable ``S_mises`` (choose in the menu for the last filter)
+- Coloring according to the variable ``S_mises``
 
 Output looks like this:
 
