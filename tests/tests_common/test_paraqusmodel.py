@@ -76,7 +76,7 @@ class TestParaqusModelFields(unittest.TestCase):
         field = self.model.get_node_field("scalar field")
         
         assert field.field_name == "scalar field"
-        assert np.all(field.field_values == [1,3,2,4,5,6,7,8])
+        assert np.all(field.field_values == [[1],[3],[2],[4],[5],[6],[7],[8]])
         
         
     def test_vector_node_field(self):
