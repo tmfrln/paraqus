@@ -50,6 +50,8 @@ class TestODBContextManager(unittest.TestCase):
         """An odb that was already opened stays open after leaving the context."""
         odb = session.openOdb(self.odb_path)
         
+        self.assertEqual(len(session.odbs), 1)
+        
         with ODBObject(self.odb_path) as odb_new:
             self.assertEqual(odb, odb_new)
             

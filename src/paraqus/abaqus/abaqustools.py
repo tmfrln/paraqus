@@ -26,8 +26,12 @@ class ODBObject(object):
         self.already_open = False
 
     def __enter__(self):
+        
+        # make sure to compare with absolute paths
+        keys = [os.path.abspath(k) for k in session.odbs.keys()]
+        
         # if the odb is already open, just return the odb object
-        if self.file_path in session.odbs.keys():
+        if self.file_path in keys: 
             # odb is already open
             self.already_open = True
             return session.odbs[self.file_path]
