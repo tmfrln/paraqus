@@ -10,7 +10,8 @@ import warnings
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-from constants import USER, NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
+import paraqus.constants as constants
+from paraqus.constants import USER, NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
 
 
 class ParaqusModel(object):
@@ -1120,13 +1121,13 @@ class Field(object):
         if field_position not in (NODES, ELEMENTS):
             msg = "Invalid field position: {}".format(field_position)
             raise Exception(msg)
-        self._field_position = field_position
+        self._field_position = getattr(constants, str(field_position).upper())
         
         # Add type
         if field_type not in (SCALAR, VECTOR, TENSOR):
             msg = "Invalid field type: {}".format(field_type)
             raise Exception(msg)
-        self._field_type = field_type
+        self._field_type = getattr(constants, str(field_type).upper())
 
         # Add values
         if self.field_type == SCALAR:
