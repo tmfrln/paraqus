@@ -127,9 +127,7 @@ class ParaqusModel(object):
     >>>
     >>> # Export model as VTK
     >>> writer = BinaryWriter()
-    >>> writer.initialise_collection()
     >>> writer.write(model)
-    >>> writer.finalize_collection()
 
     """
 
@@ -208,13 +206,13 @@ class ParaqusModel(object):
         None.
 
         """
-        field_values = np.array(field_values)
+        field_values = np.asarray(field_values, dtype=float)
         
         # Create field object
         # An error will be thrown in case of invalid choices
         # of field_position and field_type
         field = Field(field_name, field_values,
-                            field_position, field_type)
+                      field_position, field_type)
 
         # Add a node field
         if field_position == NODES:
@@ -229,9 +227,9 @@ class ParaqusModel(object):
             # elif len(self.nodes.tags) > len(field_tags):
             # Always call pad method so that values will be sorted
             # regarding the order of node tags
-            field.field_values = self._pad_field_values(field_tags,
-                                                        field_values,
-                                                        self.nodes.tags)
+            field._field_values = self._pad_field_values(field_tags,
+                                                         field_values,
+                                                         self.nodes.tags)
 
             self.node_fields.add_field(field)
 
@@ -248,9 +246,9 @@ class ParaqusModel(object):
             # elif len(self.elements.tags) > len(field_tags):
             # Always call pad method so that values will be sorted
             # regarding the order of element tags
-            field.field_values = self._pad_field_values(field_tags,
-                                                        field_values,
-                                                        self.elements.tags)
+            field._field_values = self._pad_field_values(field_tags,
+                                                         field_values,
+                                                         self.elements.tags)
 
             self.element_fields.add_field(field)
 
@@ -323,16 +321,16 @@ class ParaqusModel(object):
 
         # Create a new paraqus model representing the submodel
         submodel = ParaqusModel(sub_element_repo.tags,
-                             sub_element_repo.connectivity,
-                             sub_element_repo.types,
-                             sub_node_repo.tags,
-                             sub_node_repo.coordinates,
-                             model_name=self.model_name,
-                             part_name=self.part_name,
-                             step_name=self.step_name,
-                             frame_tag=self.frame_tag,
-                             frame_time=self.frame_time,
-                             source=self.source)
+                                sub_element_repo.connectivity,
+                                sub_element_repo.types,
+                                sub_node_repo.tags,
+                                sub_node_repo.coordinates,
+                                model_name=self.model_name,
+                                part_name=self.part_name,
+                                step_name=self.step_name,
+                                frame_tag=self.frame_tag,
+                                frame_time=self.frame_time,
+                                source=self.source)
 
         # Add field to the submodel
         for nf in self.node_fields.get_subset(sub_node_repo):
@@ -496,10 +494,11 @@ class ElementRepository(object):
 
         # The connectivity cannot be stored as one array in case of
         # elements with different numbers of element nodes
-        self.tags = element_tags
-        self.connectivity = connectivity
-        self.types = element_types
-        self.groups = {}
+        self._tags = np.asarray(element_tags).reshape(-1)
+        self._index_mapper = dict(zip(element_tags, range(len(element_tags))))
+        self._connectivity = [np.asarray(c).reshape(-1) for c in connectivity]
+        self._types = np.asarray(element_types, dtype=np.uint8).reshape(-1)
+        self._groups = {}
 
 
     # Properties
@@ -507,28 +506,21 @@ class ElementRepository(object):
     def tags(self):
         return self._tags
 
-    @tags.setter
-    def tags(self, element_tags):
-
-        self._tags = np.array(element_tags).reshape(-1)
-        self.index_mapper = dict(zip(element_tags, range(len(element_tags))))
+    @property
+    def index_mapper(self):
+        return self._index_mapper
 
     @property
     def connectivity(self):
         return self._connectivity
 
-    @connectivity.setter
-    def connectivity(self, connectivity):
-        self._connectivity = [np.array(c).reshape(-1) for c in connectivity]
-
     @property
     def types(self):
         return self._types
-
-    @types.setter
-    def types(self, element_types):
-        self._types = np.array(element_types,
-                               dtype=np.uint8).reshape(-1)
+    
+    @property
+    def groups(self):
+        return self._groups
 
 
     # Methods
@@ -576,7 +568,7 @@ class ElementRepository(object):
 
         element_tags = np.asarray(element_tags)
         element_tags.sort()
-        self.groups[group_name] = element_tags
+        self._groups[group_name] = element_tags
 
 
     def get_subset(self, *element_tags):
@@ -599,8 +591,8 @@ class ElementRepository(object):
         # If there is in anvalid element tag, an error will be raised
         # by the index mapper, thus there is no need to check for valid
         # inputs here
-        indices = np.array([self.index_mapper[e]
-                            for e in element_tags])
+        indices = np.asarray([self.index_mapper[e]
+                              for e in element_tags])
 
         tags = self.tags[indices]
         connectivity = [self.connectivity[i] for i in indices]
@@ -714,29 +706,11 @@ class NodeRepository(object):
 
         assert len(node_tags) == len(node_coords)
 
-        self.tags = node_tags
-        self.coordinates = node_coords
-        self.groups = {}
-
-    # Properties
-    @property
-    def tags(self):
-        return self._tags
-
-    @tags.setter
-    def tags(self, node_tags):
-
-        self._tags = np.array(node_tags).reshape(-1)
-        self.index_mapper = dict(zip(node_tags, range(len(node_tags))))
-
-    @property
-    def coordinates(self):
-        return self._coordinates
-
-    @coordinates.setter
-    def coordinates(self, node_coords):
-
-        node_coords = np.array(node_coords)
+        self._tags = np.asarray(node_tags).reshape(-1)
+        self._index_mapper = dict(zip(node_tags, range(len(node_tags))))
+        self._groups = {}
+        
+        node_coords = np.asarray(node_coords)
         rows, columns = node_coords.shape
 
         if columns == 3:
@@ -750,6 +724,23 @@ class NodeRepository(object):
             raise ValueError(msg)
 
         self._coordinates = node_coords
+
+    # Properties
+    @property
+    def tags(self):
+        return self._tags
+
+    @property
+    def index_mapper(self):
+        return self._index_mapper
+
+    @property
+    def coordinates(self):
+        return self._coordinates
+
+    @property
+    def groups(self):
+        return self._groups
 
 
     # Methods
@@ -794,7 +785,7 @@ class NodeRepository(object):
 
         node_tags = np.asarray(node_tags)
         node_tags.sort()
-        self.groups[group_name] = node_tags
+        self._groups[group_name] = node_tags
 
     def get_subset(self, *node_tags):
         """
@@ -857,8 +848,16 @@ class FieldRepositoryBaseClass(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        self.fields = {}
+        self._fields = {}
+       
+        
+    # Properties
+    @property
+    def fields(self):
+        return self._fields
 
+
+    # Methods
     def __getitem__(self, field_name):
         """Key-based access."""
         return self.fields[field_name]
@@ -1116,49 +1115,38 @@ class Field(object):
                  field_type):
 
         self.field_name = field_name
-        self.field_position = field_position
-        self.field_type = field_type
-        self.field_values = field_values
+        
+        # Add position
+        if field_position not in (NODES, ELEMENTS):
+            msg = "Invalid field position: {}".format(field_position)
+            raise Exception(msg)
+        self._field_position = field_position
+        
+        # Add type
+        if field_type not in (SCALAR, VECTOR, TENSOR):
+            msg = "Invalid field type: {}".format(field_type)
+            raise Exception(msg)
+        self._field_type = field_type
 
+        # Add values
+        if self.field_type == SCALAR:
+            self._field_values = np.asarray(field_values).reshape((-1,1))
+        else:
+            self._field_values = np.asarray(field_values)
+        
 
     # Properties
     @property
     def field_values(self):
         return self._field_values
 
-    @field_values.setter
-    def field_values(self, field_values):
-
-        if self.field_type == SCALAR:
-            self._field_values = np.array(field_values).reshape((-1,1))
-        else:
-            self._field_values = np.array(field_values)
-
     @property
     def field_position(self):
         return self._field_position
 
-    @field_position.setter
-    def field_position(self, field_position):
-
-        if field_position not in (NODES, ELEMENTS):
-            msg = "Invalid field position: {}".format(field_position)
-            raise Exception(msg)
-
-        self._field_position = field_position
-
     @property
     def field_type(self):
         return self._field_type
-
-    @field_type.setter
-    def field_type(self, field_type):
-
-        if field_type not in (SCALAR, VECTOR, TENSOR):
-            msg = "Invalid field type: {}".format(field_type)
-            raise Exception(msg)
-
-        self._field_type = field_type
 
 
     # Methods
