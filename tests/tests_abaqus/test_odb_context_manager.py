@@ -21,7 +21,7 @@ class TestODBContextManager(unittest.TestCase):
             odb.close()
         
         self.odb_path = os.path.join('resources', 
-                                     'element_test_2021.odb')
+                                     'element_test_current.odb')
     
     
     def test_open_close(self):
@@ -73,7 +73,7 @@ class TestODBUpgrade(unittest.TestCase):
             
         # base odb for the tests
         abq2018_odb = os.path.join('resources',
-                                   'element_test_2018.odb')
+                                   'element_test_old.odb')
         
         # backup folder has to be consistent with the upgrade_odb function
         self.backup_folder = 'odbs_before_upgrades'

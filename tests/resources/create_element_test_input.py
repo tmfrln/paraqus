@@ -131,9 +131,15 @@ model.FieldOutputRequest(name='FieldOut',
 # Create Job
 import job
 
-jobElementTest = mdb.Job(name='element_test_2021',     model=modelName,
+jobElementTest = mdb.Job(name='element_test_current',     model=modelName,
     type=ANALYSIS, description='Uniform stress state in a rectangular body',
     numCpus=1, historyPrint=OFF)
 
-jobElementTest.submit();
+jobElementTestOld = mdb.Job(name='element_test_old',     model=modelName,
+    type=ANALYSIS, description='Uniform stress state in a rectangular body',
+    numCpus=1, historyPrint=OFF)
+
+jobElementTest.writeInput()
+
+jobElementTestOld.writeInput()
 

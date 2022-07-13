@@ -16,7 +16,7 @@ class TestElementTestMesh(unittest.TestCase):
     """Class docsrt"""
     def setUp(self):
         self.odb_path = os.path.join('resources', 
-                                     'element_test_2021.odb')
+                                     'element_test_current.odb')
         
         self.step_name = "Apply Force"
         self.frame_index = -1
