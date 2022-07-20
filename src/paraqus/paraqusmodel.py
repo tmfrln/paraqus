@@ -91,11 +91,11 @@ class ParaqusModel(object):
         Add a node group to the model.
     add_element_group
         Add an element group to the model.
-    extract_submodel_by_elements
-        Extract a submodel based on element tags.
+    split_model
+        Split the model into a given number of parts.
     get_fields_by_type
-        Extract all stored fields of a specific type, e.g. all
-        scalar element fields.
+        Extract all stored fields of a specific type, e.g. all scalar 
+        element fields.
     get_node_field
         Extract a node field by its name.
     get_element_field
@@ -131,7 +131,7 @@ class ParaqusModel(object):
     >>> writer.write(model)
 
     """
-
+    
     model_counter = 0
 
     def __init__(self,
@@ -303,9 +303,9 @@ class ParaqusModel(object):
         """
         Split the model into number_of_pieces parts.
 
-        The split is performed based on element numbers, so that the resulting
-        model pieces are not necessarily continuous (i.e. they might have
-        holes etc).
+        The split is performed based on element numbers, so that the 
+        resulting model pieces are not necessarily continuous (i.e. they 
+        might have holes etc).
 
         Parameters
         ----------
