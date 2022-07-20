@@ -19,7 +19,7 @@ import struct
 import base64
 
 from constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER, BASE64, RAW,
-                       UINT64, UINT32)
+                       UINT64)
 from version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
 
 
@@ -293,8 +293,6 @@ class WriterBaseClass(object):
             corresponding pvtu file.
 
         """
-        
-
         # Create pieces and write them to file
         vtu_files = []
         
@@ -317,8 +315,6 @@ class WriterBaseClass(object):
             # if self._collection:
                 # self._add_to_collection(model, pvtu_file_path)
             return pvtu_file_path
-
-
 
     def _write_pvtu_file(self, model, vtu_files):
         """
@@ -385,7 +381,6 @@ class WriterBaseClass(object):
                                            NumberOfComponents=components)
 
             for group_name in model.nodes.groups:
-                # TODO: Change this according to potential change in dtype
                 dtype = "uint8"
                 xml.add_and_finish_element("PDataArray",
                                            type=VTK_TYPE_MAPPER[dtype],
@@ -407,7 +402,6 @@ class WriterBaseClass(object):
                                            NumberOfComponents=components)
 
             for group_name in model.elements.groups:
-                # TODO: Change this according to potential change in dtype
                 dtype = "uint8"
                 xml.add_and_finish_element("PDataArray",
                                            type=VTK_TYPE_MAPPER[dtype],
@@ -433,7 +427,6 @@ class WriterBaseClass(object):
             xml.finish_all_elements()
 
         return file_path
-
 
     def _prepare_to_write_vtu_file(self, piece, piece_tag):
         """
@@ -504,6 +497,7 @@ class WriterBaseClass(object):
 
         return (file_path, nel, nnp, node_coords, element_types,
                 element_offsets, connectivity)
+
 
 class BinaryWriter(WriterBaseClass):
     """
@@ -737,7 +731,6 @@ class BinaryWriter(WriterBaseClass):
 
                 # Add node fields based on groups
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    # TODO: Check if there is a smaller possible data type than int8
                     field_vals = np.isin(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     dtype = field_vals.dtype.name
@@ -770,7 +763,6 @@ class BinaryWriter(WriterBaseClass):
                     xml.finish_element()
 
                 for group_name, group_elems in piece.elements.groups.items():
-                    # TODO: Check if there is a smaller possible data type than int8
                     field_vals = np.isin(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
@@ -873,9 +865,8 @@ class BinaryWriter(WriterBaseClass):
                                                offset=byte_offset)
                     byte_offset = update_byte_offset(field_vals)
 
-                # node fields for groups
+                # Node fields for groups
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    # TODO: Check if there is a smaller possible data type than int8
                     field_vals = np.isin(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     dtype = field_vals.dtype.name
@@ -937,7 +928,6 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append node group data
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    # TODO: Check if there is a smaller possible data type than int8
                     field_vals = np.isin(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
@@ -950,7 +940,6 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append element group data
                 for group_name, group_elems in piece.elements.groups.items():
-                    # TODO: Check if there is a smaller possible data type than int8
                     field_vals = np.isin(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals)
@@ -1119,7 +1108,6 @@ class AsciiWriter(WriterBaseClass):
 
             # Add node fields based on groups
             for group_name, group_nodes in piece.nodes.groups.items():
-                # TODO: Check if there is a smaller possible data type than int8
                 field_vals = np.isin(piece.nodes.tags,
                                      group_nodes).astype(np.uint8)
                 dtype = field_vals.dtype.name
@@ -1154,7 +1142,6 @@ class AsciiWriter(WriterBaseClass):
 
             # Add element fields based on groups
             for group_name, group_elems in piece.elements.groups.items():
-                    # TODO: Check if there is a smaller possible data type than int8
                     field_vals = np.isin(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
