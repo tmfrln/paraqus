@@ -293,26 +293,20 @@ class WriterBaseClass(object):
             corresponding pvtu file.
 
         """
-        # Split list of element tags regarding the number of pieces
-        element_tags_per_piece = np.array_split(model.elements.tags,
-                                                self.number_of_pieces)
+        
 
         # Create pieces and write them to file
         vtu_files = []
-        for piece_tag, piece_element_tags in enumerate(element_tags_per_piece):
-
-            # Create the piece
-            if self.number_of_pieces > 1:
-                piece = model.extract_submodel_by_elements(piece_element_tags)
-            else:
-                piece = model
+        
+        # Generator for submodels
+        pieces = model.split_model(self.number_of_pieces)
+        
+        # Loop over the submodels
+        for piece_tag, piece in enumerate(pieces):
 
             # Dump to disk
             vtu_file_path = self._write_vtu_file(piece, piece_tag)
             vtu_files.append(vtu_file_path)
-
-            # if self._collection and self.number_of_pieces == 1:
-                # self._add_to_collection(piece, vtu_file_path)
 
         # Connect different pieces in a pvtu file
         if self.number_of_pieces == 1:
@@ -380,7 +374,7 @@ class WriterBaseClass(object):
 
             # Add node fields
             xml.add_element("PPointData")
-            for nf in model.node_field_outputs:
+            for nf in model.node_fields:
                 name = nf.field_name
                 values = nf.get_3d_field_values()
                 components = len(values[0])
@@ -402,7 +396,7 @@ class WriterBaseClass(object):
 
             # Add element fields
             xml.add_element("PCellData")
-            for ef in model.element_field_outputs:
+            for ef in model.element_fields:
                 name = ef.field_name
                 values = ef.get_3d_field_values()
                 components = len(values[0])
@@ -727,7 +721,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Add node fields
                 xml.add_element("PointData")
-                for nf in piece.node_field_outputs:
+                for nf in piece.node_fields:
                     field_vals = nf.get_3d_field_values()
                     components = len(field_vals[0])
                     dtype = field_vals.dtype.name
@@ -761,7 +755,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Add element fields
                 xml.add_element("CellData")
-                for ef in piece.element_field_outputs:
+                for ef in piece.element_fields:
                     field_vals = ef.get_3d_field_values()
                     components = len(field_vals[0])
                     dtype=field_vals.dtype.name
@@ -867,7 +861,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Add node fields
                 xml.add_element("PointData")
-                for nf in piece.node_field_outputs:
+                for nf in piece.node_fields:
                     field_vals = nf.get_3d_field_values()
                     components = len(field_vals[0])
                     dtype = field_vals.dtype.name
@@ -898,7 +892,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Add element fields
                 xml.add_element("CellData")
-                for ef in piece.element_field_outputs:
+                for ef in piece.element_fields:
                     field_vals = ef.get_3d_field_values()
                     components = len(field_vals[0])
                     dtype = field_vals.dtype.name
@@ -936,7 +930,7 @@ class BinaryWriter(WriterBaseClass):
                     xml.add_array_data_to_element(array, break_line=False)
 
                 # Append node field data
-                for nf in piece.node_field_outputs:
+                for nf in piece.node_fields:
                     field_vals = nf.get_3d_field_values()
                     xml.add_array_data_to_element(field_vals,
                                                   break_line=False)
@@ -949,7 +943,7 @@ class BinaryWriter(WriterBaseClass):
                     xml.add_array_data_to_element(field_vals, break_line=False)
 
                 # Append element field data
-                for ef in piece.element_field_outputs:
+                for ef in piece.element_fields:
                     field_vals = ef.get_3d_field_values()
                     xml.add_array_data_to_element(field_vals,
                                                   break_line=False)
@@ -1109,7 +1103,7 @@ class AsciiWriter(WriterBaseClass):
             # Add node fields
             xml.add_element("PointData")
 
-            for nf in piece.node_field_outputs:
+            for nf in piece.node_fields:
                 field_vals = nf.get_3d_field_values()
                 components = len(field_vals[0])
                 dtype = field_vals.dtype.name
@@ -1144,7 +1138,7 @@ class AsciiWriter(WriterBaseClass):
             # Add element fields
             xml.add_element("CellData")
 
-            for ef in piece.element_field_outputs:
+            for ef in piece.element_fields:
                 field_vals = ef.get_3d_field_values()
                 components = len(field_vals[0])
                 dtype=field_vals.dtype.name

@@ -299,7 +299,40 @@ class ParaqusModel(object):
         """
         self.elements.add_group(group_name, element_tags)
 
-    def extract_submodel_by_elements(self, element_tags):
+    def split_model(self, number_of_pieces):
+        """
+        Split the model into number_of_pieces parts.
+
+        The split is performed based on element numbers, so that the resulting
+        model pieces are not necessarily continuous (i.e. they might have
+        holes etc).
+
+        Parameters
+        ----------
+        number_of_pieces : int
+            Number of parts the model will be split into.
+
+        Yields
+        ------
+        piece : ParaqusModel
+            The resulting submodel for one piece including all fields and
+            groups.
+
+        """
+        # Split list of element tags regarding the number of pieces
+        element_tags_per_piece = np.array_split(self.elements.tags,
+                                                number_of_pieces)
+        
+        for piece_element_tags in element_tags_per_piece:
+            # Create the piece
+            if number_of_pieces > 1:
+                piece = self._extract_submodel_by_elements(piece_element_tags)
+            else:
+                piece = self
+                
+            yield piece             
+                
+    def _extract_submodel_by_elements(self, element_tags):
         """
         Extract a submodel based on element tags.
 
@@ -603,7 +636,7 @@ class ElementRepository(object):
         return_repo = ElementRepository(tags, connectivity, types)
 
         # Make sure the indices are coherent with the original model
-        return_repo.index_mapper = dict(zip(tags, indices))
+        return_repo._index_mapper = dict(zip(tags, indices))
 
         # Extract group elements that are present in the subset
         for group_name, group_tags in self.groups.items():
@@ -817,7 +850,7 @@ class NodeRepository(object):
         return_repo = NodeRepository(tags, coords)
 
         # make sure the indices are coherent with the original model
-        return_repo.index_mapper = dict(zip(tags, indices))
+        return_repo._index_mapper = dict(zip(tags, indices))
 
         # extract group elements that are present in the subset
         for group_name, group_tags in self.groups.items():
@@ -1232,6 +1265,6 @@ if __name__ == "__main__":
     # vtu_writer = AsciiWriter()
     vtu_writer.number_of_pieces = 2
 
-    # vtu_writer.write(model_1)
+    vtu_writer.write(model_1)
 
     print("*** FINISHED SUCCESFULLY ***")
