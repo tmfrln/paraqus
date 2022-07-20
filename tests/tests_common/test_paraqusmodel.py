@@ -236,6 +236,14 @@ class TestParaqusModelFields(unittest.TestCase):
                                              [51, 52, 53, 54]])
         
     def test_pad_field_values(self):
-        pass
+        assert False
+    
+    
+    def test_partition_model(self):
+        assert False
             
+        
+    def test_fields_by_type(self):
+        assert False
+        
         
