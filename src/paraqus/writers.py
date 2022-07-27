@@ -1199,6 +1199,8 @@ class AsciiWriter(WriterBaseClass):
                                        NumberOfComponents=1,
                                        type=VTK_TYPE_MAPPER[dtype],
                                        format="ascii")
+            xml.add_array_data_to_element(node_tags)
+            xml.finish_element()
 
             xml.finish_element()  # Finish node fields
 
@@ -1277,7 +1279,7 @@ class CollectionWriter(object):
 
     Example
     -------
-    >>> import writers import BinaryWriter, CollectionWriter
+    >>> from writers import BinaryWriter, CollectionWriter
     >>> vtu_writer = BinaryWriter()
     >>> with CollectionWriter(vtu_writer, "my_collection") as writer:
     >>>     writer.write(random_paraqus_model_frame_1)
