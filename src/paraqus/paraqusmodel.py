@@ -126,8 +126,6 @@ class ParaqusModel(object):
 
     """
     
-    model_counter = 0
-
     def __init__(self,
                  element_tags,
                  connectivity,
@@ -140,7 +138,7 @@ class ParaqusModel(object):
         self.model_name = kwargs.pop("model_name", "MODEL NAME")
         self.part_name = kwargs.pop("part_name", "PART NAME")
         self.step_name = kwargs.pop("step_name", "STEP NAME")
-        self.frame_time = kwargs.pop("frame_time", ParaqusModel.model_counter)
+        self.frame_time = kwargs.pop("frame_time", 0.0)
         self.source = kwargs.pop("source", USER)
 
         # Check for unrecognized kwargs
@@ -156,9 +154,6 @@ class ParaqusModel(object):
         # Add field repositories
         self.node_fields = NodeFieldRepository()
         self.element_fields = ElementFieldRepository()
-
-        ParaqusModel.model_counter += 1
-
 
     # Methods
     def __str__(self):
