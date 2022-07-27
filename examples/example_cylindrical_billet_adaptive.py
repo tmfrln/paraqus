@@ -24,7 +24,7 @@ ODB_PATHS = ["billet_case1_std_coarse.odb",
              "billet_case1_std_coarse_rez.odb"] # path to the odb files
 MODEL_NAME = "Cylindrical-Billet-Adaptive" # can be chosen freely
 INSTANCE_NAMES = ["BILLET-1"] # which instances will be exported
-STEP_NAME = "Step-1" # name of the step that will be exported
+STEP_NAMES = ["Step-1", "Step-1"] # name of the step that will be exported
 FRAME_INDICES = [(0, -1), (1, -1)] # frame indices to export per odb
 
 # create a writer that will write the exported results to a vtk file
@@ -39,7 +39,7 @@ vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
 with CollectionWriter(vtu_writer, "Compression Test") as writer:
 
     time_offset = 0
-    for frames, odb in zip(FRAME_INDICES, ODB_PATHS):
+    for step, frames, odb in zip(STEP_NAMES, FRAME_INDICES, ODB_PATHS):
         reader = ODBReader(odb_path=odb,
                            model_name=MODEL_NAME,
                            instance_names=INSTANCE_NAMES,
@@ -53,10 +53,10 @@ with CollectionWriter(vtu_writer, "Compression Test") as writer:
         reader.add_field_export_request("PE")
     
         for frame_index in frames:
-            for instance_model in reader.read_instances(step_name=STEP_NAME,
+            for instance_model in reader.read_instances(step_name=step,
                                                         frame_index=frame_index):
                 writer.write(instance_model)
                 
-        time_offset = reader.get_frame_time(STEP_NAME, -1)
+        time_offset = reader.get_frame_time(step, -1)
 
 print("*** FINISHED ***")
