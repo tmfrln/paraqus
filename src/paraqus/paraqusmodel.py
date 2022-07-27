@@ -1246,7 +1246,7 @@ if __name__ == "__main__":
     # Test writer class
     vtu_writer = BinaryWriter(clear_output_dir=True)
     vtu_writer.encoding = "RAW"
-    # vtu_writer = AsciiWriter()
+    vtu_writer = AsciiWriter()
     vtu_writer.number_of_pieces = 2
 
     vtu_writer.write(model_1)
