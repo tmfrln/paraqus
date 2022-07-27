@@ -381,6 +381,12 @@ class WriterBaseClass(object):
                                            type=VTK_TYPE_MAPPER[dtype],
                                            Name="_group " + group_name,
                                            NumberOfComponents=1)
+                
+            dtype = model.nodes.tags.dtype.name
+            xml.add_and_finish_element("PDataArray",
+                                       type=VTK_TYPE_MAPPER[dtype],
+                                       Name="_node_tags",
+                                       NumberOfComponents=1)
 
             xml.finish_element()  # Finish node fields
 
@@ -402,6 +408,12 @@ class WriterBaseClass(object):
                                            type=VTK_TYPE_MAPPER[dtype],
                                            Name="_group " + group_name,
                                            NumberOfComponents=1)
+                
+            dtype = model.elements.tags.dtype.name
+            xml.add_and_finish_element("PDataArray",
+                                       type=VTK_TYPE_MAPPER[dtype],
+                                       Name="_element_tags",
+                                       NumberOfComponents=1)
 
             xml.finish_element()  # Finish element fields
 
@@ -411,7 +423,7 @@ class WriterBaseClass(object):
             dtype=coordinates.dtype.name
             xml.add_and_finish_element("PDataArray",
                                        type=VTK_TYPE_MAPPER[dtype],
-                                       NumberOfComponents=len(coordinates[0]))
+                                       NumberOfComponents=3)
             xml.finish_element()
 
             # Add pieces
@@ -442,6 +454,10 @@ class WriterBaseClass(object):
             Number of elements.
         nnp : int
             Number of node points.
+        element_tags : numpy.ndarray
+            The original element tags.
+        node_tags : numpy.ndarray
+            The original node tags.
         node_coords : numpy.ndarray
             Nodal coordinates in shape (nnp,3).
         element_types : numpy.ndarray
@@ -477,6 +493,8 @@ class WriterBaseClass(object):
         nnp = len(piece.nodes.tags)
 
         # Extract some relevant arrays for the vtu output
+        element_tags = piece.elements.tags
+        node_tags = piece.nodes.tags
         node_coords = piece.nodes.coordinates            
         tag_based_conn = piece.elements.connectivity
         element_types = piece.elements.types
@@ -497,8 +515,8 @@ class WriterBaseClass(object):
             connectivity.append(np.array([node_index_mapper[i] for i in conn],
                                     dtype=tag_based_conn[0].dtype))
 
-        return (file_path, nel, nnp, node_coords, element_types,
-                element_offsets, connectivity)
+        return (file_path, nel, nnp, element_tags, node_tags, node_coords, 
+                element_types, element_offsets, connectivity)
 
 
 class BinaryWriter(WriterBaseClass):
@@ -631,6 +649,8 @@ class BinaryWriter(WriterBaseClass):
         (file_path,
          nel,
          nnp,
+         element_tags,
+         node_tags,
          node_coords,
          element_types,
          element_offsets,
@@ -745,8 +765,18 @@ class BinaryWriter(WriterBaseClass):
 
                     xml.add_array_data_to_element(field_vals)
                     xml.finish_element()
-
+                    
+                # Add node tags as field
+                dtype = node_tags.dtype.name
+                xml.add_element("DataArray",
+                                Name="_node_tags",
+                                NumberOfComponents=1,
+                                type=VTK_TYPE_MAPPER[dtype],
+                                format="binary")
+                xml.add_array_data_to_element(node_tags)
                 xml.finish_element()
+                
+                xml.finish_element()  # Finish node fields
 
                 # Add element fields
                 xml.add_element("CellData")
@@ -777,6 +807,16 @@ class BinaryWriter(WriterBaseClass):
 
                     xml.add_array_data_to_element(field_vals)
                     xml.finish_element()
+                    
+                # Add element tags as field
+                dtype = element_tags.dtype.name
+                xml.add_element("DataArray",
+                                Name="_element_tags",
+                                NumberOfComponents=1,
+                                type=VTK_TYPE_MAPPER[dtype],
+                                format="binary")
+                xml.add_array_data_to_element(element_tags)
+                xml.finish_element()
 
                 xml.finish_all_elements()
 
@@ -880,6 +920,16 @@ class BinaryWriter(WriterBaseClass):
                                                format="appended",
                                                offset=byte_offset)
                     byte_offset = update_byte_offset(field_vals)
+                    
+                # Add node tags as field
+                dtype = node_tags.dtype.name
+                xml.add_and_finish_element("DataArray",
+                                            Name="_node_tags",
+                                            NumberOfComponents=1,
+                                            type=VTK_TYPE_MAPPER[dtype],
+                                            format="appended",
+                                            offset=byte_offset)
+                byte_offset = update_byte_offset(node_tags)
 
                 xml.finish_element()  # Finish node fields
 
@@ -898,7 +948,7 @@ class BinaryWriter(WriterBaseClass):
                                                offset=byte_offset)
                     byte_offset = update_byte_offset(field_vals)
 
-                # element_fields for groups
+                # Element_fields for groups
                 for group_name, group_elems in piece.elements.groups.items():
                     field_vals = np.isin(piece.elements.tags,
                                          group_elems).astype(np.uint8)
@@ -906,10 +956,21 @@ class BinaryWriter(WriterBaseClass):
 
                     xml.add_and_finish_element("DataArray",
                                                Name="_group " + group_name,
+                                               NumberOfComponents=1,
                                                type=VTK_TYPE_MAPPER[dtype],
                                                format="appended",
                                                offset=byte_offset)
                     byte_offset = update_byte_offset(field_vals)
+                    
+                # Add element tags as field
+                dtype = element_tags.dtype.name
+                xml.add_and_finish_element("DataArray",
+                                            Name="_element_tags",
+                                            NumberOfComponents=1,
+                                            type=VTK_TYPE_MAPPER[dtype],
+                                            format="appended",
+                                            offset=byte_offset)
+                byte_offset = update_byte_offset(element_tags)
 
                 xml.finish_element()  # Finish cell data
                 xml.finish_element()  # Finish piece
@@ -933,6 +994,9 @@ class BinaryWriter(WriterBaseClass):
                     field_vals = np.isin(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
+                    
+                # Append node tags field
+                xml.add_array_data_to_element(node_tags, break_line=False)
 
                 # Append element field data
                 for ef in piece.element_fields:
@@ -944,7 +1008,10 @@ class BinaryWriter(WriterBaseClass):
                 for group_name, group_elems in piece.elements.groups.items():
                     field_vals = np.isin(piece.elements.tags,
                                          group_elems).astype(np.uint8)
-                    xml.add_array_data_to_element(field_vals)
+                    xml.add_array_data_to_element(field_vals, break_line=False)
+                    
+                # Add element tags field
+                xml.add_array_data_to_element(element_tags)
 
                 xml.finish_all_elements()
 
@@ -1032,6 +1099,8 @@ class AsciiWriter(WriterBaseClass):
         (file_path,
          nel,
          nnp,
+         element_tags,
+         node_tags,
          node_coords,
          element_types,
          element_offsets,
@@ -1122,6 +1191,14 @@ class AsciiWriter(WriterBaseClass):
 
                 xml.add_array_data_to_element(field_vals)
                 xml.finish_element()
+                
+            # Add node tags as field
+            dtype = node_tags.dtype.name
+            xml.add_and_finish_element("DataArray",
+                                       Name="_node_tags",
+                                       NumberOfComponents=1,
+                                       type=VTK_TYPE_MAPPER[dtype],
+                                       format="ascii")
 
             xml.finish_element()  # Finish node fields
 
@@ -1144,18 +1221,28 @@ class AsciiWriter(WriterBaseClass):
 
             # Add element fields based on groups
             for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.isin(piece.elements.tags,
-                                         group_elems).astype(np.uint8)
-                    dtype = field_vals.dtype.name
+                field_vals = np.isin(piece.elements.tags,
+                                     group_elems).astype(np.uint8)
+                dtype = field_vals.dtype.name
 
-                    xml.add_element("DataArray",
-                                    Name="_goup " + group_name,
-                                    NumberOfComponents=1,
-                                    type= VTK_TYPE_MAPPER[dtype],
-                                    format="ascii")
+                xml.add_element("DataArray",
+                                Name="_goup " + group_name,
+                                NumberOfComponents=1,
+                                type= VTK_TYPE_MAPPER[dtype],
+                                format="ascii")
 
-                    xml.add_array_data_to_element(field_vals)
-                    xml.finish_element()
+                xml.add_array_data_to_element(field_vals)
+                xml.finish_element()
+                    
+            # Add element tags as field
+            dtype = element_tags.dtype.name
+            xml.add_element("DataArray",
+                            Name="_element_tags",
+                            NumberOfComponents=1,
+                            type=VTK_TYPE_MAPPER[dtype],
+                            format="ascii")
+            xml.add_array_data_to_element(element_tags)
+            xml.finish_element()
 
             xml.finish_all_elements()
 
