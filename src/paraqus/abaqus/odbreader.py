@@ -266,7 +266,6 @@ class ODBReader():
                                      model_name=model_name,
                                      part_name=instance_name,
                                      step_name=step_name,
-                                     frame_tag=frame_index,
                                      frame_time=frame_time,
                                      source=ABAQUS)
 

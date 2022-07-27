@@ -47,9 +47,6 @@ class ParaqusModel(object):
         Name of the part instance. Default is 'PART NAME'.
     step_name : str, optional
         Name of the load step. Default is 'STEP NAME'.
-    frame_tag : int, optional
-        Tag of the current freame. Default is the absolute number of
-        defined paraqus models.
     frame_time : float, optional
         Current frame time. Default is the absolute number of defined
         paraqus models.
@@ -65,8 +62,6 @@ class ParaqusModel(object):
         Name of the part instance.
     step_name : str
         Name of the load step.
-    frame_tag : int
-        Tag of the frame.
     frame_time : float
         Current frame time of the model frame.
     source : ParaqusConstant
@@ -123,7 +118,6 @@ class ParaqusModel(object):
     >>>                      model_name="foo",
     >>>                      part_name="bar",
     >>>                      step_name="foobar",
-    >>>                      frame_tag=1,
     >>>                      frame_time=0.1)
     >>>
     >>> # Export model as VTK
@@ -146,7 +140,6 @@ class ParaqusModel(object):
         self.model_name = kwargs.pop("model_name", "MODEL NAME")
         self.part_name = kwargs.pop("part_name", "PART NAME")
         self.step_name = kwargs.pop("step_name", "STEP NAME")
-        self.frame_tag = kwargs.pop("frame_tag", ParaqusModel.model_counter)
         self.frame_time = kwargs.pop("frame_time", ParaqusModel.model_counter)
         self.source = kwargs.pop("source", USER)
 
@@ -173,8 +166,7 @@ class ParaqusModel(object):
         description = ("ParaqusModel\n"
                        + "  model_name: '" + self.model_name + "'\n"
                        + "  part_name:  '" + self.part_name + "'\n"
-                       + "  step_name:  '" + self.step_name + "'\n"
-                       + "  frame_tag:   " + str(self.frame_tag) + "\n")
+                       + "  step_name:  '" + self.step_name + "'\n")
 
         return description
 
@@ -362,7 +354,6 @@ class ParaqusModel(object):
                                 model_name=self.model_name,
                                 part_name=self.part_name,
                                 step_name=self.step_name,
-                                frame_tag=self.frame_tag,
                                 frame_time=self.frame_time,
                                 source=self.source)
 

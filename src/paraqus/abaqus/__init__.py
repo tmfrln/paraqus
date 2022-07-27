@@ -3,6 +3,5 @@
 Export of simulation results within Abaqus.
 
 """
-# make ODBobject and ODBReader importable without importing the subpackages
-from abaqustools import ODBObject
+# make ODBReader importable without importing the subpackages
 from odbreader import ODBReader
