@@ -36,7 +36,7 @@ Now, as done in other tutorials before, we can generate our models and export th
 Look at what you have done!
 ---------------------------
 
-The exported vtu-files are located in an automatically created folder ``vtk_output/vtu``. In addition, the folder ``vtk_output`` contains a file ``Compression Test.pvd`` that can be openend in *Paraview*.
+The exported vtu-files are located in an automatically created folder ``vtk_output/Compression Test/vtu``. In addition, the folder ``vtk_output`` contains a file ``Compression Test.pvd`` that can be openend in *Paraview*.
 
 The visualisation pipeline looks as follows:
 
