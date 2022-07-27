@@ -746,14 +746,7 @@ class NodeRepository(object):
         
         node_coords = np.asarray(node_coords)
         rows, columns = node_coords.shape
-
-        if columns == 3:
-            pass
-        elif columns == 2:
-            node_coords = np.hstack((node_coords, np.zeros((rows,1))))
-        elif columns == 1:
-            node_coords = np.hstack((node_coords, np.zeros((rows,2))))
-        else:
+        if columns not in (1, 2, 3):
             msg = "Invalid nodal coordinates."
             raise ValueError(msg)
 

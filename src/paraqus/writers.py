@@ -18,9 +18,9 @@ import numpy as np
 import struct
 import base64
 
-from constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER, BASE64, RAW,
-                       UINT64)
-from version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
+from paraqus.constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER, 
+                               BASE64, RAW, UINT64)
+from paraqus.version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
 
 
 # Mapper for data types used in vtk files
@@ -208,9 +208,6 @@ class WriterBaseClass(object):
 
         self.number_of_pieces = number_of_pieces
         self.output_dir = os.path.abspath(output_dir)
-        self._active_model = None
-        self._collection_items = {}
-        self._collection = False
         self._part_frame_counter = {}
         self.FORMAT = None
 
@@ -312,8 +309,6 @@ class WriterBaseClass(object):
 
         if self.number_of_pieces > 1:
             pvtu_file_path = self._write_pvtu_file(model, vtu_files)
-            # if self._collection:
-                # self._add_to_collection(model, pvtu_file_path)
             return pvtu_file_path
 
     def _write_pvtu_file(self, model, vtu_files):
@@ -482,11 +477,18 @@ class WriterBaseClass(object):
         nnp = len(piece.nodes.tags)
 
         # Extract some relevant arrays for the vtu output
-        node_coords = piece.nodes.coordinates
+        node_coords = piece.nodes.coordinates            
         tag_based_conn = piece.elements.connectivity
         element_types = piece.elements.types
         element_offsets = np.cumsum([len(c) for c in tag_based_conn],
                                     dtype=tag_based_conn[0].dtype)
+        
+        # Make 3d nodal coordinates
+        rows, columns = node_coords.shape
+        if columns == 2:
+            node_coords = np.hstack((node_coords, np.zeros((rows,1))))
+        elif columns == 1:
+            node_coords = np.hstack((node_coords, np.zeros((rows,2))))
 
         # Create connectivity expressed in terms of the node indices
         node_index_mapper = piece.nodes.index_mapper
@@ -1199,6 +1201,7 @@ class CollectionWriter(object):
     def __init__(self, writer, collection_name):
         self.writer = writer
         self.collection_name = collection_name
+        self._collection_items = None
 
     def __enter__(self):
         self._initialize_collection()
@@ -1245,6 +1248,7 @@ class CollectionWriter(object):
             return
 
         self._write_pvd_file()
+        self._collection_items = None
 
     def _add_to_collection(self, model, file_path):
         """
@@ -1265,8 +1269,10 @@ class CollectionWriter(object):
         None.
 
         """
-        # self._active_model = model
         abspath = path.abspath(file_path)
+        
+        if self._collection_items is None:
+            raise RuntimeError("Collection has not been initialized.")
 
         # Some input checking
         if path.splitext(file_path)[1] not in [".vtu", ".pvtu"]:
@@ -1597,7 +1603,6 @@ class XmlFactory(object):
             self._stream.write("\n")
 
         self._add_tabs = break_line
-
 
     def _write_ascii_array_data(self, array, break_line=True):
         """
