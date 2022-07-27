@@ -1194,11 +1194,11 @@ class AsciiWriter(WriterBaseClass):
                 
             # Add node tags as field
             dtype = node_tags.dtype.name
-            xml.add_and_finish_element("DataArray",
-                                       Name="_node_tags",
-                                       NumberOfComponents=1,
-                                       type=VTK_TYPE_MAPPER[dtype],
-                                       format="ascii")
+            xml.add_element("DataArray",
+                            Name="_node_tags",
+                            NumberOfComponents=1,
+                            type=VTK_TYPE_MAPPER[dtype],
+                            format="ascii")
             xml.add_array_data_to_element(node_tags)
             xml.finish_element()
 
