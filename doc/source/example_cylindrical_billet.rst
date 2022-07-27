@@ -30,4 +30,21 @@ This also means that at any point in time, there exists only one ``ParaqusModel`
 Look at what you have done!
 ---------------------------
 
-Here will follow some instructions on how to visualize the results in Paraview.
+The exported vtu-file `PART-1-1_0_0.vtu` is located in an automatically created folder ``vtk_output/Cylindrical-Billet/vtu`` and can be openend in *Paraview*.
+
+The visualisation pipeline looks as follows:
+
+- Apply deformation (*Warp By Vector* filter)
+- Rotate model around z-axis by -90° (*Transform* filter)
+- Reflect model at y-axis (*Reflect* filter)
+- Rotate model around y-axis by 90° (*Transform* filter)
+- Create a surface (*Extract Surface* filter)
+- Revolve around z-axis (*Rotational Extrusion* filter)
+- Extrapolate data from cells to point (*Cell Data to Point Data* filter)
+- Coloring according to the variable ``TEMP``
+
+Output looks like this:
+
+.. image:: /images/screenshot_cylindrical_billet.png
+  :width: 800
+  :alt: Screenshot of the deformed billet from Paraview
