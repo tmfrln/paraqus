@@ -744,7 +744,7 @@ class NodeRepository(object):
         self._index_mapper = dict(zip(node_tags, range(len(node_tags))))
         self._groups = {}
         
-        node_coords = np.asarray(node_coords)
+        node_coords = np.asarray(node_coords).reshape((len(self._tags), -1))
         rows, columns = node_coords.shape
         if columns not in (1, 2, 3):
             msg = "Invalid nodal coordinates."
