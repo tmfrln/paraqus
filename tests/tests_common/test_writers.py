@@ -162,12 +162,12 @@ class TestBinaryWriter(unittest.TestCase):
         if os.path.isdir(self.binary_folder):
             shutil.rmtree(self.binary_folder, ignore_errors=True)
         
-    def test_write_vtu_file(self):
-        """A binary .vtu file can be written based on a ParaqusModel."""
+    def test_write_vtu_file_base64(self):
+        """A base64 .vtu file can be written based on a ParaqusModel."""
         # Initialize writer
-        binary_writer = AsciiWriter(self.binary_folder, 
-                                    clear_output_dir=True, 
-                                    number_of_pieces=1)
+        binary_writer = BinaryWriter(self.binary_folder, 
+                                     clear_output_dir=True, 
+                                     number_of_pieces=1)
         
         # Export model
         binary_writer.write(self.model)
@@ -176,12 +176,48 @@ class TestBinaryWriter(unittest.TestCase):
         
         assert os.path.isfile(vtu_file)
         
-    def test_write_pvtu_file(self):
-        """Multiple binary .vtu files can be written based on a ParaqusModel."""
+    def test_write_pvtu_file_base64(self):
+        """Multiple base64 .vtu files can be written based on a ParaqusModel."""
         # Initialize writer
-        binary_writer = AsciiWriter(self.binary_folder, 
-                                    clear_output_dir=True, 
-                                    number_of_pieces=2)
+        binary_writer = BinaryWriter(self.binary_folder, 
+                                     clear_output_dir=True, 
+                                     number_of_pieces=2)
+        
+        # Export model
+        binary_writer.write(self.model)
+        vtu_file_1 = os.path.join(self.binary_folder, "2D_TEST_MODEL",
+                                  "vtu", "2D_TEST_PART_0_0.vtu")
+        vtu_file_2 = os.path.join(self.binary_folder, "2D_TEST_MODEL",
+                                  "vtu", "2D_TEST_PART_1_0.vtu")
+        pvtu_file = os.path.join(self.binary_folder, "2D_TEST_MODEL",
+                                 "vtu", "2D_TEST_PART_0.pvtu")
+        
+        assert os.path.isfile(vtu_file_1)
+        assert os.path.isfile(vtu_file_2)
+        assert os.path.isfile(pvtu_file)
+        
+    def test_write_vtu_file_raw(self):
+        """A raw .vtu file can be written based on a ParaqusModel."""
+        # Initialize writer
+        binary_writer = BinaryWriter(self.binary_folder, 
+                                     clear_output_dir=True, 
+                                     number_of_pieces=1,
+                                     encoding="raw")
+        
+        # Export model
+        binary_writer.write(self.model)
+        vtu_file = os.path.join(self.binary_folder, "2D_TEST_MODEL", 
+                                "vtu", "2D_TEST_PART_0_0.vtu")
+        
+        assert os.path.isfile(vtu_file)
+        
+    def test_write_pvtu_file_raw(self):
+        """Multiple raw .vtu files can be written based on a ParaqusModel."""
+        # Initialize writer
+        binary_writer = BinaryWriter(self.binary_folder, 
+                                     clear_output_dir=True, 
+                                     number_of_pieces=2,
+                                     encoding="raw")
         
         # Export model
         binary_writer.write(self.model)
@@ -241,9 +277,9 @@ class TestCollectionWriter(unittest.TestCase):
     def test_write_pvd_file(self):
         """A .pvd file can be written as a collection of .vtu files."""
         # Initialize writer
-        binary_writer = AsciiWriter(self.collection_folder, 
-                                    clear_output_dir=True, 
-                                    number_of_pieces=2)
+        binary_writer = BinaryWriter(self.collection_folder, 
+                                     clear_output_dir=True, 
+                                     number_of_pieces=2)
         
         # Make pvd file
         with CollectionWriter(binary_writer, "2D_TEST_MODEL") as writer:
