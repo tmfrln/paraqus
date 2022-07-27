@@ -257,6 +257,13 @@ class TestParaqusModelFields(unittest.TestCase):
                                                            [2],
                                                            [np.nan],
                                                            [5]])
+        
+    def test_error_sclara_field_multiple_components(self):
+        assert False
+        
+        
+    def test_vector_values_padded(self):
+        assert False
     
 
 class TestParaqusModelSplitting(unittest.TestCase):
