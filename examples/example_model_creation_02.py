@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Example 02 - advanced model creation
+Example 02 - field data
 
 This example demonstrates how to add field data to ParaqusModels.
 
@@ -9,7 +9,9 @@ import numpy as np
 
 from paraqus import ParaqusModel, AsciiWriter
 
-# we start by creating the same model as in example 1
+# =============================================================================
+#           we start by creating the same model as in example 1
+# =============================================================================
 
 # specify node tags and corresponding coordinates (2d in this case)
 node_tags = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -56,7 +58,9 @@ model = ParaqusModel(element_tags,
                      model_name=model_name,
                      part_name=part_name)
 
-# the part different from example 1 starts here :-)
+# =============================================================================
+#             the part different from example 1 starts here :-)
+# =============================================================================
 
 # we create a field called u representing the displacement of each node
 field_name = "u"
@@ -103,10 +107,7 @@ model.add_field(field_name,
 
 
 # create an instance of the AsciiWriter (i.e. the vtu files are human readable)
-# we specify the output directory and tell the writer to delete any old vtu
-# files within the directory
-writer = AsciiWriter(output_dir="vtu_examples",
-                     clear_output_dir=True)
+writer = AsciiWriter(output_dir="vtu_examples")
 
 # write the model to disk
 writer.write(model)
