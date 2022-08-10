@@ -30,8 +30,12 @@ import base64
 
 from paraqus.constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER,
                                BASE64, RAW, UINT64)
-from paraqus.version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
 
+
+# Version string for the vtk version that is supported
+VTK_VERSION_MAJOR = 1
+VTK_VERSION_MINOR = 0
+VTK_VERSION_STRING = str(VTK_VERSION_MAJOR) + "." + str(VTK_VERSION_MINOR)
 
 # Mapper for data types used in vtk files
 VTK_TYPE_MAPPER = {"int8":    "Int8",
