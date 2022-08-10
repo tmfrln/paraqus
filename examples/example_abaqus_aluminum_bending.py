@@ -1,15 +1,29 @@
 """
 Export selected results from the aluminum bending example output database.
 
+The model contains shell elements, including rigid elements and damage.
+This example demonstrates how paraqus deals with these challenges.
+
 Run this file in the Abaqus python interpreter. It is assumed that the
 output dabase 'threepointbending_alextrusion.odb' is located in the current
 work directory. Visit the paraqus documentation for a full description on how
 to run the example before using this script to export results.
 
+To create the output database for this example, execute the following
+commands in the examples folder:
+    abaqus fetch job=threepointbending_alextrusion.inp
+    abaqus job=threepointbending_alextrusion parallel=domain domains=4 cpus=4 mp_mode=threads interactive
+
+Caution: This might take a few minutes. If you machine has less than
+4 CPUs, adjust the domains and cpus parameters.
+
+The following pipeline can be used in Paraview to visualize the results:
+- Apply deformation (Warp By Vector filter)
+- Remove failed elements (Threshold filter based on STATUS variable > 0.5)
+- Alternative: Threshold based on STATUS < 0.5 and invert (keeps the rigid bodies)
+- Coloring according to the variable S_mides_absmax
 
 """
-# TODO: Add link to docs
-
 # # Uncomment this if you cannot add paraqus to the python path, and set
 # # the paraqus source directory for your system
 # import sys
@@ -19,45 +33,43 @@ to run the example before using this script to export results.
 from paraqus.abaqus import ODBReader
 from paraqus.writers import BinaryWriter
 
+# set some constants based on the odb that will be exported
 ODB_PATH = "threepointbending_alextrusion.odb" # path to the odb
 MODEL_NAME = "Aluminum-Bending" # can be chosen freely
 INSTANCE_NAMES = None # None will choose all instances
 STEP_NAME = "Step-1" # name of the step that will be exported
 FRAME_INDEX = -1 # export the last frame of the step
 
-# create the reader - this will not yet perform any "reading"
+# create the reader
 reader = ODBReader(odb_path=ODB_PATH,
                    model_name=MODEL_NAME,
                    instance_names=INSTANCE_NAMES,
                    )
 
+# for shell elements, output is stored at different section points,
+# representing different points along the element thickness. We can
+# either export the results for a specified point, or use a reduction to
+# obtain a field based on all section points.
+
+# Note that the rigid elements do not have stress output - paraqus will
+# fill the results for these elements with nans
+
 # specify which fields will be exported
 reader.add_field_export_request("S", # S = stress
                                 invariant="mises", # export the von Mises norm
-                                # for each shell element, there are multiple
-                                # field values at different section points,
-                                # i.e. points along the shell thickness
-                                # direction. Set this to 'mean' to average them,
-                                # or to 'absmax' to export the value with the
-                                # highest norm.
-                                section_point_reduction='absmax',
+                                section_point_reduction='absmax', # reduction: use maximum absolute value
                                 )
 
-reader.add_field_export_request("S", # S = stress
-                                invariant="mises", # export the von Mises norm
-                                # for each shell element, there are multiple
-                                # field values at different section points,
-                                # i.e. points along the shell thickness
-                                # direction. Set this to 'mean' to average them,
-                                # or to 'absmax' to export the value with the
-                                # highest norm.
+# same output, but only for one section point
+reader.add_field_export_request("S",
+                                invariant="mises",
                                 section_point_number=1,
                                 )
 
-reader.add_field_export_request("U")
-reader.add_field_export_request("STATUS")
+reader.add_field_export_request("U") # displacements
+reader.add_field_export_request("STATUS") # indicates element failure
 
-
+# add some element groups, representing different parts of the model
 reader.add_set_export_request(set_name="P1_DOUBLECHAMBEREXTRUSION",
                               set_type="elements",
                               instance_name="PART-1-1")

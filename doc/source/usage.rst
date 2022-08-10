@@ -11,14 +11,14 @@ The general workflow for the usage of paraqus always includes the following step
 - Optional: Create a ``CollectionWriter`` to connect vtk files based on multiple ``ParaqusModel`` instances, e.g. when they represent different time steps for the same model
 - Write the vtk files to disk
 
-Have a look at the pure python examples to learn how to create a ``ParaqusModel`` from scratch and how to write a vtu file based on it.
+Have a look at the pure python examples (located in the subdirectory ``examples`` of paraqus) to learn how to create a ``ParaqusModel`` from scratch and how to write a vtk file based on it.
 
 ============================     ========
 Example                          Contents
 ============================     ========
 example_model_creation_01.py     - Creating a simple model
                                  - Exporting the model as a vtu file
-----------------------------     --------
+
 example_model_creation_02.py     - Adding field data to a model
 
 example_model_creation_03.py     - Adding node and element groups to a model
@@ -34,13 +34,28 @@ example_model_creation_05.py     - Using a CollectionWriter to group multiple vt
 Usage with Abaqus
 -----------------
 
-When used to export models from Abaqus, the creation of the ``ParaqusModel`` instances is handled by the ``ODBReader`` class. The following steps do not change compared to the usage with pure python.
+When used to export models from Abaqus, the creation of the ``ParaqusModel`` instances is handled by the ``ODBReader`` class. The following steps do not change compared to the usage with pure python. The following examples demonstrate how to use paraqus with Abaqus, and need a working Abaqus installation to run. 
 
-.. toctree::
-   :maxdepth: 1
+In general, the Abaqus input files must be downloaded and an Abaqus analysis must be performed for each example. Detailed instructions can be found in the individual python files. It is recommended to run the Abaqus analysis for each example, and then look at the output database to get a feel for the model. Only then should you go through the python code and try to understand what each line does, being able to reference e.g. part names with the output database.
 
-   example_cylindrical_billet
-   example_aluminum_failure
-   example_rivet_forming
-   example_cylindrical_billet_adaptive
+At the end of each of the Abaqus tutorials, an exemplary pipeline for Paraview is described to visualize the results.
+
+
+=============================================     ========
+Example                                           Contents
+=============================================     ========
+example_abaqus_cylindrical_billet.py              - Using an ODBReader to export results from an Abaqus odb.
+                                                  - Exporting field outputs
+						  - Exporting node and element groups
+
+example_abaqus_cylindrical_billet_adaptive.py     - Using a CollectionWriter to combine exports from multiple output databases
+                                                  - Specifying time offsets to store correct time values for each result
+
+example_abaqus_aluminum_bending.py                - Export of results for shell elements
+                                                  - Fields that are not defined at all nodes/elements
+
+example_abaqus_rivet_forming     		  - CEL elements
+                                                  - Large models, parallel vtk files
+
+============================                      ========
 
