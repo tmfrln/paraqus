@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan and Stollberg
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Abaqus element library for paraqus.
 
@@ -43,20 +53,20 @@ ABQ_ELEMENT_LIBRARY = {
     # Diffusive heat transfer elements
     "DC1D2": 3,
     "DC1D3": 4,
-    
+
     # Forced convection heat transfer elements
     "DCC1D2": 3,
     "DCC1D2D": 3,
-    
+
     # Coupled thermal-electrical elements
     "DC1D2E": 3,
     "DC1D3E": 3,
-    
+
     # Acoustic elements
     "AC1D2": 3,
     "AC1D3": 3,
-        
-   
+
+
 #%% 2d solid elements
 # -----------------------------------------------------------------------------
 
@@ -77,7 +87,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CPE8H": 23,
     "CPE8R": 23,
     "CPE8RH": 23,
-    
+
     # Plane stress elements
     "CPS3": 5,
     "CPS4": 9,
@@ -87,7 +97,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CPS6M": 22,
     "CPS8": 23,
     "CPS8R": 23,
-    
+
     # Generalized plane strain elements
     "CPEG3": 5,
     "CPEG3H": 5,
@@ -105,7 +115,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CPEG8H": 23,
     "CPEG8R": 23,
     "CPEG8RH": 23,
-    
+
     # Coupled temperature-displacement plane strain elements
     "CPE3T": 5,
     "CPE4T": 9,
@@ -118,7 +128,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CPE8HT": 23,
     "CPE8RT": 23,
     "CPE8RHT": 23,
-    
+
     # Coupled temperature-displacement plane stress elements
     "CPS3T": 5,
     "CPS4T": 9,
@@ -126,7 +136,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CPS6MT": 22,
     "CPS8T": 23,
     "CPS8RT": 23,
-    
+
     # Coupled temperature-displacement generalized plane strain elements
     "CPEG3T": 5,
     "CPEG3HT": 5,
@@ -139,23 +149,23 @@ ABQ_ELEMENT_LIBRARY = {
     "CPEG8T": 23,
     "CPEG8HT": 23,
     "CPEG8RHT": 23,
-    
+
     # Diffusive heat transfer or mass diffusion elements
     "DC2D3": 5,
     "DC2D4": 9,
     "DC2D6": 22,
     "DC2D8": 23,
-    
+
     # Forced convection/diffusion elements
     "DCC2D4": 5,
     "DCC2D4D": 5,
-    
+
     # Coupled thermal-electrical elements
     "DC2D3E": 5,
     "DC2D4E": 9,
     "DC2D6E": 22,
     "DC2D8E": 23,
-    
+
     # Pore pressure plane strain elements
     "CPE4P": 9,
     "CPE4PH": 9,
@@ -167,34 +177,34 @@ ABQ_ELEMENT_LIBRARY = {
     "CPE8PH": 23,
     "CPE8RP": 23,
     "CPE8RPH": 23,
-    
+
     # Coupled temperature–pore pressure plane strain elements
     "CPE4PT": 9,
     "CPE4PHT": 9,
     "CPE4RPT": 9,
     "CPE4RPHT": 9,
-    
+
     # Acoustic elements
     "AC2D3": 5,
     "AC2D4": 9,
     "AC2D4R": 9,
     "AC2D6": 22,
     "AC2D8": 23,
-    
+
     # Piezoelectric plane strain elements
     "CPE3E": 5,
     "CPE4E": 9,
     "CPE6E": 22,
     "CPE8E": 23,
     "CPE8RE": 23,
-    
+
     # Piezoelectric plane stress elements
     "CPS3E": 5,
     "CPS4E": 9,
     "CPS6E": 22,
     "CPS8E": 23,
     "CPS8RE": 23,
-    
+
     # Electromagnetic elements
     "EMC2D3": 5,
     "EMC2D4": 9,
@@ -202,7 +212,7 @@ ABQ_ELEMENT_LIBRARY = {
 
 #%% 3d solid elements
 # -----------------------------------------------------------------------------
-    
+
     # Stress/displacement elements
     "C3D4": 10,
     "C3D4H": 10,
@@ -230,7 +240,7 @@ ABQ_ELEMENT_LIBRARY = {
     "C3D20R": 25,
     "C3D20RH": 25,
     "CSS8": 12,
-    
+
     # Coupled temperature-displacement elements
     "C3D4T": 10,
     "C3D6T": 13,
@@ -247,7 +257,7 @@ ABQ_ELEMENT_LIBRARY = {
     "C3D20HT": 25,
     "C3D20RT": 25,
     "C3D20RHT": 25,
-    
+
     # Coupled thermal-electrical-structural elements
     "Q3D4": 10,
     "Q3D6": 13,
@@ -261,7 +271,7 @@ ABQ_ELEMENT_LIBRARY = {
     "Q3D20H": 25,
     "Q3D20R": 25,
     "Q3D20RH": 25,
-    
+
     # Diffusive heat transfer or mass diffusion elements
     "DC3D4": 10,
     "DC3D5": 14,
@@ -271,11 +281,11 @@ ABQ_ELEMENT_LIBRARY = {
     "DC3D10": 24,
     "DC3D15": 26,
     "DC3D20": 25,
-    
+
     # Forced convection/diffusion elements
     "DCC3D8": 12,
     "DCC3D8D": 12,
-    
+
     # Coupled thermal-electrical elements
     "DC3D4E": 10,
     "DC3D6E": 13,
@@ -283,7 +293,7 @@ ABQ_ELEMENT_LIBRARY = {
     "DC3D10E": 24,
     "DC3D15E": 26,
     "DC3D20E": 25,
-    
+
     # Pore pressure elements
     "C3D4P": 10,
     "C3D4PH": 10,
@@ -301,7 +311,7 @@ ABQ_ELEMENT_LIBRARY = {
     "C3D20PH": 25,
     "C3D20RP": 25,
     "C3D20RPH": 25,
-    
+
     # Coupled temperature–pore pressure elements
     "C3D4PT": 10,
     "C3D4PHT": 10,
@@ -313,7 +323,7 @@ ABQ_ELEMENT_LIBRARY = {
     "C3D10MPT": 24,
     "C3D10PT": 24,
     "C3D10PHT": 24,
-    
+
     # Acoustic elements
     "AC3D4": 10,
     "AC3D5": 14,
@@ -323,12 +333,12 @@ ABQ_ELEMENT_LIBRARY = {
     "AC3D10": 24,
     "AC3D15": 26,
     "AC3D20": 25,
-    
+
     # Poroelastic acoustic elements
     "C3D4A": 10,
     "C3D6A": 13,
     "C3D8A": 12,
-    
+
     # Piezoelectric elements
     "C3D4E": 10,
     "C3D6E": 13,
@@ -337,20 +347,20 @@ ABQ_ELEMENT_LIBRARY = {
     "C3D15E": 26,
     "C3D20E": 25,
     "C3D20RE": 25,
-    
+
     # Electromagnetic elements
     "EMC3D4": 10,
     "EMC3D6": 13,
     "EMC3D8": 12,
-    
+
     # Coupled Eulerian Lagrangian elements - mechanical only
     "EC3D8R": 12,
-    
+
     # Coupled Eulerian Lagrangian elements - thermomechanical
     "EC3D8RT": 12,
 
 #%% Axisymmetric solid elements
-    
+
     # Stress/displacement elements without twist
     "CAX3": 5,
     "CAX3H": 5,
@@ -368,7 +378,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CAX8H": 23,
     "CAX8R": 23,
     "CAX8RH": 23,
-    
+
     # Stress/displacement elements with twist
     "CGAX3": 5,
     "CGAX3H": 5,
@@ -384,25 +394,25 @@ ABQ_ELEMENT_LIBRARY = {
     "CGAX8H": 23,
     "CGAX8R": 23,
     "CGAX8RH": 23,
-    
+
     # Diffusive heat transfer or mass diffusion elements
     "DCAX3": 5,
     "DCAX4": 9,
     "DCAX6": 22,
     "DCAX8": 23,
-    
+
     # Forced convection/diffusion elements
     "DCCAX2": 3,
     "DCCAX2D": 3,
     "DCCAX4": 9,
     "DCCAX4D": 9,
-    
+
     # Coupled thermal-electrical elements
     "DCAX3E": 5,
     "DCAX4E": 9,
     "DCAX6E": 22,
     "DCAX8E": 23,
-    
+
     # Coupled temperature-displacement elements without twist
     "CAX3T": 5,
     "CAX4T": 9,
@@ -415,7 +425,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CAX8HT": 23,
     "CAX8RT": 23,
     "CAX8RHT": 23,
-    
+
     # Coupled temperature-displacement elements with twist
     "CGAX3T": 5,
     "CGAX3HT": 5,
@@ -429,7 +439,7 @@ ABQ_ELEMENT_LIBRARY = {
     "CGAX8HT": 23,
     "CGAX8RT": 23,
     "CGAX8RHT": 23,
-    
+
     # Pore pressure elements
     "CAX4P": 9,
     "CAX4PH": 9,
@@ -441,19 +451,19 @@ ABQ_ELEMENT_LIBRARY = {
     "CAX8PH": 23,
     "CAX8RP": 23,
     "CAX8RPH": 23,
-    
+
     # Coupled temperature–pore pressure elements
     "CAX4PT": 9,
     "CAX4RPT": 9,
     "CAX4RPHT": 9,
-    
+
     # Acoustic elements
     "ACAX3": 5,
     "ACAX4R": 9,
     "ACAX4": 9,
     "ACAX6": 22,
     "ACAX8": 23,
-    
+
     # Piezoelectric elements
     "CAX3E": 5,
     "CAX4E": 9,
@@ -479,25 +489,25 @@ ABQ_ELEMENT_LIBRARY = {
     "T2D2H": 3,
     "T2D3": 4,
     "T2D3H": 4,
-    
+
     # 3D stress/displacement truss elements
     "T3D2": 3,
     "T3D2H": 3,
     "T3D3": 4,
     "T3D3H": 4,
-    
+
     # 2D coupled temperature-displacement truss elements
     "T2D2T": 3,
     "T2D3T": 4,
-    
+
     # 3D coupled temperature-displacement truss elements
     "T3D2T": 3,
     "T3D3T": 4,
-    
+
     # 2D piezoelectric truss elements
     "T2D2E": 3,
     "T2D3E": 4,
-    
+
     # 3D piezoelectric truss elements
     "T3D2E": 3,
     "T3D3E": 4,
@@ -505,7 +515,7 @@ ABQ_ELEMENT_LIBRARY = {
 
 #%% Beam elements
 # -----------------------------------------------------------------------------
-    
+
     # Beams in a plane
     "B21": 3,
     "B21H": 3,
@@ -517,7 +527,7 @@ ABQ_ELEMENT_LIBRARY = {
     "PIPE21H": 3,
     "PIPE22": 4,
     "PIPE22H": 4,
-    
+
     # Beams in space
     "B31": 3,
     "B31H": 3,
@@ -529,7 +539,7 @@ ABQ_ELEMENT_LIBRARY = {
     "PIPE31H": 3,
     "PIPE32": 4,
     "PIPE32H": 4,
-    
+
     # Open-section beams in space
     "B31OS": 3,
     "B31OSH": 3,
@@ -539,17 +549,17 @@ ABQ_ELEMENT_LIBRARY = {
 
 #%% Frame elements
 # -----------------------------------------------------------------------------
-    
+
     # Frame in a plane
     "FRAME2D": 3,
-    
+
     # Frame in space
     "FRAME3D": 4,
 
 
 #%% Elbow elements
 # -----------------------------------------------------------------------------
-    
+
     "ELBOW31": 3,
     "ELBOW32": 4,
     "ELBOW31B": 3,
@@ -558,13 +568,13 @@ ABQ_ELEMENT_LIBRARY = {
 
 #%% Shear panel elements
 # -----------------------------------------------------------------------------
-    
+
     "SHEAR4": 12,
 
 
 #%% 3d conventional shell elements
 # -----------------------------------------------------------------------------
-    
+
     # Stress/displacement elements
     "STRI3": 5,
     "S3": 5,
@@ -579,13 +589,13 @@ ABQ_ELEMENT_LIBRARY = {
     "S8R": 23,
     "S8R5": 23,
     "S9R5": 28,
-    
+
     # Heat transfer elements
     "DS3": 5,
     "DS4": 9,
     "DS6": 22,
     "DS8": 23,
-    
+
     # Coupled temperature-displacement elements
     "S3T": 5,
     "S3RT": 5,
@@ -596,11 +606,11 @@ ABQ_ELEMENT_LIBRARY = {
 
 #%% Continuum shell elements
 # -----------------------------------------------------------------------------
-    
+
     # Stress/displacement elements
     "SC6R": 13,
     "SC8R": 12,
-    
+
     # Coupled temperature-displacement elements
     "SC6RT": 13,
     "SC8RT": 12,
@@ -608,11 +618,11 @@ ABQ_ELEMENT_LIBRARY = {
 
 #%% Axisymmetric shell elements
 # -----------------------------------------------------------------------------
-    
+
     # Stress/displacement elements
     "SAX1": 3,
     "SAX2": 4,
-    
+
     # Heat transfer elements
     "DSAX1": 3,
     "DSAX2": 4,
@@ -629,12 +639,12 @@ ABQ_ELEMENT_LIBRARY = {
 
 #%% Rigid elements
 # -----------------------------------------------------------------------------
-    
+
     # 2D rigid elements
     "R2D2": 3,
     "RAX2": 3,
     "RB2D2": 3,
-    
+
     # 3D rigid elements
     "R3D3": 5,
     "R3D4": 9,

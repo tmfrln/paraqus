@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan and Stollberg
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 This module containts all classes that contribute to paraqus models,
 i.e. not just the model class itself but also repositories for nodes,
@@ -48,8 +58,7 @@ class ParaqusModel(object):
     step_name : str, optional
         Name of the load step. Default is 'STEP NAME'.
     frame_time : float, optional
-        Current frame time. Default is the absolute number of defined
-        paraqus models.
+        Current frame time. Default is 0.0.
     source : ParaqusConstant, optional
         This is just for informational purpose and defines the source
         of the model, e.g. ABAQUS. Default is USER.
@@ -89,7 +98,7 @@ class ParaqusModel(object):
     split_model
         Split the model into a given number of parts.
     get_fields_by_type
-        Extract all stored fields of a specific type, e.g. all scalar 
+        Extract all stored fields of a specific type, e.g. all scalar
         element fields.
     get_node_field
         Extract a node field by its name.
@@ -125,7 +134,7 @@ class ParaqusModel(object):
     >>> writer.write(model)
 
     """
-    
+
     def __init__(self,
                  element_tags,
                  connectivity,
@@ -195,7 +204,7 @@ class ParaqusModel(object):
 
         """
         field_values = np.asarray(field_values, dtype=float)
-        
+
         # Create field object
         # An error will be thrown in case of invalid choices
         # of field_position and field_type
@@ -290,8 +299,8 @@ class ParaqusModel(object):
         """
         Split the model into number_of_pieces parts.
 
-        The split is performed based on element numbers, so that the 
-        resulting model pieces are not necessarily continuous (i.e. they 
+        The split is performed based on element numbers, so that the
+        resulting model pieces are not necessarily continuous (i.e. they
         might have holes etc).
 
         Parameters
@@ -309,16 +318,16 @@ class ParaqusModel(object):
         # Split list of element tags regarding the number of pieces
         element_tags_per_piece = np.array_split(self.elements.tags,
                                                 number_of_pieces)
-        
+
         for piece_element_tags in element_tags_per_piece:
             # Create the piece
             if number_of_pieces > 1:
                 piece = self._extract_submodel_by_elements(piece_element_tags)
             else:
                 piece = self
-                
-            yield piece             
-                
+
+            yield piece
+
     def _extract_submodel_by_elements(self, element_tags):
         """
         Extract a submodel based on element tags.
@@ -537,7 +546,7 @@ class ElementRepository(object):
     @property
     def types(self):
         return self._types
-    
+
     @property
     def groups(self):
         return self._groups
@@ -729,7 +738,7 @@ class NodeRepository(object):
         self._tags = np.asarray(node_tags).reshape(-1)
         self._index_mapper = dict(zip(node_tags, range(len(node_tags))))
         self._groups = {}
-        
+
         node_coords = np.asarray(node_coords).reshape((len(self._tags), -1))
         rows, columns = node_coords.shape
         if columns not in (1, 2, 3):
@@ -862,8 +871,8 @@ class FieldRepositoryBaseClass(object):
 
     def __init__(self):
         self._fields = {}
-       
-        
+
+
     # Properties
     @property
     def fields(self):
@@ -1128,13 +1137,13 @@ class Field(object):
                  field_type):
 
         self.field_name = field_name
-        
+
         # Add position
         if field_position not in (NODES, ELEMENTS):
             msg = "Invalid field position: {}".format(field_position)
             raise Exception(msg)
         self._field_position = getattr(constants, str(field_position).upper())
-        
+
         # Add type
         if field_type not in (SCALAR, VECTOR, TENSOR):
             msg = "Invalid field type: {}".format(field_type)
@@ -1146,7 +1155,7 @@ class Field(object):
             self._field_values = np.asarray(field_values).reshape((-1,1))
         else:
             self._field_values = np.asarray(field_values)
-        
+
 
     # Properties
     @property

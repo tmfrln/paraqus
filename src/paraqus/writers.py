@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan and Stollberg
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 This module keeps all writers for the different output format, e.g.
 ascii and binary. Related tools like VtkFileManager should also be
@@ -18,7 +28,7 @@ import numpy as np
 import struct
 import base64
 
-from paraqus.constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER, 
+from paraqus.constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER,
                                BASE64, RAW, UINT64)
 from paraqus.version import PARAQUS_VERSION_STRING, VTK_VERSION_STRING
 
@@ -292,10 +302,10 @@ class WriterBaseClass(object):
         """
         # Create pieces and write them to file
         vtu_files = []
-        
+
         # Generator for submodels
         pieces = model.split_model(self.number_of_pieces)
-        
+
         # Loop over the submodels
         for piece_tag, piece in enumerate(pieces):
 
@@ -381,7 +391,7 @@ class WriterBaseClass(object):
                                            type=VTK_TYPE_MAPPER[dtype],
                                            Name="_group " + group_name,
                                            NumberOfComponents=1)
-                
+
             dtype = model.nodes.tags.dtype.name
             xml.add_and_finish_element("PDataArray",
                                        type=VTK_TYPE_MAPPER[dtype],
@@ -408,7 +418,7 @@ class WriterBaseClass(object):
                                            type=VTK_TYPE_MAPPER[dtype],
                                            Name="_group " + group_name,
                                            NumberOfComponents=1)
-                
+
             dtype = model.elements.tags.dtype.name
             xml.add_and_finish_element("PDataArray",
                                        type=VTK_TYPE_MAPPER[dtype],
@@ -495,12 +505,12 @@ class WriterBaseClass(object):
         # Extract some relevant arrays for the vtu output
         element_tags = piece.elements.tags
         node_tags = piece.nodes.tags
-        node_coords = piece.nodes.coordinates            
+        node_coords = piece.nodes.coordinates
         tag_based_conn = piece.elements.connectivity
         element_types = piece.elements.types
         element_offsets = np.cumsum([len(c) for c in tag_based_conn],
                                     dtype=tag_based_conn[0].dtype)
-        
+
         # Make 3d nodal coordinates
         rows, columns = node_coords.shape
         if columns == 2:
@@ -515,7 +525,7 @@ class WriterBaseClass(object):
             connectivity.append(np.array([node_index_mapper[i] for i in conn],
                                     dtype=tag_based_conn[0].dtype))
 
-        return (file_path, nel, nnp, element_tags, node_tags, node_coords, 
+        return (file_path, nel, nnp, element_tags, node_tags, node_coords,
                 element_types, element_offsets, connectivity)
 
 
@@ -765,7 +775,7 @@ class BinaryWriter(WriterBaseClass):
 
                     xml.add_array_data_to_element(field_vals)
                     xml.finish_element()
-                    
+
                 # Add node tags as field
                 dtype = node_tags.dtype.name
                 xml.add_element("DataArray",
@@ -775,7 +785,7 @@ class BinaryWriter(WriterBaseClass):
                                 format="binary")
                 xml.add_array_data_to_element(node_tags)
                 xml.finish_element()
-                
+
                 xml.finish_element()  # Finish node fields
 
                 # Add element fields
@@ -807,7 +817,7 @@ class BinaryWriter(WriterBaseClass):
 
                     xml.add_array_data_to_element(field_vals)
                     xml.finish_element()
-                    
+
                 # Add element tags as field
                 dtype = element_tags.dtype.name
                 xml.add_element("DataArray",
@@ -920,7 +930,7 @@ class BinaryWriter(WriterBaseClass):
                                                format="appended",
                                                offset=byte_offset)
                     byte_offset = update_byte_offset(field_vals)
-                    
+
                 # Add node tags as field
                 dtype = node_tags.dtype.name
                 xml.add_and_finish_element("DataArray",
@@ -961,7 +971,7 @@ class BinaryWriter(WriterBaseClass):
                                                format="appended",
                                                offset=byte_offset)
                     byte_offset = update_byte_offset(field_vals)
-                    
+
                 # Add element tags as field
                 dtype = element_tags.dtype.name
                 xml.add_and_finish_element("DataArray",
@@ -994,7 +1004,7 @@ class BinaryWriter(WriterBaseClass):
                     field_vals = np.isin(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
-                    
+
                 # Append node tags field
                 xml.add_array_data_to_element(node_tags, break_line=False)
 
@@ -1009,7 +1019,7 @@ class BinaryWriter(WriterBaseClass):
                     field_vals = np.isin(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
-                    
+
                 # Add element tags field
                 xml.add_array_data_to_element(element_tags)
 
@@ -1191,7 +1201,7 @@ class AsciiWriter(WriterBaseClass):
 
                 xml.add_array_data_to_element(field_vals)
                 xml.finish_element()
-                
+
             # Add node tags as field
             dtype = node_tags.dtype.name
             xml.add_element("DataArray",
@@ -1235,7 +1245,7 @@ class AsciiWriter(WriterBaseClass):
 
                 xml.add_array_data_to_element(field_vals)
                 xml.finish_element()
-                    
+
             # Add element tags as field
             dtype = element_tags.dtype.name
             xml.add_element("DataArray",
@@ -1271,7 +1281,7 @@ class CollectionWriter(object):
         The writer that is used the generate .pvtu and .vtu files.
     collection_name : str
         The name of the collection.
-        
+
     Methods
     -------
     write
@@ -1359,7 +1369,7 @@ class CollectionWriter(object):
 
         """
         abspath = path.abspath(file_path)
-        
+
         if self._collection_items is None:
             raise RuntimeError("Collection has not been initialized.")
 

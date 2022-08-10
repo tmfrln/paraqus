@@ -1,3 +1,13 @@
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan and Stollberg
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 The main purpose of this file is to implement a model class that is
 instantiated based on an abaqus odb.
@@ -48,7 +58,7 @@ class ODBReader():
     odb_path : str
         Path to the underlying odb.
     model_name : str
-        Name of the model returned by the reader. 
+        Name of the model returned by the reader.
     field_export_requests : list
         Contains one request per field that will be exported to vtk format.
     group_export_requests : list
@@ -72,7 +82,7 @@ class ODBReader():
         Default: None.
     time_offset : float, optional
         Assume the simulation started at this time when exporting. Useful to
-        create vtk files that are ordered in time from multiple odbs. 
+        create vtk files that are ordered in time from multiple odbs.
         Default: 0.0
 
     Methods
@@ -148,8 +158,8 @@ class ODBReader():
         request = GroupExportRequest(set_name, set_type, instance_name)
 
         self.group_export_requests.append(request)
-        
-    
+
+
     def add_surface_export_request(self,
                                    surface_name,
                                    surface_type,
@@ -179,7 +189,7 @@ class ODBReader():
                                      surface_set=True)
 
         self.group_export_requests.append(request)
-        
+
 
     def get_frame_time(self, step_name, frame_index):
         """
@@ -193,7 +203,7 @@ class ODBReader():
             Name of the step in Abaqus.
         frame_index : int
             Index of the frame in the step in Abaqus.
-            
+
         Returns
         -------
         frame_time : float
@@ -274,7 +284,7 @@ class ODBReader():
                     fo = self._get_field_output(request,
                                                 frame,
                                                 instance=instance)
-                    
+
                     if fo is None:
                         # skip empty outputs when exporting
                         msg = ("Field output {} ".format(request.field_name)
@@ -303,7 +313,7 @@ class ODBReader():
                     # do nothing if the request is not for this instance
                     if group_tags is None:
                         continue
-                    
+
                     # add the actual groups to the model
                     if request.group_type == NODES:
                         model.nodes.add_group(request.export_name,
@@ -321,7 +331,7 @@ class ODBReader():
     def _get_group_tags(self, request, odb, instance):
         """
         Return the node/element tags for a node/element set.
-        
+
         Parameters
         ----------
         request : GroupExportRequest
@@ -330,13 +340,13 @@ class ODBReader():
             The open odb.
         instance : Abaqus part instance object
             The part instance that is currently exported.
-            
+
         Returns
         -------
         tags : ArrayLike or None
             Node/element numbers in the surface or set. If the export request
             is for another instance, None is returned.
-        
+
         """
         # we will read the attributes based on the group type
         if request.group_type == NODES:
@@ -345,11 +355,11 @@ class ODBReader():
         elif request.group_type == ELEMENTS:
             group_type = "elements"
             set_type = "elementSets"
-        
-        
+
+
         if request.instance_name is None:
             # assembly-level set/surface
-            
+
             # extract an odbSet representing the surface or set
             if request.surface_set:
                 # the surface returns as an odbSet directly
@@ -358,7 +368,7 @@ class ODBReader():
                 # for node/element sets, we need to take one more step
                 set_repository = odb.rootAssembly.__getattribute__(set_type)
                 set_object = set_repository[request.group_name]
-            
+
             # for assembly-level sets or surfaces, the nodes/elements are
             # stored per instance, so we extract the index for the current
             # instance
@@ -367,45 +377,45 @@ class ODBReader():
             except ValueError:
                 # instance has no nodes/elements in the set
                 return np.array([], dtype=int)
-            
+
             # extract the nodes/elements as an odbMeshNodeArray or
             # odbMeshElementArray. This array has only nodes/elements of
             # the instance under consideration
             array_object = set_object.__getattribute__(group_type)[index]
-            
+
             labels = np.array([o.label for o in array_object])
-            
+
             # sort the array
             labels.sort()
-            
+
             # remove duplicates (these do actually occur)
             return np.unique(labels)
-            
+
         elif request.instance_name == instance.name:
             # instance-level set/surface
-            
+
             # extract an odbSet representing the surface or set
             if request.surface_set:
                 # the surface returns as an odbSet directly
-                set_object = instance.surfaces[request.group_name] 
+                set_object = instance.surfaces[request.group_name]
             else:
                 # for node/element sets, we need to take one more step
                 set_repository = instance.__getattribute__(set_type)
                 set_object = set_repository[request.group_name]
-            
+
             # extract the nodes/elements as an odbMeshNodeArray or
             # odbMeshElementArray
-            array_object = set_object.__getattribute__(group_type) 
-                        
+            array_object = set_object.__getattribute__(group_type)
+
             # return an array of node or element labels
             labels = np.array([o.label for o in array_object])
-            
+
             # sort the array
             labels.sort()
-            
+
             # remove duplicates (these do actually occur)
             return np.unique(labels)
-    
+
         else:
             # The request was not for this instance
             return None
@@ -442,11 +452,11 @@ class ODBReader():
                 field_out = field_out.getSubset(position=abaqusConstants.CENTROID)
             else:
                 raise ValueError("Position not implemented.")
-                
+
         if len(field_out.values) == 0:
             # no data for the field at this position
             return None
-                
+
         return field_out
 
 
@@ -478,7 +488,7 @@ class ODBReader():
 
         """
         blocks = field_out.bulkDataBlocks
-        
+
         position = blocks[0].position
 
         assert all([b.position == position for b in blocks]), \
@@ -496,7 +506,7 @@ class ODBReader():
         # NODAL, CENTROID, WHOLE_ELEMENT
         if position == abaqusConstants.NODAL:
             paraqus_position = NODES
-            
+
             (labels,
              data,
              field_type,
@@ -507,7 +517,7 @@ class ODBReader():
         elif position in (abaqusConstants.CENTROID,
                           abaqusConstants.WHOLE_ELEMENT):
             paraqus_position = ELEMENTS
-            
+
             (labels,
              data,
              field_type,
@@ -516,7 +526,7 @@ class ODBReader():
                                                          instance_mesh)
         else:
             raise ValueError("Position not implemented.")
-            
+
         # change 5th and 6th component to be compatible to vtk element order
         if field_type == TENSOR and data.shape[1] == 6:
             data = data[:,[0,1,2,3,5,4]]
@@ -574,7 +584,7 @@ class ODBReader():
                 section_points[ib] = block.sectionPoint.number
 
         # mapping section point number -> index in data array
-        section_point_indices = {n: i 
+        section_point_indices = {n: i
              for (i,n) in enumerate(np.unique(section_points))}
 
         # assume these is only one data value for each (element, sectionPoint)
@@ -583,20 +593,20 @@ class ODBReader():
 
         # initialize data as NaNs
         data = np.ones((nel, nsp, ncomponents), dtype=dtype)*np.nan
-        
+
         # create a description for the field
         description_str = request.field_name
 
         if request.invariant is not None:
             description_str += "_{}".format(request.invariant)
-        
+
         if request.section_point_number is not None:
-            description_str += "_sp{}".format(request.section_point_number)  
+            description_str += "_sp{}".format(request.section_point_number)
         elif nsp > 1:
-            # triggers only if there is no explicit specification of the 
+            # triggers only if there is no explicit specification of the
             # section point
             description_str += "_{}".format(request.section_point_reduction)
-            
+
         # extract the data by looping over the data blocks
         for block, sp_number in zip(blocks, section_points):
             sp_index = section_point_indices[sp_number]
@@ -803,7 +813,7 @@ class InstanceMesh():
 class FieldExportRequest():
     """
     Specify a field output that will be exported.
-    
+
     Attributes
     ----------
     See parameters.
@@ -815,17 +825,17 @@ class FieldExportRequest():
     field_position : str, optional
         What type of field. valid values: 'nodes' or 'elements'.
     invariant : str, optional
-        Invariant of the field, if applicable. E.g. 'mises', 'magnitude'.        
+        Invariant of the field, if applicable. E.g. 'mises', 'magnitude'.
     section_point_number : int, optional
         Section point for shell elements. If no section point number is
-        specified, the section point values are reduced according to 
+        specified, the section point values are reduced according to
         `section_point_reduction`.
     section_point_reduction : str
         How to reduce values of multiple section points for the same node or
         element. Valid values are 'mean' or 'absmax'.
-    
+
     """
-    
+
     def __init__(self,
                  field_name,
                  field_position=None,
@@ -847,11 +857,11 @@ class FieldExportRequest():
 class GroupExportRequest():
     """
     Specify a group of nodes or elements that will be written to the vtk file.
-    
+
     Attributes
     ----------
     See parameters
-    
+
     Parameters
     ----------
     group_name : str
@@ -865,9 +875,9 @@ class GroupExportRequest():
     surface_set : bool, optional
         If `False`, export a set. If `True`, export nodes/elements of a
         surface.
-        
+
     """
-    
+
     def __init__(self,
                  group_name,
                  group_type,
@@ -888,10 +898,10 @@ class GroupExportRequest():
         export_name = ""
         if self.surface_set:
             export_name += "surface."
-                        
+
         if self.instance_name is not None:
             export_name += self.instance_name + "."
-            
+
         export_name += self.group_name
-        
+
         return export_name
