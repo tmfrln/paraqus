@@ -88,10 +88,16 @@ class ODBReader():
     Methods
     -------
     add_field_export_request
+        Request the export of a certain field output to the ParaqusModel.
     add_set_export_request
+        Request the export of a node/element group to the ParaqusModel.
     add_surface_export_request
-    get_end_time
+        Request the export of a node/element surface to the ParaqusModel.
+    get_frame_time
+        Returns the time value of the last frame in the odb.
     read_instances
+        Loop over the part instances in a frame and return a ParaqusModel
+        instance for each of them.
 
     """
 

@@ -205,12 +205,6 @@ class WriterBaseClass(object):
         > 1, also a .pvtu file is created. In case a collection has
         been initialized, the exported files will be added to this
         collection.
-    initialize_collection
-        Initialize a collection of multiple paraqus models, e.g. in
-        case of multiple parts or time steps.
-    finalize_collection
-        Export the created collection of .vtu or .pvtu files as a .pvd
-        file.
 
     """
     __metaclass__ = ABCMeta
@@ -577,12 +571,6 @@ class BinaryWriter(WriterBaseClass):
         > 1, also a .pvtu file is created. In case a collection has
         been initialized, the exported files will be added to this
         collection.
-    initialize_collection
-        Initialize a collection of multiple paraqus models, e.g. in
-        case of multiple parts or time steps.
-    finalize_collection
-        Export the created collection of .vtu or .pvtu files as a .pvd
-        file.
 
     Example
     -------
@@ -1065,12 +1053,6 @@ class AsciiWriter(WriterBaseClass):
         > 1, also a .pvtu file is created. In case a collection has
         been initialized, the exported files will be added to this
         collection.
-    initialize_collection
-        Initialize a collection of multiple paraqus models, e.g. in
-        case of multiple parts or time steps.
-    finalize_collection
-        Export the created collection of .vtu or .pvtu files as a .pvd
-        file.
 
     Example
     -------
@@ -1314,7 +1296,19 @@ class CollectionWriter(object):
         self._finalize_collection()
 
     def write(self, model):
+        """
+        Write a ParaqusModel to a vtk file using the underlying writer.
 
+        Parameters
+        ----------
+        model : ParaqusModel
+            The model that will be converted to a vtk file.
+
+        Returns
+        -------
+        None.
+
+        """
         old_model_name = model.model_name
         model.model_name = self.collection_name
 

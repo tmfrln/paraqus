@@ -14,4 +14,4 @@ Export of simulation results within Abaqus.
 
 """
 # make ODBReader importable without importing the subpackages
-from odbreader import ODBReader
+from paraqus.abaqus.odbreader import ODBReader
