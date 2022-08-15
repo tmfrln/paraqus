@@ -33,7 +33,7 @@ intersphinx_disabled_domains = ['std']
 
 templates_path = ['_templates']
 
-autodoc_mock_imports = ["abaqus", "numpy"]
+autodoc_mock_imports = ["abaqus", "abaqusConstants", "numpy"]
 
 # -- Options for HTML output
 

@@ -40,7 +40,6 @@ In general, the Abaqus input files must be downloaded and an Abaqus analysis mus
 
 At the end of each of the Abaqus tutorials, an exemplary pipeline for Paraview is described to visualize the results.
 
-
 =============================================     ========
 Example                                           Contents
 =============================================     ========
@@ -58,4 +57,5 @@ example_abaqus_rivet_forming     		  - CEL elements
                                                   - Large models, parallel vtk files
 
 ============================                      ========
+
 
