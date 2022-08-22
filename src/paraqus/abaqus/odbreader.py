@@ -443,7 +443,8 @@ class ODBReader():
             field_out = field_out.getSubset(region=instance)
 
         # output should be uniform in terms of location (node or qp output)
-        assert len(field_out.locations) == 1
+        # FIXME: This is propably not needed anymore
+        # assert len(field_out.locations) == 1
 
         # if an invariant is specified, apply the reduction
         if invariant is not None:
