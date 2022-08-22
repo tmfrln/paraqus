@@ -85,6 +85,24 @@ class ODBReader():
         create vtk files that are ordered in time from multiple odbs.
         Default: 0.0
 
+    Examples
+    --------
+    >>> from paraqus.abaqus import ODBReader
+    >>> # Define the odb/model/instances that will be read
+    >>> reader = ODBReader(odb_path="example.odb",
+    >>>                    model_name="example model",
+    >>>                    instance_names=["instance-1", "instance-2"],
+    >>>                    )
+    >>> # Export the node field 'U' (displacements)
+    >>> reader.add_field_export_request("U", field_position="nodes")
+    >>> # export the element set 'element set name' only for 'instance-1'
+    >>> reader.add_set_export_request("element set name",
+    >>>                               set_type="elements",
+    >>>                               instance_name="instance-1")
+    >>> # store the models for both instances in a list
+    >>> instance_models = list(reader.read_instances(step_name="Step-1",
+    >>>                                              frame_index=-1)
+    >>>                       )
 
     """
 
@@ -100,6 +118,29 @@ class ODBReader():
         self.group_export_requests = []
         self.instance_names = instance_names
         self.time_offset = time_offset
+
+
+    def get_number_of_frames(self, step_name):
+        """
+        Return the number of frames for a given step in the underlying odb.
+
+        The reader does NOT check that all output is available in each frame.
+
+        Parameters
+        ----------
+        step_name : str
+            Name of the step in the odb.
+
+        Returns
+        -------
+        number_of_frames : int
+            Number of frames in the step, including the initial (0th) frame.
+
+        """
+        with ODBObject(self.odb_path) as odb:
+            step = odb.steps[step_name]
+            return len(step.frames)
+
 
 
     def add_field_export_request(self,
