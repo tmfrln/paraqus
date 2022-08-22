@@ -9,14 +9,16 @@ ParaqusModel
 .. autoclass:: paraqus.ParaqusModel
    :members:
 
-BinaryWriter/AsciiWriter
-------------------------
-We only document the BinaryWriter class here. The AsciiWriter class has the same API and writes binary instead of ascii files.
+Writers
+-------
+
+.. autoclass:: paraqus.AsciiWriter
+   :members:
+   :inherited-members:
 
 .. autoclass:: paraqus.BinaryWriter
    :members:
    :inherited-members:
-
 
 CollectionWriter
 ----------------
