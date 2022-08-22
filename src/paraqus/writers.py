@@ -91,11 +91,6 @@ class VtkFileManager(object):
         Constant defining the output format of array data, i.e.
         ASCII or BINARY.
 
-    Methods
-    -------
-    write
-        Write ascii or binary data into the corresponding VTK file.
-
     Example
     -------
     >>> from constants import BINARY
@@ -197,14 +192,6 @@ class WriterBaseClass(object):
     FORMAT : ParaqusConstant
         A constant defining the type of writer, i.e. ASCII or BINARY.
         This is only for informational purposes.
-
-    Methods
-    -------
-    write
-        Export a paraqus model to .vtu file format. If number_of_pieces
-        > 1, also a .pvtu file is created. In case a collection has
-        been initialized, the exported files will be added to this
-        collection.
 
     """
     __metaclass__ = ABCMeta
@@ -563,14 +550,6 @@ class BinaryWriter(WriterBaseClass):
     FORMAT : ParaqusConstant
         This is a constant with value BINARY and is only used for
         informational purposes.
-
-    Methods
-    -------
-    write
-        Export a paraqus model to .vtu file format. If number_of_pieces
-        > 1, also a .pvtu file is created. In case a collection has
-        been initialized, the exported files will be added to this
-        collection.
 
     Example
     -------
@@ -1046,14 +1025,6 @@ class AsciiWriter(WriterBaseClass):
         This is a constant with value ASCII and is only used for
         informational purposes.
 
-    Methods
-    -------
-    write
-        Export a paraqus model to .vtu file format. If number_of_pieces
-        > 1, also a .pvtu file is created. In case a collection has
-        been initialized, the exported files will be added to this
-        collection.
-
     Example
     -------
     >>> from writers import AsciiWriter
@@ -1268,11 +1239,6 @@ class CollectionWriter(object):
     collection_name : str
         The name of the collection.
 
-    Methods
-    -------
-    write
-        Export a paraqus model to .vtk format.
-
     Example
     -------
     >>> from writers import BinaryWriter, CollectionWriter
@@ -1435,21 +1401,6 @@ class XmlFactory(object):
         The data type used for the headers of the binary data blocks.
         Currently supported are UINT32 and UINT64. This is not needed in
         case of writing VTK ascii files. The default is None.
-
-    Methods
-    -------
-    add_element
-        Add a new element section to the XML file..
-    finish_element
-        Close the active element section in the XML file.
-    finish_all_elements
-        Close and finish all open element sections.
-    add_and_finish_element
-        Add an element section and close it immediately.
-    add_content_to_element
-        Add any content that is not a array-shaped to the XML file.
-    add_array_data_to_element
-        Add array data to the XML file.
 
     """
 

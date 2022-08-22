@@ -51,7 +51,7 @@ class ParaqusModel(object):
         (number of nodes x number of dimensions).
     model_name : str, optional
         Name of the main model. In case of multiple frames or parts
-        every paraqus model should have the same mode name. Default is
+        every paraqus model should have the same model name. Default is
         'MODEL NAME'.
     part_name : str, optional
         Name of the part instance. Default is 'PART NAME'.
@@ -86,24 +86,6 @@ class ParaqusModel(object):
         Repository storing all node fields.
     element_fields : ElementRepository
         Repository sotring all element fields.
-
-    Methods
-    -------
-    add_field
-        Add a field to the paraqus model.
-    add_node_group
-        Add a node group to the model.
-    add_element_group
-        Add an element group to the model.
-    split_model
-        Split the model into a given number of parts.
-    get_fields_by_type
-        Extract all stored fields of a specific type, e.g. all scalar
-        element fields.
-    get_node_field
-        Extract a node field by its name.
-    get_element_field
-        Extract an element field by its name.
 
     Example
     -------
@@ -719,13 +701,6 @@ class NodeRepository(object):
     groups : dict
         Mapping group name -> node tags.
 
-    Methods
-    -------
-    add_group
-        Add a node group to the repository.
-    get_subset
-        Create a new NodeRepository containing only a subset of nodes
-        based on node tags.
 
     """
 
@@ -857,15 +832,6 @@ class FieldRepositoryBaseClass(object):
     fields : dict
         Mapping field name -> Field.
 
-    Methods
-    -------
-    get_fields_by_type
-        Export fields based on the field type.
-    add_field
-        Add a new field to the repository.
-    get_subset
-        Export fields for a subset of nodes or elements.
-
     """
     __metaclass__ = ABCMeta
 
@@ -939,14 +905,6 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
     fields : dict
         Mapping field name -> Field.
 
-    Methods
-    -------
-    get_fields_by_type
-        Export node fields based on the field type.
-    add_field
-        Add a new node field to the repository.
-    get_subset
-        Export node fields for a subset of nodes.
 
     """
 
@@ -1022,14 +980,6 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
     fields : dict
         Mapping field name -> Field.
 
-    Methods
-    -------
-    get_fields_by_type
-        Export element fields based on the field type.
-    add_field
-        Add a new element field to the repository.
-    get_subset
-        Export element fields for a subset of elements.
 
     """
 
@@ -1123,10 +1073,6 @@ class Field(object):
     field_values : numpy.ndarray
         Field values of the field.
 
-    Methods
-    -------
-    get_3d_field_values
-        Get a copy of the field values in 3d representation.
 
     """
 
@@ -1213,46 +1159,3 @@ class Field(object):
             raise NotImplementedError(
                 "Only SCALAR, VECTOR and TENSOR are supported."
                 )
-
-#------------------------------------------------------------------
-# Short test
-if __name__ == "__main__":
-
-    from writers import BinaryWriter, AsciiWriter
-
-    # Define geometry consisting of two first-order quad elements and
-    # three first-order tri elements
-    node_tags = [1,2,3,4,5,6,7,8]
-    node_coords = [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0.5,1.5],[1.5,1.5]]
-    element_tags = [1,2,3,4,5]
-    connectivity = [[1,2,5,4],[2,3,6,5],[4,5,7],[5,6,8],[5,8,7]]
-    element_types = [9,9,5,5,5]
-
-    # Create four element base model
-    model_name = "2D_TEST_MODEL"
-    part_name = "2D_TEST_PART"
-    model_1 = ParaqusModel(element_tags,
-                           connectivity,
-                           element_types,
-                           node_tags,
-                           node_coords,
-                           model_name=model_name,
-                           part_name=part_name)
-
-    # Add some fields
-    tensor_field_vals = [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4],[5,5,5,5]]
-    vector_field_vals = [[1,1,1],[2,2,2],[3,3,3],[4,4,4],[5,5,5]]
-    model_1.add_field("tensor_field", [1,2,3,4,5], tensor_field_vals,
-                             "elements", "tensor")
-    model_1.add_field("vector_field", [1,2,3,4,5], vector_field_vals,
-                             "elements", "vector")
-
-    # Test writer class
-    vtu_writer = BinaryWriter(clear_output_dir=True)
-    vtu_writer.encoding = "RAW"
-    vtu_writer = AsciiWriter()
-    vtu_writer.number_of_pieces = 2
-
-    vtu_writer.write(model_1)
-
-    print("*** FINISHED SUCCESFULLY ***")
