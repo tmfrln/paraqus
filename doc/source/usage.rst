@@ -56,6 +56,6 @@ example_abaqus_aluminum_bending.py                - Export of results for shell 
 example_abaqus_rivet_forming     		  - CEL elements
                                                   - Large models, parallel vtk files
 
-============================                      ========
+=============================================     ========
 
 
