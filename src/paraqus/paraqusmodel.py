@@ -1087,20 +1087,24 @@ class Field(object):
         # Add position
         if field_position not in (NODES, ELEMENTS):
             msg = "Invalid field position: {}".format(field_position)
-            raise Exception(msg)
+            raise ValueError(msg)
         self._field_position = getattr(constants, str(field_position).upper())
 
         # Add type
         if field_type not in (SCALAR, VECTOR, TENSOR):
             msg = "Invalid field type: {}".format(field_type)
-            raise Exception(msg)
+            raise ValueError(msg)
         self._field_type = getattr(constants, str(field_type).upper())
 
         # Add values
+        field_values = np.asarray(field_values)
         if self.field_type == SCALAR:
-            self._field_values = np.asarray(field_values).reshape((-1,1))
+            if np.squeeze(field_values).ndim > 1:
+                msg = "Data for scalar field is not 1d."
+                raise ValueError(msg)
+            self._field_values = field_values.reshape((-1,1))
         else:
-            self._field_values = np.asarray(field_values)
+            self._field_values = field_values
 
 
     # Properties
