@@ -235,8 +235,8 @@ class TestParaqusModelFields(unittest.TestCase):
                                              [41, 42, 43, 44],
                                              [51, 52, 53, 54]])
 
-    def test_pad_field_values(self):
-        """Missing values in fields are padded with Nans."""
+    def test_pad_scalar_field_values(self):
+        """Missing values in scalar fields are padded with Nans."""
         # no value for node 4
         field_tags = [1, 3, 2, 5]
         field_vals = [1, 2, 3, 5]
@@ -257,9 +257,32 @@ class TestParaqusModelFields(unittest.TestCase):
                                                            [2],
                                                            [np.nan],
                                                            [5]])
-    def test_vector_values_padded(self):
-        assert False
 
+    def test_pad_vector_field_values(self):
+        """Missing values in vector fields are padded with Nans."""
+        # no value for node 4
+        field_tags = [1, 3, 2, 5]
+        field_vals = [[11, 12, 13],
+                      [21, 22, 23],
+                      [31, 32, 33],
+                      [51, 52, 53]]
+
+        self.model.add_field("vector element field",
+                             field_tags,
+                             field_vals,
+                             "elements",
+                             "vector")
+
+        field = self.model.get_element_field("vector element field")
+
+        assert field.field_name == "vector element field"
+        assert field.field_type == "VECTOR"
+        assert field.field_position == "ELEMENTS"
+        np.testing.assert_array_equal(field.field_values, [[11, 12, 13],
+                                                           [31, 32, 33],
+                                                           [21, 22, 23],
+                                                           [np.nan]*3,
+                                                           [51, 52, 53]])
 
     def test_error_scalar_field_multiple_components(self):
         """An exception is raised when data for a scalar field is not 1d."""
