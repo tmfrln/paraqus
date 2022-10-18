@@ -90,8 +90,7 @@ class ParaqusModel(object):
     Example
     -------
     >>> import numpy as np
-    >>> from paraqusmodel import ParaqusModel
-    >>> from writers import BinaryWriter
+    >>> from paraqus import ParaqusModel, BinaryWriter
     >>>
     >>> # Define the model parameters
     >>> element_tags = np.array([1,2])
