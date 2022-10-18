@@ -5,6 +5,11 @@ Example 02 - field data
 This example demonstrates how to add field data to ParaqusModels.
 
 """
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append(".../paraqus/src")
+
 import numpy as np
 
 from paraqus import ParaqusModel, AsciiWriter
@@ -28,7 +33,7 @@ node_coords = np.array([[0, 0],
                         [0.5, 1.5],
                         [1.5, 1.5]])
 
-# the element types are chosen based on the vtk specification, see e.g. 
+# the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 element_types = [9, 9, 5, 5, 5] # two quads, three triangles
 

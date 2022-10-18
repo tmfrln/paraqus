@@ -6,6 +6,11 @@ This example demonstrates how to create a ParaqusModel instance from scratch.
 The model is then written to a vtu file.
 
 """
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append(".../paraqus/src")
+
 from paraqus import ParaqusModel, AsciiWriter, BinaryWriter
 
 # specify node tags and corresponding coordinates (2d in this case)
@@ -20,7 +25,7 @@ node_coords = [[0, 0],
                [0.5, 1.5],
                [1.5, 1.5]]
 
-# the element types are chosen based on the vtk specification, see e.g. 
+# the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 element_types = [9, 9, 5, 5, 5] # two quads, three triangles
 

@@ -5,6 +5,11 @@ Example 05 - Grouping multiple vtu files for different times.
 This example demonstrates how to work with time steps in paraqus.
 
 """
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append(".../paraqus/src")
+
 import numpy as np
 
 from paraqus import ParaqusModel, AsciiWriter, CollectionWriter
@@ -28,7 +33,7 @@ node_coords = np.array([[0, 0],
                         [0.5, 1.5],
                         [1.5, 1.5]])
 
-# the element types are chosen based on the vtk specification, see e.g. 
+# the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 element_types = [9, 9, 5, 5, 5] # two quads, three triangles
 
@@ -83,7 +88,7 @@ vtu_writer = AsciiWriter(output_dir="vtu_examples")
 
 collection_name = "example_model_05"
 with CollectionWriter(vtu_writer, collection_name) as collection_writer:
-    
+
     # loop over time steps
     tmax = 2.
     for time in np.linspace(0,tmax,21):
@@ -97,9 +102,9 @@ with CollectionWriter(vtu_writer, collection_name) as collection_writer:
                              model_name=model_name,
                              part_name=part_name,
                              frame_time = time)
-        
+
         # we scale the displacement field
-        
+
         # add the scaled field to the model
         scale = time/tmax
         model.add_field(field_name,
@@ -107,10 +112,10 @@ with CollectionWriter(vtu_writer, collection_name) as collection_writer:
                         field_values*scale,
                         field_position,
                         field_type)
-                
+
         # now write the vtu file for this time step
         collection_writer.write(model)
-    
+
 # if you open the pvd file in paraview, the vtu files for the individual models
 # are interpreted as a time series and can be played as a video to visualize
 # how the deformation changes over time

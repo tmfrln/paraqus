@@ -6,6 +6,11 @@ This example demonstrates how to combine multiple ParaqusModels which describe
 different parts of the same model.
 
 """
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append(".../paraqus/src")
+
 from paraqus import ParaqusModel, AsciiWriter, CollectionWriter
 
 # we create two simple models that are not connected to each other,
@@ -81,8 +86,8 @@ collection_name = "example_model_04_combined"
 with CollectionWriter(vtu_writer, collection_name) as collection_writer:
     collection_writer.write(model_1)
     collection_writer.write(model_2)
-    
+
 # the collection name replaces the model name of the ParaqusModels in the
 # folder structure. In addition to the vtu files for each individual part, a
-# pvd file is created. Opening this pvd file in paraview combines both parts 
+# pvd file is created. Opening this pvd file in paraview combines both parts
 # in one view
