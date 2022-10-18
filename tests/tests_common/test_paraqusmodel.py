@@ -257,10 +257,14 @@ class TestParaqusModelFields(unittest.TestCase):
                                                            [2],
                                                            [np.nan],
                                                            [5]])
+    def test_vector_values_padded(self):
+        assert False
+
 
     def test_error_scalar_field_multiple_components(self):
-        field_tags = [1, 3, 2, 5]
-        field_vals = [[1, 1], [2, 2], [3, 3], [4,4]]
+        """An exception is raised when data for a scalar field is not 1d."""
+        field_tags = [1, 2, 3, 4, 5]
+        field_vals = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]]
 
         with self.assertRaises(ValueError) as context:
             self.model.add_field("scalar element field",
@@ -270,8 +274,7 @@ class TestParaqusModelFields(unittest.TestCase):
                              "scalar")
 
 
-    def test_vector_values_padded(self):
-        assert False
+
 
 
 class TestParaqusModelSplitting(unittest.TestCase):
