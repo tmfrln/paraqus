@@ -13,21 +13,27 @@ Paraqus comes with two small example Abaqus output databases for tests. One of t
 
 To recreate the file ``element_test_current.odb``, navigate to the directory ``tests/resources`` and run the command ``abaqus job=element_test_current``, where ``abaqus`` should be replaced with the command for the version of Abaqus you are currently using. 
 
-To recreate the file ``element_test_old.odb``, navigate to the directory ``tests/resources`` and run the command ``abaqusOLD job=element_test_current``, where ``abaqusOLD`` should be replaced with the command for a previous release of Abaqus (e.g. if you are using Abaqus 2021 normally, this should be Abaqus 2020 or older). If you do not have access to a previous Abaqus release, just skip this and let the corresponding tests fail - this is no big deal, since the tests only cover edge cases of working with older files.
+To recreate the file ``element_test_old.odb``, navigate to the directory ``paraqus/tests/resources`` and run the command ``abaqusOLD job=element_test_current``, where ``abaqusOLD`` should be replaced with the command for a previous release of Abaqus (e.g. if you are using Abaqus 2021 normally, this should be Abaqus 2020 or older). If you do not have access to a previous Abaqus release, just skip this and let the corresponding tests fail - this is no big deal, since the tests only cover edge cases of working with older files.
 
 
 Run tests using Abaqus
 ----------------------
 
-- Navigate to the directory ``tests/resources/``
-- Run the command ``abaqus cae noGUI=run_all_tests.py``
-- The file ``test_report_all.txt`` is created and contains the test report.
+In the python console of Abaqus  CAE, run the following commands:
+
+>>> import paraqus.tests as tests
+>>> tests.run_abaqus()
+
+The report file for the tests is generated in the current working directory, and a small summary is displayed in Abaqus.
 
 
 Run tests using an external python interpreter
 ----------------------------------------------
 
-- Navigate to the directory ``tests/resources/``
-- Run the command ``python run_common_tests.py``
-- The file ``test_report_common.txt`` is created and contains the test report. Only tests that do not require Abaqus are included.
+In a python session (or a script file) run the following commands:
+
+>>> import paraqus.tests as tests
+>>> tests.run_python()
+
+The report file for the tests is generated in the current working directory, and a small summary is displayed.
 

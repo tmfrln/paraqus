@@ -11,11 +11,13 @@ import numpy as np
 
 from paraqus.abaqus import ODBReader
 
+RESOURCE_PATH  = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                              "resources")
 
 class TestElementTestMesh(unittest.TestCase):
     """Class docsrt"""
     def setUp(self):
-        self.odb_path = os.path.join('resources', 
+        self.odb_path = os.path.join(RESOURCE_PATH, 
                                      'element_test_current.odb')
         
         self.step_name = "Apply Force"
