@@ -21,3 +21,4 @@
 *.stt
 abaqus.rpy
 abaqus.rpy.*
+doc/build/**
