@@ -9,7 +9,7 @@ where = ["src", "examples"]
 "*" = ["*.py", "*.inp", "*.odb"]
 
 [project]
-name = "Paraqus"
+name = "paraqus"
 version = "0.0.1"
 authors = [
   { name="Tim Furlan", email="tim.furlan@gmx.de" },
