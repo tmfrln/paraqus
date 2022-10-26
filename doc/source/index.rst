@@ -1,5 +1,5 @@
-Paraqus - The Book
-==================
+Paraqus Documentation
+=====================
 
 Paraqus is a python package to write simulation results, typically from finite element simulations, to the vtk format.
 
