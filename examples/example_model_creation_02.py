@@ -8,7 +8,7 @@ This example demonstrates how to add field data to ParaqusModels.
 # # Uncomment this if you cannot add paraqus to the python path, and set
 # # the paraqus source directory for your system
 # import sys
-# sys.path.append(".../paraqus/src")
+# sys.path.append("...")
 
 import numpy as np
 

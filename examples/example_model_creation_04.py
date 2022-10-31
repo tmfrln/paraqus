@@ -9,7 +9,7 @@ different parts of the same model.
 # # Uncomment this if you cannot add paraqus to the python path, and set
 # # the paraqus source directory for your system
 # import sys
-# sys.path.append(".../paraqus/src")
+# sys.path.append("...")
 
 from paraqus import ParaqusModel, AsciiWriter, CollectionWriter
 
