@@ -1,0 +1,46 @@
+name: Upload Python Package to PyPI
+    
+on:
+  workflow_dispatch:
+    
+jobs:
+  deploy:
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install --upgrade build
+        python3 -m pip install --upgrade twine
+    - name: Build
+      run: python3 -m build
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        repository_url: https://pypi.org/legacy/
+
+  test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install package from TestPyPI
+      run: |
+        python3 -m pip install paraqus
+    - name: Run tests
+      run: |
+        python3 -c "from paraqus.tests import run_python_tests; run_python_tests()"
+
+
