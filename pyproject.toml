@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src", "examples"]
+
+[tool.setuptools.package-data]
+"*" = ["*.py", "*.inp", "*.odb"]
+
+[project]
+name = "paraqus"
+version = "0.0.4"
+authors = [
+  { name="Tim Furlan", email="tim.furlan@gmx.de" },
+  { name="Jonathan Stollberg", email="jonathan.stollberg@tu-dortmund.de" },
+]
+description = "VTK file export from Abaqus"
+readme = "readme.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy"
+]
