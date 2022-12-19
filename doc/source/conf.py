@@ -3,8 +3,8 @@
 # -- Project information
 
 project = 'Paraqus'
-copyright = '2022, Furlan & Stollberg'
-author = 'Furlan, Stollberg'
+copyright = '2022, Furlan, Stollberg and Menzel'
+author = 'Furlan, Stollberg and Menzel'
 
 # this should ideally integrate in some way...
 release = '0.0'
