@@ -1,10 +1,24 @@
 # -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Example 03 - Node and element groups
 
 This example demonstrates how node/element groups are specified.
 
 """
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append("...")
 
 from paraqus import ParaqusModel, AsciiWriter
 
@@ -23,7 +37,7 @@ node_coords = [[0, 0],
                [0.5, 1.5],
                [1.5, 1.5]]
 
-# the element types are chosen based on the vtk specification, see e.g. 
+# the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 element_types = [9, 9, 5, 5, 5] # two quads, three triangles
 
@@ -67,10 +81,10 @@ group_name = "triangle elements"
 element_tags = [3,4,5]
 model.add_element_group(group_name, element_tags)
 
-# the groups will be exported to the vtu files as indicator functions. 
-# for example, for the group "nodes lower edge", there will be a field 
+# the groups will be exported to the vtu files as indicator functions.
+# for example, for the group "nodes lower edge", there will be a field
 # "_group nodes lower edge", which takes the value 1 at all nodes in the group,
-# and the value 0 on all other nodes. 
+# and the value 0 on all other nodes.
 
 # create an instance of the AsciiWriter (i.e. the vtu files are human readable)
 writer = AsciiWriter(output_dir="vtu_examples")

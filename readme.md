@@ -4,21 +4,10 @@ Paraqus is a python package developed to export simulation results to the .vtk-f
 
 Currently, paraqus is still under development and not yet ready to use.
 
-## Installation
 
-Paraqus can be installed from the python package index.
+## Documentation
 
-```bash
-pip install paraqus
-```
-
-When the package is used in the software Abaqus, add it to the system path.
-```python
-import sys
-sys.path.append('DIR-TO-PARAQUS-PACKAGE')
-```
-
-Afterwards, the package can be imported in Abaqus. The dependecies should be already installed in recent Abaqus versions.
+The documentation for Paraqus can be found [here](https://paraqus.readthedocs.io/). It also contains information on how to install the software.
 
 
 ## License

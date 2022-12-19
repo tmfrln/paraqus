@@ -2,7 +2,7 @@
 #
 #   Paraqus - A VTK exporter for FEM results.
 #
-#   Copyright (C) 2022, Furlan and Stollberg
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
 #
 #    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
@@ -93,7 +93,7 @@ class VtkFileManager(object):
 
     Example
     -------
-    >>> from constants import BINARY
+    >>> from paraqus.constants import BINARY
     >>> with VtkFileManager("my_file.vtu", BINARY) as vtu_file:
     >>>     vtu_file.write("<VTKFile>\n")
     >>>     vtu_file.write("<UnstructuredGrid>\n")
@@ -553,8 +553,8 @@ class BinaryWriter(WriterBaseClass):
 
     Example
     -------
-    >>> from constants import RAW
-    >>> from writers import BinaryWriter
+    >>> from paraqus import BinaryWriter
+    >>> from paraqus.constants import RAW
     >>> writer = BinaryWriter(number_of_pieces=2, encoding=RAW)
     >>> writer.write(random_paraqus_model)
 
@@ -1027,7 +1027,7 @@ class AsciiWriter(WriterBaseClass):
 
     Example
     -------
-    >>> from writers import AsciiWriter
+    >>> from paraqus import AsciiWriter
     >>> writer = AsciiWriter(number_of_pieces=2)
     >>> writer.write(random_paraqus_model)
 
@@ -1241,7 +1241,7 @@ class CollectionWriter(object):
 
     Example
     -------
-    >>> from writers import BinaryWriter, CollectionWriter
+    >>> from paraqus import BinaryWriter, CollectionWriter
     >>> vtu_writer = BinaryWriter()
     >>> with CollectionWriter(vtu_writer, "my_collection") as writer:
     >>>     writer.write(random_paraqus_model_frame_1)

@@ -12,6 +12,8 @@ from abaqus import session
 from paraqus.abaqus.abaqustools import ODBObject
 from paraqus.abaqus.abaqustools import upgrade_odb
 
+RESOURCE_PATH  = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                              "resources")
 
 class TestODBContextManager(unittest.TestCase):
     
@@ -20,7 +22,7 @@ class TestODBContextManager(unittest.TestCase):
         for odb in session.odbs.values():
             odb.close()
         
-        self.odb_path = os.path.join('resources', 
+        self.odb_path = os.path.join(RESOURCE_PATH, 
                                      'element_test_current.odb')
     
     
@@ -72,7 +74,7 @@ class TestODBUpgrade(unittest.TestCase):
             odb.close()
             
         # base odb for the tests
-        abq2018_odb = os.path.join('resources',
+        abq2018_odb = os.path.join(RESOURCE_PATH,
                                    'element_test_old.odb')
         
         # backup folder has to be consistent with the upgrade_odb function

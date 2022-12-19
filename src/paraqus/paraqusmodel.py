@@ -2,7 +2,7 @@
 #
 #   Paraqus - A VTK exporter for FEM results.
 #
-#   Copyright (C) 2022, Furlan and Stollberg
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
 #
 #    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
@@ -90,8 +90,7 @@ class ParaqusModel(object):
     Example
     -------
     >>> import numpy as np
-    >>> from paraqusmodel import ParaqusModel
-    >>> from writers import BinaryWriter
+    >>> from paraqus import ParaqusModel, BinaryWriter
     >>>
     >>> # Define the model parameters
     >>> element_tags = np.array([1,2])
@@ -1087,20 +1086,24 @@ class Field(object):
         # Add position
         if field_position not in (NODES, ELEMENTS):
             msg = "Invalid field position: {}".format(field_position)
-            raise Exception(msg)
+            raise ValueError(msg)
         self._field_position = getattr(constants, str(field_position).upper())
 
         # Add type
         if field_type not in (SCALAR, VECTOR, TENSOR):
             msg = "Invalid field type: {}".format(field_type)
-            raise Exception(msg)
+            raise ValueError(msg)
         self._field_type = getattr(constants, str(field_type).upper())
 
         # Add values
+        field_values = np.asarray(field_values)
         if self.field_type == SCALAR:
-            self._field_values = np.asarray(field_values).reshape((-1,1))
+            if np.squeeze(field_values).ndim > 1:
+                msg = "Data for scalar field is not 1d."
+                raise ValueError(msg)
+            self._field_values = field_values.reshape((-1,1))
         else:
-            self._field_values = np.asarray(field_values)
+            self._field_values = field_values
 
 
     # Properties

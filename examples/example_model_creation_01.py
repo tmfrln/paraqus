@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Example 01 - model creation
 
@@ -6,6 +16,11 @@ This example demonstrates how to create a ParaqusModel instance from scratch.
 The model is then written to a vtu file.
 
 """
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append("...")
+
 from paraqus import ParaqusModel, AsciiWriter, BinaryWriter
 
 # specify node tags and corresponding coordinates (2d in this case)
@@ -20,7 +35,7 @@ node_coords = [[0, 0],
                [0.5, 1.5],
                [1.5, 1.5]]
 
-# the element types are chosen based on the vtk specification, see e.g. 
+# the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 element_types = [9, 9, 5, 5, 5] # two quads, three triangles
 
