@@ -2,9 +2,6 @@
 
 Paraqus is a python package developed to export simulation results to the .vtk-format. 
 
-Currently, paraqus is still under development and not yet ready to use.
-
-
 ## Documentation
 
 The documentation for Paraqus can be found [here](https://paraqus.readthedocs.io/). It also contains information on how to install the software.
