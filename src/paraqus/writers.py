@@ -734,7 +734,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Add node fields based on groups
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.isin(piece.nodes.tags,
+                    field_vals = np.in1d(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -776,7 +776,7 @@ class BinaryWriter(WriterBaseClass):
                     xml.finish_element()
 
                 for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.isin(piece.elements.tags,
+                    field_vals = np.in1d(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -890,7 +890,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Node fields for groups
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.isin(piece.nodes.tags,
+                    field_vals = np.in1d(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -931,7 +931,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Element_fields for groups
                 for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.isin(piece.elements.tags,
+                    field_vals = np.in1d(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -972,7 +972,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append node group data
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.isin(piece.nodes.tags,
+                    field_vals = np.in1d(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
 
@@ -987,7 +987,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append element group data
                 for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.isin(piece.elements.tags,
+                    field_vals = np.in1d(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
 
@@ -1146,7 +1146,7 @@ class AsciiWriter(WriterBaseClass):
 
             # Add node fields based on groups
             for group_name, group_nodes in piece.nodes.groups.items():
-                field_vals = np.isin(piece.nodes.tags,
+                field_vals = np.in1d(piece.nodes.tags,
                                      group_nodes).astype(np.uint8)
                 dtype = field_vals.dtype.name
 
@@ -1190,7 +1190,7 @@ class AsciiWriter(WriterBaseClass):
 
             # Add element fields based on groups
             for group_name, group_elems in piece.elements.groups.items():
-                field_vals = np.isin(piece.elements.tags,
+                field_vals = np.in1d(piece.elements.tags,
                                      group_elems).astype(np.uint8)
                 dtype = field_vals.dtype.name
 
