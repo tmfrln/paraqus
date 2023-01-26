@@ -263,8 +263,8 @@ class TestParaqusModelFields(unittest.TestCase):
         # no value for node 4
         field_tags = [1, 3, 2, 5]
         field_vals = [[11, 12, 13],
-                      [21, 22, 23],
                       [31, 32, 33],
+                      [21, 22, 23],
                       [51, 52, 53]]
 
         self.model.add_field("vector element field",
@@ -279,8 +279,8 @@ class TestParaqusModelFields(unittest.TestCase):
         assert field.field_type == "VECTOR"
         assert field.field_position == "ELEMENTS"
         np.testing.assert_array_equal(field.field_values, [[11, 12, 13],
-                                                           [31, 32, 33],
                                                            [21, 22, 23],
+                                                           [31, 32, 33],
                                                            [np.nan]*3,
                                                            [51, 52, 53]])
 
