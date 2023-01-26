@@ -24,7 +24,7 @@ run the example before using this script to export results.
 To create the output database for this example, execute the following
 commands in the examples folder:
     abaqus fetch job=rivet_forming_cel.inp
-    abaqus job=Rivet-Forming-CEL parallel=domain domains=4 cpus=4 mp_mode=threads interactive
+    abaqus job=rivet_forming_cel parallel=domain domains=4 cpus=4 mp_mode=threads interactive
 
 Caution: This might take up to an hour. If you machine has less than
 4 CPUs, adjust the domains and cpus parameters.  If you want to test the
