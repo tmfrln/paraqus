@@ -74,7 +74,7 @@ reader.add_set_export_request("ETOP", set_type="elements",
                               instance_name="PART-1-1")
 
 # create a writer that will write the exported results to a vtk file
-vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
+vtu_writer = AsciiWriter("vtk_output_billet", clear_output_dir=True)
 
 # the method read_instances loops over all part instances for one
 # point in time, and returns ParaqusModel instances for each of them.

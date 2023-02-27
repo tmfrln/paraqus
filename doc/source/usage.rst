@@ -56,6 +56,9 @@ Example                                           Contents
 `example_abaqus_rivet_forming <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_rivet_forming.py>`_                                    - CEL elements
                                                                                                                                                           - Large models, parallel vtk files
 
+`example_abaqus_extrusion <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_extrusion.py>`_                                            - User materials
+                                                                                                                                                          - Exporting large numbers of frames for video animations
+
 =====================================================================================================================================================     ===============================================================================
 
 

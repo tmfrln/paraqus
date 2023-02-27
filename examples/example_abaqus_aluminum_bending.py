@@ -98,7 +98,7 @@ reader.add_set_export_request(set_name="P4_RIGHTSUPPORT",
                               instance_name="PART-1-1")
 
 # create a writer that will write the exported results to a vtk file
-vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
+vtu_writer = BinaryWriter("vtk_output_bending", clear_output_dir=True)
 
 # loop over all instances and export the results
 instance_models = list(reader.read_instances(step_name=STEP_NAME,

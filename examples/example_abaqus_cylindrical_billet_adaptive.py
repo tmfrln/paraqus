@@ -66,7 +66,7 @@ FRAME_INDICES = [(0, -1), (1, -1)] # frame indices to export per odb
 # create a writer that will write the exported results to a vtk file
 # we use the BinaryWriter this time, creating more efficient but not
 # human-readable files
-vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
+vtu_writer = BinaryWriter("vtk_output_billet_adaptive", clear_output_dir=True)
 
 # we use the CollectionWriter context manager to create a .pvd file for all
 # time steps. This allows us to combine multiple files, representing
