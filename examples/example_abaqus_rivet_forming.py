@@ -75,7 +75,7 @@ reader.add_field_export_request("EVF_ASSEMBLY_EULERIAN-1_MAT-1-1")
 reader.add_field_export_request("PEEQVAVG") # equiv. plastic strain
 
 # create a writer that will write the exported results to a vtk file
-vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
+vtu_writer = AsciiWriter("vtk_output_rivet", clear_output_dir=True)
 
 # the vtk format supports parallel files for large model, i.e. model
 # information is split to multiple files. This makes the post-processing
