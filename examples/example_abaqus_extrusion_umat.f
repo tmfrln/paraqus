@@ -1,3 +1,17 @@
+!   Paraqus - A VTK exporter for FEM results.
+!
+!   Copyright (C) 2022, Furlan, Stollberg and Menzel
+!
+!    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General !Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+!
+!
+!   Example user material subroutine for the extrusion example
+!   The user material implements finite strain elasto-plasticity in terms of a von Mises plasticity, formulated in Mandel stresses, and includes isotropic hardening. An exponential map is implemented for the time integration.
+!
        SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,RPL,DDSDDT,
      &                  DRPLDE,DRPLDT,STRAN,DSTRAN,TIME,DTIME,TEMP,
      &                  DTEMP,PREDEF,DPRED,CMNAME,NDI,NSHR,NTENS,NSTATV,
@@ -30,11 +44,7 @@
             !-----------------------------------------------------------
             ! Constitutive model
             CALL constitutiveModel(DFGRD1,STATEV,matParams,P,KINC,dP_dF,PNEWDT)
-            
-            !-----------------------------------------------------------
-            ! numerical Tangent
-            ! CALL DPDF_NUM(DFGRD1,STATEV,matParams,P,dP_dF,KINC,PNEWDT)
-            
+                        
             !-----------------------------------------------------------
             ! Push-Forward
             sigma = MATMUL(DFGRD1,P)/detJ
@@ -395,30 +405,7 @@
             END DO
             
         END SUBROUTINE
-        
-        SUBROUTINE DPDF_NUM(F,STATEV,matParams,P,dP_dF,KINC,PNEWDT)
-          
-            DOUBLE PRECISION, DIMENSION(3,3,3,3) :: dP_dF,dP_dF_ana
-            DOUBLE PRECISION, DIMENSION(3,3)     :: F,dF,P,dP
-            DOUBLE PRECISION, DIMENSION(11)      :: STATEV
-            DOUBLE PRECISION, DIMENSION(6)       :: matParams
-            DOUBLE PRECISION                     :: eps,PNEWDT
-            INTEGER                              :: ii,jj,KINC
-            
-            eps = 10.0d0**(-8.0d0)
-            
-            dP_dF = 0.0d0
-            Do ii = 1,3
-                DO jj = 1,3
-                    dF = F
-                    dF(ii,jj) = dF(ii,jj) + eps
-                    CALL constitutiveModel(dF,STATEV,matParams,dP,KINC,dP_dF_ana,PNEWDT)
-                    dP_dF(:,:,ii,jj) = dP_dF(:,:,ii,jj) + (dP-P)/(eps)
-                END DO
-            END DO
-            
-        END SUBROUTINE
-        
+                
         ! Tangent 1 of local const model
         SUBROUTINE calc_DR_Fp_DFp(Fp,Fp_n,Ce,dlambda,DexpDLp,devM,mu,lam,DR_Fp_DFp)
             
