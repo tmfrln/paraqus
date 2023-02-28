@@ -7,8 +7,8 @@ copyright = '2022, Furlan, Stollberg and Menzel'
 author = 'Furlan, Stollberg and Menzel'
 
 # this should ideally integrate in some way...
-release = '0.0'
-version = '0.0.1'
+release = '1.0'
+version = '1.0.0'
 
 # -- General configuration
 
