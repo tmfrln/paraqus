@@ -8,7 +8,7 @@ author = 'Furlan, Stollberg and Menzel'
 
 # this should ideally integrate in some way...
 release = '0.0'
-version = '0.0.1'
+version = '0.9.0'
 
 # -- General configuration
 
