@@ -10,7 +10,7 @@ where = ["src", "examples"]
 
 [project]
 name = "paraqus"
-version = "0.9.0"
+version = "1.0.0"
 authors = [
   { name="Tim Furlan", email="tim.furlan@gmx.de" },
   { name="Jonathan Stollberg", email="jonathan.stollberg@tu-dortmund.de" },
