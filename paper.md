@@ -40,6 +40,11 @@ Abaqus is an example of a commercial FE software that is widely used in the acad
 
 A script for the export from Abaqus data to VTK format was published in @odb2vtk under the name ``odb2vtk``. This script offers limited options to customise export data, and only supports a subset of the finite elements available in Abaqus. AbaPy is a Python package that is not aimed solely at post-processing, but also at the automatic creation of Abaqus simulations [@abapy]. While AbaPy offers the option to export field outputs to VTK format, the greater range of applications comes with increased complexity. Paraqus falls in between these existing options: It is organised as a package with a small and intuitive api, yet allows a broad range of customisation of the exports, and writes the more efficient binary version of the VTK format. It also offers options to group exports from multiple simulations, time steps, or bodies, using Paraview's .pvd files. Paraqus also performs exports noticeably faster than AbaPy for larger models.
 
+# Contributions
+
+- Tim Furlan: Conceptualization; Software - Design, Implementation (focus on reading Abaqus output), Documentation; Writing - Original Draft; Example generation
+- Jonathan Stollberg: Conceptualization; Software Design, Implementation (focus on writing vtu files), Documentation; Writing - Original Draft; Example generation
+- Andreas Menzel: Conceptualization; Supervision - Project direction; Writing - Review & Editing; Example generation
 
 # Acknowledgements
 
