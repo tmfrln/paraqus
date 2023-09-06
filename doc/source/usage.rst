@@ -13,23 +13,23 @@ The general workflow for the usage of paraqus always includes the following step
 
 Have a look at the pure python examples (located in the subdirectory ``examples`` of paraqus) to learn how to create a ``ParaqusModel`` from scratch and how to write a vtk file based on it.
 
-============================     ========
-Example                          Contents
-============================     ========
-example_model_creation_01.py     - Creating a simple model
-                                 - Exporting the model as a vtu file
+===================================================================================================================     ==========================================================
+Example                                                                                                                 Contents
+===================================================================================================================     ==========================================================
+`example_model_creation_01.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_model_creation_01.py>`_     - Creating a simple model
+                                                                                                                        - Exporting the model as a vtu file
 
-example_model_creation_02.py     - Adding field data to a model
+`example_model_creation_02.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_model_creation_02.py>`_     - Adding field data to a model
 
-example_model_creation_03.py     - Adding node and element groups to a model
+`example_model_creation_03.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_model_creation_03.py>`_     - Adding node and element groups to a model
 
-example_model_creation_04.py     - Using a CollectionWriter to group multiple vtu files
-                                   for different parts of the same model
+`example_model_creation_04.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_model_creation_04.py>`_     - Using a CollectionWriter to group multiple vtu files
+                                                                                                                          for different parts of the same model
 
-example_model_creation_05.py     - Using a CollectionWriter to group multiple vtu files
-                                   for different time steps
+`example_model_creation_05.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_model_creation_05.py>`_     - Using a CollectionWriter to group multiple vtu files
+                                                                                                                          for different time steps
 
-============================     ========
+===================================================================================================================     ==========================================================
 
 Usage with Abaqus
 -----------------
@@ -40,22 +40,25 @@ In general, the Abaqus input files must be downloaded and an Abaqus analysis mus
 
 At the end of each of the Abaqus tutorials, an exemplary pipeline for Paraview is described to visualize the results.
 
-=============================================     ========
+=====================================================================================================================================================     ===============================================================================
 Example                                           Contents
-=============================================     ========
-example_abaqus_cylindrical_billet.py              - Using an ODBReader to export results from an Abaqus odb.
-                                                  - Exporting field outputs
-						  - Exporting node and element groups
+=====================================================================================================================================================     ===============================================================================
+`example_abaqus_cylindrical_billet.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_cylindrical_billet.py>`_                       - Using an ODBReader to export results from an Abaqus odb.
+                                                                                                                                                          - Exporting field outputs
+                                                                                                                                                          - Exporting node and element groups
 
-example_abaqus_cylindrical_billet_adaptive.py     - Using a CollectionWriter to combine exports from multiple output databases
-                                                  - Specifying time offsets to store correct time values for each result
+`example_abaqus_cylindrical_billet_adaptive.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_cylindrical_billet_adaptive.py>`_     - Using a CollectionWriter to combine exports from multiple output databases
+                                                                                                                                                          - Specifying time offsets to store correct time values for each result
 
-example_abaqus_aluminum_bending.py                - Export of results for shell elements
-                                                  - Fields that are not defined at all nodes/elements
+`example_abaqus_aluminum_bending.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_aluminum_bending.py>`_                           - Export of results for shell elements
+                                                                                                                                                          - Fields that are not defined at all nodes/elements
 
-example_abaqus_rivet_forming     		  - CEL elements
-                                                  - Large models, parallel vtk files
+`example_abaqus_rivet_forming <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_rivet_forming.py>`_                                    - CEL elements
+                                                                                                                                                          - Large models, parallel vtk files
 
-=============================================     ========
+`example_abaqus_extrusion <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_extrusion.py>`_                                            - User materials
+                                                                                                                                                          - Exporting large numbers of frames for video animations
+
+=====================================================================================================================================================     ===============================================================================
 
 

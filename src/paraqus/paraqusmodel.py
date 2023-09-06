@@ -2,7 +2,7 @@
 #
 #   Paraqus - A VTK exporter for FEM results.
 #
-#   Copyright (C) 2022, Furlan and Stollberg
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
 #
 #    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
@@ -90,8 +90,7 @@ class ParaqusModel(object):
     Example
     -------
     >>> import numpy as np
-    >>> from paraqusmodel import ParaqusModel
-    >>> from writers import BinaryWriter
+    >>> from paraqus import ParaqusModel, BinaryWriter
     >>>
     >>> # Define the model parameters
     >>> element_tags = np.array([1,2])
@@ -429,29 +428,28 @@ class ParaqusModel(object):
 
     def _pad_field_values(self, field_tags, field_values, pad_tags):
         """Extend a field value array with nan values for unset tags."""
+        # TODO: force sorting early to remove the need for index juggling
         field_values = field_values.reshape(len(field_values), -1)
 
-        if all(np.in1d(field_tags, pad_tags)):
-            # All field tags are there, so we pad the values
-
-            # Indices of the field_tags in pad_tags
-            sorter = np.argsort(pad_tags)
-            indices = sorter[np.searchsorted(pad_tags, field_tags,
-                                             sorter=sorter)]
-
-            # New array pre-filled with nans
-            shape = (len(pad_tags), field_values.shape[1])
-
-            new_field_values = np.empty(shape, dtype=field_values.dtype)
-            new_field_values[:,:] = np.nan
-
-            # Fill in the old values
-            new_field_values[indices,:] = field_values
-
-            return new_field_values
-
-        else:
+        # make sure the padded tags contain all of the field tags
+        if not all(np.in1d(field_tags, pad_tags)):
             raise ValueError("Cannot pad values: not all tags are found.")
+
+        # Indices of the field_tags in pad_tags
+        sorter = np.argsort(pad_tags)
+        indices_sorted = sorter[np.searchsorted(pad_tags, field_tags)]
+        indices_original = sorter[indices_sorted]
+
+        # New array pre-filled with nans
+        shape = (len(pad_tags), field_values.shape[1])
+
+        new_field_values = np.empty(shape, dtype=field_values.dtype)
+        new_field_values[:,:] = np.nan
+
+        # Fill in the old values
+        new_field_values[indices_original,:] = field_values
+
+        return new_field_values
 
 
 class ElementRepository(object):
@@ -1087,20 +1085,24 @@ class Field(object):
         # Add position
         if field_position not in (NODES, ELEMENTS):
             msg = "Invalid field position: {}".format(field_position)
-            raise Exception(msg)
+            raise ValueError(msg)
         self._field_position = getattr(constants, str(field_position).upper())
 
         # Add type
         if field_type not in (SCALAR, VECTOR, TENSOR):
             msg = "Invalid field type: {}".format(field_type)
-            raise Exception(msg)
+            raise ValueError(msg)
         self._field_type = getattr(constants, str(field_type).upper())
 
         # Add values
+        field_values = np.asarray(field_values)
         if self.field_type == SCALAR:
-            self._field_values = np.asarray(field_values).reshape((-1,1))
+            if np.squeeze(field_values).ndim > 1:
+                msg = "Data for scalar field is not 1d."
+                raise ValueError(msg)
+            self._field_values = field_values.reshape((-1,1))
         else:
-            self._field_values = np.asarray(field_values)
+            self._field_values = field_values
 
 
     # Properties

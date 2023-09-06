@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Export selected results from the rivet forming example output database.
 
@@ -13,7 +24,7 @@ run the example before using this script to export results.
 To create the output database for this example, execute the following
 commands in the examples folder:
     abaqus fetch job=rivet_forming_cel.inp
-    abaqus job=Rivet-Forming-CEL parallel=domain domains=4 cpus=4 mp_mode=threads interactive
+    abaqus job=rivet_forming_cel parallel=domain domains=4 cpus=4 mp_mode=threads interactive
 
 Caution: This might take up to an hour. If you machine has less than
 4 CPUs, adjust the domains and cpus parameters.  If you want to test the
@@ -40,7 +51,7 @@ The following pipeline can be used in Paraview to visualize the results:
 # # Uncomment this if you cannot add paraqus to the python path, and set
 # # the paraqus source directory for your system
 # import sys
-# sys.path.append(".../paraqus/src")
+# sys.path.append("...")
 
 # we will use the ODBReader class to extract information from the odb
 from paraqus.abaqus import ODBReader
@@ -64,7 +75,7 @@ reader.add_field_export_request("EVF_ASSEMBLY_EULERIAN-1_MAT-1-1")
 reader.add_field_export_request("PEEQVAVG") # equiv. plastic strain
 
 # create a writer that will write the exported results to a vtk file
-vtu_writer = AsciiWriter("vtk_output", clear_output_dir=True)
+vtu_writer = AsciiWriter("vtk_output_rivet", clear_output_dir=True)
 
 # the vtk format supports parallel files for large model, i.e. model
 # information is split to multiple files. This makes the post-processing

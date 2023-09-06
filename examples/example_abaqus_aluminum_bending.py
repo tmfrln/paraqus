@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Export selected results from the aluminum bending example output database.
 
@@ -27,7 +38,7 @@ The following pipeline can be used in Paraview to visualize the results:
 # # Uncomment this if you cannot add paraqus to the python path, and set
 # # the paraqus source directory for your system
 # import sys
-# sys.path.append(".../paraqus/src")
+# sys.path.append("...")
 
 # we will use the ODBReader class to extract information from the odb
 from paraqus.abaqus import ODBReader
@@ -87,7 +98,7 @@ reader.add_set_export_request(set_name="P4_RIGHTSUPPORT",
                               instance_name="PART-1-1")
 
 # create a writer that will write the exported results to a vtk file
-vtu_writer = BinaryWriter("vtk_output", clear_output_dir=True)
+vtu_writer = BinaryWriter("vtk_output_bending", clear_output_dir=True)
 
 # loop over all instances and export the results
 instance_models = list(reader.read_instances(step_name=STEP_NAME,

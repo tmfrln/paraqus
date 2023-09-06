@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+#
+#   Paraqus - A VTK exporter for FEM results.
+#
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
+#
+#    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Example 04 - Grouping multiple vtu files.
 
@@ -6,6 +16,11 @@ This example demonstrates how to combine multiple ParaqusModels which describe
 different parts of the same model.
 
 """
+# # Uncomment this if you cannot add paraqus to the python path, and set
+# # the paraqus source directory for your system
+# import sys
+# sys.path.append("...")
+
 from paraqus import ParaqusModel, AsciiWriter, CollectionWriter
 
 # we create two simple models that are not connected to each other,
@@ -81,8 +96,8 @@ collection_name = "example_model_04_combined"
 with CollectionWriter(vtu_writer, collection_name) as collection_writer:
     collection_writer.write(model_1)
     collection_writer.write(model_2)
-    
+
 # the collection name replaces the model name of the ParaqusModels in the
 # folder structure. In addition to the vtu files for each individual part, a
-# pvd file is created. Opening this pvd file in paraview combines both parts 
+# pvd file is created. Opening this pvd file in paraview combines both parts
 # in one view

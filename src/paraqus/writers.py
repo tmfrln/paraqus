@@ -2,7 +2,7 @@
 #
 #   Paraqus - A VTK exporter for FEM results.
 #
-#   Copyright (C) 2022, Furlan and Stollberg
+#   Copyright (C) 2022, Furlan, Stollberg and Menzel
 #
 #    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
@@ -93,7 +93,7 @@ class VtkFileManager(object):
 
     Example
     -------
-    >>> from constants import BINARY
+    >>> from paraqus.constants import BINARY
     >>> with VtkFileManager("my_file.vtu", BINARY) as vtu_file:
     >>>     vtu_file.write("<VTKFile>\n")
     >>>     vtu_file.write("<UnstructuredGrid>\n")
@@ -553,8 +553,8 @@ class BinaryWriter(WriterBaseClass):
 
     Example
     -------
-    >>> from constants import RAW
-    >>> from writers import BinaryWriter
+    >>> from paraqus import BinaryWriter
+    >>> from paraqus.constants import RAW
     >>> writer = BinaryWriter(number_of_pieces=2, encoding=RAW)
     >>> writer.write(random_paraqus_model)
 
@@ -734,7 +734,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Add node fields based on groups
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.isin(piece.nodes.tags,
+                    field_vals = np.in1d(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -776,7 +776,7 @@ class BinaryWriter(WriterBaseClass):
                     xml.finish_element()
 
                 for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.isin(piece.elements.tags,
+                    field_vals = np.in1d(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -890,7 +890,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Node fields for groups
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.isin(piece.nodes.tags,
+                    field_vals = np.in1d(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -931,7 +931,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Element_fields for groups
                 for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.isin(piece.elements.tags,
+                    field_vals = np.in1d(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     dtype = field_vals.dtype.name
 
@@ -972,7 +972,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append node group data
                 for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.isin(piece.nodes.tags,
+                    field_vals = np.in1d(piece.nodes.tags,
                                          group_nodes).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
 
@@ -987,7 +987,7 @@ class BinaryWriter(WriterBaseClass):
 
                 # Append element group data
                 for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.isin(piece.elements.tags,
+                    field_vals = np.in1d(piece.elements.tags,
                                          group_elems).astype(np.uint8)
                     xml.add_array_data_to_element(field_vals, break_line=False)
 
@@ -1027,7 +1027,7 @@ class AsciiWriter(WriterBaseClass):
 
     Example
     -------
-    >>> from writers import AsciiWriter
+    >>> from paraqus import AsciiWriter
     >>> writer = AsciiWriter(number_of_pieces=2)
     >>> writer.write(random_paraqus_model)
 
@@ -1146,7 +1146,7 @@ class AsciiWriter(WriterBaseClass):
 
             # Add node fields based on groups
             for group_name, group_nodes in piece.nodes.groups.items():
-                field_vals = np.isin(piece.nodes.tags,
+                field_vals = np.in1d(piece.nodes.tags,
                                      group_nodes).astype(np.uint8)
                 dtype = field_vals.dtype.name
 
@@ -1190,7 +1190,7 @@ class AsciiWriter(WriterBaseClass):
 
             # Add element fields based on groups
             for group_name, group_elems in piece.elements.groups.items():
-                field_vals = np.isin(piece.elements.tags,
+                field_vals = np.in1d(piece.elements.tags,
                                      group_elems).astype(np.uint8)
                 dtype = field_vals.dtype.name
 
@@ -1241,7 +1241,7 @@ class CollectionWriter(object):
 
     Example
     -------
-    >>> from writers import BinaryWriter, CollectionWriter
+    >>> from paraqus import BinaryWriter, CollectionWriter
     >>> vtu_writer = BinaryWriter()
     >>> with CollectionWriter(vtu_writer, "my_collection") as writer:
     >>>     writer.write(random_paraqus_model_frame_1)
