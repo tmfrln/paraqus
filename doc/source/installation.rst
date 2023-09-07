@@ -56,3 +56,9 @@ Adding Paraqus to the python path (advanced, but recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you would like to avoid adding the code lines above to all your files when using Paraqus, you can add the directory *path* to the environment variable ``PYTHONPATH``. Since this step is dependent on the operating system, it is not described here in detail, but you have to google for your system.
+
+Dependencies
+------------
+
+The only dependency for Paraqus is Numpy. When the Abaqus python interpreter is used, numpy is already installed by default. If Paraqus is installed via pip, numpy will be automatically installed as well.
+
