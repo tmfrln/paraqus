@@ -143,7 +143,7 @@ class ODBReader():
             return len(step.frames)
 
 
-    def get_frame_indices(self, step_name):
+    def get_frame_indices(self, step_name, how='all'):
         """
         Return the indices of the frames with at least one requested fiels.
         
@@ -151,7 +151,10 @@ class ODBReader():
         ----------
         step_name : str
             Name of the step in the odb.
-            
+        how : str
+            Whether to get frame indices where 'any' or 'all' fields have
+            values. Default: 'all'.
+        
         Returns
         -------
         indices : List[int]
@@ -166,9 +169,17 @@ class ODBReader():
         field_names = [er.field_name for er in self.field_export_requests]
         
         # function to check if at least one field is present in a frame
-        def has_data(f):
-            return any([n in f.fieldOutputs for n in field_names])
+        if how=='all':
+            reduction = all
+        elif how=='any':
+            reduction = any
+        else:
+            raise ValueError("'how' argument must be 'any' or 'all'.")
         
+        def has_data(f):
+            return reduction([n in f.fieldOutputs for n in field_names])
+                
+                
         with ODBObject(self.odb_path) as odb:
             step = odb.steps[step_name]
             frames = step.frames
