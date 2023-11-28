@@ -143,6 +143,40 @@ class ODBReader():
             return len(step.frames)
 
 
+    def get_frame_indices(self, step_name):
+        """
+        Return the indices of the frames with at least one requested fiels.
+        
+        Parameters
+        ----------
+        step_name : str
+            Name of the step in the odb.
+            
+        Returns
+        -------
+        indices : List[int]
+        
+        """
+        if len(self.field_export_requests) == 0:
+            raise RuntimeError(
+                "Can not check for frame indices when no field export "
+                "requests are registered.")
+        
+        # names of the fields
+        field_names = [er.field_name for er in self.field_export_requests]
+        
+        # function to check if at least one field is present in a frame
+        def has_data(f):
+            return any([n in f.fieldOutputs for n in field_names])
+        
+        with ODBObject(self.odb_path) as odb:
+            step = odb.steps[step_name]
+            frames = step.frames
+                        
+            frame_indices = [i for (i,f) in enumerate(frames) if has_data(f)]
+        
+        return frame_indices
+
 
     def add_field_export_request(self,
                                  field_name,
