@@ -244,7 +244,9 @@ ABQ_ELEMENT_LIBRARY = {
     # Coupled temperature-displacement elements
     "C3D4T": 10,
     "C3D6T": 13,
+    "C3D6RT": 13,
     "C3D6HT": 13,
+    "C3D6RHT": 13,
     "C3D8T": 12,
     "C3D8HT": 12,
     "C3D8RT": 12,
