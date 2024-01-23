@@ -838,9 +838,9 @@ class InstanceMesh():
             types = types[sorter]
 
             # convert back to tuples so return type stays the same
-            types = tuple([types[i] for i in sorter])
+            # types = tuple([types[i] for i in sorter])
 
-            connectivities = tuple([connectivities[i] for i in sorter])
+            connectivities = [tuple(connectivities[i]) for i in sorter]
 
         self.element_labels = labels
         self.element_types = types
