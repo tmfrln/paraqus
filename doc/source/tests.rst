@@ -15,7 +15,7 @@ To create the ressources, you first need to find out where Paraqus is installed 
 
 To recreate the file ``element_test_current.odb``, navigate to the directory ``paraqus/tests/resources`` and run the command ``abaqus job=element_test_current``, where ``abaqus`` should be replaced with the command for the version of Abaqus you are currently using. 
 
-To recreate the file ``element_test_old.odb``, navigate to the directory ``paraqus/paraqus/tests/resources`` and run the command ``abaqusOLD job=element_test_current``, where ``abaqusOLD`` should be replaced with the command for a previous release of Abaqus (e.g. if you are using Abaqus 2021 normally, this should be Abaqus 2020 or older). If you do not have access to a previous Abaqus release, just skip this and let the corresponding tests fail - this is no big deal, since the tests only cover edge cases of working with older files.
+To recreate the file ``element_test_old.odb``, navigate to the directory ``paraqus/paraqus/tests/resources`` and run the command ``abaqusOLD job=element_test_old``, where ``abaqusOLD`` should be replaced with the command for a previous release of Abaqus (e.g. if you are using Abaqus 2021 normally, this should be Abaqus 2020 or older). If you do not have access to a previous Abaqus release, just skip this and let the corresponding tests fail - this is no big deal, since the tests only cover edge cases of working with older files.
 
 
 Run tests using Abaqus
