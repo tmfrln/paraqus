@@ -24,7 +24,7 @@ Run tests using Abaqus
 In the python console of Abaqus  CAE, run the following commands:
 
 >>> import paraqus.tests as tests
->>> tests.run_abaqus()
+>>> tests.run_abaqus_tests()
 
 The report file for the tests is generated in the current working directory, and a small summary is displayed in Abaqus.
 
@@ -35,7 +35,7 @@ Run tests using an external python interpreter
 In a python session (or a script file) run the following commands:
 
 >>> import paraqus.tests as tests
->>> tests.run_python()
+>>> tests.run_python_tests()
 
 The report file for the tests is generated in the current working directory, and a small summary is displayed.
 
