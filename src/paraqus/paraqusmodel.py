@@ -10,7 +10,7 @@
 #
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
-This module containts all classes that contribute to paraqus models,
+This module containts all classes that contribute to Paraqus models,
 i.e. not just the model class itself but also repositories for nodes,
 elements and fields.
 
@@ -23,12 +23,11 @@ from abc import ABCMeta, abstractmethod
 import paraqus.constants as constants
 from paraqus.constants import USER, NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
 
-
 class ParaqusModel(object):
     """
     Paraqus representation of a finite element model.
 
-    The paraqus model can be used to manipulate and export any finite
+    The Paraqus model can be used to manipulate and export any finite
     element model as a set of VTK files.
 
     Parameters
@@ -37,21 +36,21 @@ class ParaqusModel(object):
         Tags of all elements being part of the model. Tags have to be
         unique.
     connectivity : Sequence of Sequence
-        Connectivity list in order of the element tags. The respective
-        nodes have to be in order as defined for VTK cells.
+        Connectivity list in the order defined for the element tags. The 
+        respective nodes have to be in order as defined for VTK cells.
     element_types : Sequence
-        The VTK cell types for all elements in order of the element
-        tags.
+        The VTK cell types for all elements in the order defined for the 
+        element tags.
     node_tags : Sequence
         Tags of all nodes being part of the model. Tags have to be
         unique.
     node_coords : Sequence of Sequence
-        Nodal coordinates in order of the node tags. The coordinates
-        can be defined in 1d-, 2d- or 3d-space as an array of shape
+        Nodal coordinates in the order defined for the node tags. The 
+        coordinates can be defined in 1d-, 2d- or 3d-space as an array of shape
         (number of nodes x number of dimensions).
     model_name : str, optional
         Name of the main model. In case of multiple frames or parts
-        every paraqus model should have the same model name. Default is
+        every Paraqus model should have the same model name. Default is
         'MODEL NAME'.
     part_name : str, optional
         Name of the part instance. Default is 'PART NAME'.
@@ -84,7 +83,7 @@ class ParaqusModel(object):
         coordinates.
     node_fields : NodeFieldRepository
         Repository storing all node fields.
-    element_fields : ElementRepository
+    element_fields : ElementFieldRepository
         Repository sotring all element fields.
 
     Example
@@ -115,7 +114,6 @@ class ParaqusModel(object):
     >>> writer.write(model)
 
     """
-
     def __init__(self,
                  element_tags,
                  connectivity,
@@ -125,11 +123,11 @@ class ParaqusModel(object):
                  **kwargs):
 
         # Check keyword arguments
-        self.model_name = kwargs.pop("model_name", "MODEL NAME")
-        self.part_name = kwargs.pop("part_name", "PART NAME")
-        self.step_name = kwargs.pop("step_name", "STEP NAME")
-        self.frame_time = kwargs.pop("frame_time", 0.0)
-        self.source = kwargs.pop("source", USER)
+        self._model_name = kwargs.pop("model_name", "MODEL NAME")
+        self._part_name = kwargs.pop("part_name", "PART NAME")
+        self._step_name = kwargs.pop("step_name", "STEP NAME")
+        self._frame_time = kwargs.pop("frame_time", 0.0)
+        self._source = kwargs.pop("source", USER)
 
         # Check for unrecognized kwargs
         if len(kwargs) > 0:
@@ -137,13 +135,54 @@ class ParaqusModel(object):
             raise ValueError(err_msg)
 
         # Create model geometry
-        self.elements = ElementRepository(element_tags, connectivity,
-                                          element_types)
-        self.nodes = NodeRepository(node_tags, node_coords)
+        self._elements = ElementRepository(element_tags, connectivity,
+                                           element_types)
+        self._nodes = NodeRepository(node_tags, node_coords)
 
         # Add field repositories
-        self.node_fields = NodeFieldRepository()
-        self.element_fields = ElementFieldRepository()
+        self._node_fields = NodeFieldRepository()
+        self._element_fields = ElementFieldRepository()
+        
+    # Properties
+    @property
+    def model_name(self):
+        return self._model_name
+    
+    @model_name.setter
+    def model_name(self, model_name):
+        self._model_name = model_name
+    
+    @property
+    def part_name(self):
+        return self._part_name
+    
+    @property
+    def step_name(self):
+        return self._step_name
+    
+    @property
+    def frame_time(self):
+        return self._frame_time
+    
+    @property
+    def source(self):
+        return self._source
+    
+    @property
+    def elements(self):
+        return self._elements
+    
+    @property
+    def nodes(self):
+        return self._nodes
+    
+    @property
+    def node_fields(self):
+        return self._node_fields
+    
+    @property
+    def element_fields(self):
+        return self._element_fields
 
     # Methods
     def __str__(self):
@@ -156,7 +195,7 @@ class ParaqusModel(object):
         return description
 
     def add_field(self, field_name, field_tags, field_values,
-                         field_position, field_type):
+                  field_position, field_type):
         """
         Add a field to the model.
 
@@ -169,9 +208,9 @@ class ParaqusModel(object):
         field_tags : numpy.ndarray
             Tags of the nodes or elements at which the field is stored.
         field_values : Sequence
-            Values of the field in order of the field tags. At nodes or
-            elements that are not part of the field tags, the values will be
-            set to NaN automatically.
+            Values of the field in the order defined for the field tags. At 
+            nodes or elements that are not part of the field tags, the values 
+            will be set to NaN automatically.
         field_position : ParaqusConstant
             A constant defining the storage position of the field, i.e.
             NODES or ELEMENTS.
@@ -186,29 +225,21 @@ class ParaqusModel(object):
         """
         field_values = np.asarray(field_values, dtype=float)
 
-        # Create field object
-        # An error will be thrown in case of invalid choices
-        # of field_position and field_type
-        field = Field(field_name, field_values,
-                      field_position, field_type)
-
         # Add a node field
         if field_position == NODES:
 
             if len(self.nodes.tags) < len(field_tags):
                 msg = ("Values array '{}'".format(field_name)
-                       + " has more entries than the model has nodes.")
+                       + " has more entries than the amount of the model"
+                       + " nodes.")
                 raise ValueError(msg)
 
-            # If there are more nodes than field values set the missing
-            # value to nan
-            # elif len(self.nodes.tags) > len(field_tags):
             # Always call pad method so that values will be sorted
             # regarding the order of node tags
-            field._field_values = self._pad_field_values(field_tags,
-                                                         field_values,
-                                                         self.nodes.tags)
-
+            field_values = self._pad_field_values(field_tags, field_values,
+                                                  self.nodes.tags)
+            
+            field = Field(field_name, field_values, field_position, field_type)
             self.node_fields.add_field(field)
 
         # Add an element field
@@ -216,20 +247,18 @@ class ParaqusModel(object):
 
             if len(self.elements.tags) < len(field_tags):
                 msg = ("Values array '{}'".format(field_name)
-                       + " has more entries than the model has elements.")
+                       + " has more entries than the amount of model"
+                       + " elements.")
                 raise ValueError(msg)
 
-            # If there are more elements than field values set the
-            # missing value to nan
-            # elif len(self.elements.tags) > len(field_tags):
             # Always call pad method so that values will be sorted
             # regarding the order of element tags
-            field._field_values = self._pad_field_values(field_tags,
-                                                         field_values,
-                                                         self.elements.tags)
+            field_values = self._pad_field_values(field_tags, field_values,
+                                                  self.elements.tags)
 
+            field = Field(field_name, field_values, field_position, field_type)
             self.element_fields.add_field(field)
-
+            
         else:
             msg = "Invalid field position: {}.".format(field_position)
             raise ValueError(msg)
@@ -450,9 +479,78 @@ class ParaqusModel(object):
         new_field_values[indices_original,:] = field_values
 
         return new_field_values
+    
+class MeshRepositoryBaseClass(object):
+    """
+    Base class for mesh repositories such as nodes or elements.
+    
+    Parameters
+    ----------
+    tags : Sequence
+        Tags of all nodes or elements that will be stored in the repository.
 
+    Attributes
+    ----------
+    tags : numpy.ndarray
+        Tags of the nodes or elements.
+    groups : dict
+        Mapping group name -> tags.
+        
+    """
+    __metaclass__ = ABCMeta
+    
+    def __init__(self, tags):
+        self._tags = np.asarray(tags).reshape(-1)
+        self._groups = {}
+    
+    # Properties
+    @property
+    def tags(self):
+        return self._tags
 
-class ElementRepository(object):
+    @property
+    def groups(self):
+        return self._groups
+    
+    def __iter__(self):
+        """Repository iterator."""
+        for i in range(len(self)):
+            yield self[i]
+
+    def __len__(self):
+        """Repository size."""
+        return len(self.tags)
+    
+    def add_group(self, group_name, tags):
+        """
+        Add a node or element group to the repository.
+
+        The nodes or elements must have been added beforehand, this method just
+        stores the information that the nodes or elements form a named group.
+
+        Parameters
+        ----------
+        group_name : str
+            Name of the group. Must be unique.
+        tags : Sequence
+            Integer tags of the nodes or elements in the group.
+
+        Returns
+        -------
+        None.
+
+        """
+        assert group_name not in self.groups, \
+            "Group '{}' already exists.".format(group_name)
+
+        assert set(tags) <= set(self.tags), \
+            "Some element tags in the set are not in the model."
+
+        tags = np.asarray(tags)
+        tags.sort()
+        self._groups[group_name] = tags
+
+class ElementRepository(MeshRepositoryBaseClass):
     """
     Repository to store a set of elements.
 
@@ -461,9 +559,9 @@ class ElementRepository(object):
     element_tags : Sequence
         Tags of all elements that will be stored in the repository.
     connectivity : Sequence of Sequence
-        Connectivity of all elements in order of the element tags.
+        Connectivity of all elements in the order defined for the element tags.
     element_types : Sequence
-        Type of all elements in order of the element tags.
+        Type of all elements in the order defined for the element tags.
 
     Attributes
     ----------
@@ -493,28 +591,23 @@ class ElementRepository(object):
         repository.
 
     """
-
     def __init__(self,
                  element_tags,
                  connectivity,
                  element_types):
 
-        assert len(element_tags) == len(connectivity) == len(element_types)
+        assert len(element_tags) == len(connectivity) == len(element_types), \
+            ("The amounts of element tags, element types and connectivity"
+             + "entries do not match.")
 
         # The connectivity cannot be stored as one array in case of
         # elements with different numbers of element nodes
-        self._tags = np.asarray(element_tags).reshape(-1)
+        super(ElementRepository, self).__init__(element_tags)
         self._index_mapper = dict(zip(element_tags, range(len(element_tags))))
         self._connectivity = [np.asarray(c).reshape(-1) for c in connectivity]
         self._types = np.asarray(element_types, dtype=np.uint8).reshape(-1)
-        self._groups = {}
-
 
     # Properties
-    @property
-    def tags(self):
-        return self._tags
-
     @property
     def index_mapper(self):
         return self._index_mapper
@@ -527,11 +620,6 @@ class ElementRepository(object):
     def types(self):
         return self._types
 
-    @property
-    def groups(self):
-        return self._groups
-
-
     # Methods
     def __getitem__(self, key):
         """Index-based access."""
@@ -540,45 +628,6 @@ class ElementRepository(object):
 
         return (self.tags[key], self.connectivity[key],
                 self.types[key], self.index_mapper[self.tags[key]])
-
-    def __iter__(self):
-        """Repository iterator."""
-        for i in range(len(self)):
-            yield self[i]
-
-    def __len__(self):
-        """Repository size."""
-        return len(self.tags)
-
-    def add_group(self, group_name, element_tags):
-        """
-        Add an element group to the repository.
-
-        The elements must have been added beforehand, this method just
-        stores the information that the elements form a named group.
-
-        Parameters
-        ----------
-        group_name : str
-            Name of the group. Must be unique.
-        element_tags : Sequence
-            Integer tags of the elements in the group.
-
-        Returns
-        -------
-        None.
-
-        """
-        assert group_name not in self.groups, \
-            "Group '{}' already exists.".format(group_name)
-
-        assert set(element_tags) <= set(self.tags), \
-            "Some element tags in the set are not in the model."
-
-        element_tags = np.asarray(element_tags)
-        element_tags.sort()
-        self._groups[group_name] = element_tags
-
 
     def get_subset(self, *element_tags):
         """
@@ -674,8 +723,7 @@ class ElementRepository(object):
         tags.sort()
         return tags
 
-
-class NodeRepository(object):
+class NodeRepository(MeshRepositoryBaseClass):
     """
     Repository to store a set of nodes.
 
@@ -684,8 +732,8 @@ class NodeRepository(object):
     node_tags : Sequence
         Tags of all nodes that will be stored in the repository.
     node_coords : Sequence of Sequence
-        Nodal coordinates in order of the node tags. The coordinates
-        can be defined in 1d-, 2d- or 3d-space as an array of shape
+        Nodal coordinates in the order defined for the node tags. The 
+        coordinates can be defined in 1d-, 2d- or 3d-space as an array of shape
         (number of nodes x number of dimensions).
 
     Attributes
@@ -693,7 +741,7 @@ class NodeRepository(object):
     tags : numpy.ndarray
         Tags of all nodes stored in the repository.
     coordinates : numpy.ndarray
-        Coordinates of all nodes in order of the node tags.
+        Coordinates of all nodes in the order defined for the node tags.
     index_mapper : dict
         Mapping node tag -> index in list of tags.
     groups : dict
@@ -701,19 +749,18 @@ class NodeRepository(object):
 
 
     """
-
     def __init__(self,
                  node_tags,
                  node_coords):
 
-        assert len(node_tags) == len(node_coords)
+        assert len(node_tags) == len(node_coords), \
+            ("The amounts of node tags and coordinate entries do not match.")
 
-        self._tags = np.asarray(node_tags).reshape(-1)
+        super(NodeRepository, self).__init__(node_tags)
         self._index_mapper = dict(zip(node_tags, range(len(node_tags))))
-        self._groups = {}
 
         node_coords = np.asarray(node_coords).reshape((len(self._tags), -1))
-        rows, columns = node_coords.shape
+        _, columns = node_coords.shape
         if columns not in (1, 2, 3):
             msg = "Invalid nodal coordinates."
             raise ValueError(msg)
@@ -722,10 +769,6 @@ class NodeRepository(object):
 
     # Properties
     @property
-    def tags(self):
-        return self._tags
-
-    @property
     def index_mapper(self):
         return self._index_mapper
 
@@ -733,54 +776,11 @@ class NodeRepository(object):
     def coordinates(self):
         return self._coordinates
 
-    @property
-    def groups(self):
-        return self._groups
-
-
     # Methods
     def __getitem__(self, key):
         """Index-based access."""
         return (self.tags[key], self.coordinates[key],
                 self.index_mapper[self.tags[key]])
-
-    def __iter__(self):
-        """Repository iterator."""
-        for i in range(len(self)):
-            yield self[i]
-
-    def __len__(self):
-        """Repository size."""
-        return len(self.tags)
-
-    def add_group(self, group_name, node_tags):
-        """
-        Add a node group to the repository.
-
-        The nodes must have been added beforehand, this method just
-        stores the information that they form a named group.
-
-        Parameters
-        ----------
-        group_name : str
-            Name of the group. Must be unique.
-        node_tags : Sequence
-            Integer tags of the nodes in the group.
-
-        Returns
-        -------
-        None.
-
-        """
-        assert group_name not in self.groups, \
-            "Group '{}' already exists.".format(group_name)
-
-        assert set(node_tags) <= set(self.tags), \
-            "Some node tags in the set are not in the model."
-
-        node_tags = np.asarray(node_tags)
-        node_tags.sort()
-        self._groups[group_name] = node_tags
 
     def get_subset(self, *node_tags):
         """
@@ -820,7 +820,6 @@ class NodeRepository(object):
 
         return return_repo
 
-
 class FieldRepositoryBaseClass(object):
     """
     Base class for field repositories.
@@ -836,12 +835,10 @@ class FieldRepositoryBaseClass(object):
     def __init__(self):
         self._fields = {}
 
-
     # Properties
     @property
     def fields(self):
         return self._fields
-
 
     # Methods
     def __getitem__(self, field_name):
@@ -875,24 +872,13 @@ class FieldRepositoryBaseClass(object):
 
     @abstractmethod
     def add_field(self, field):
-        """
-        Add a new node or element field to the repository.
-
-        This method is abstract since one must differ between node and
-        element fields when adding them to the respective repository.
-        """
+        """Add a new node or element field to the repository."""
         pass
 
     @abstractmethod
-    def get_subset(self):
-        """
-        Export node or element fields for a subset of nodes or elements.
-
-        This method is abstract since one must differ between working
-        with subsets of nodes or elements.
-        """
+    def get_subset(self, repository):
+        """Export node or element fields for a subset of nodes or elements."""
         return
-
 
 class NodeFieldRepository(FieldRepositoryBaseClass):
     """
@@ -903,9 +889,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
     fields : dict
         Mapping field name -> Field.
 
-
     """
-
     def __init__(self):
         super(NodeFieldRepository, self).__init__()
 
@@ -968,7 +952,6 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
 
         return sub_fields
 
-
 class ElementFieldRepository(FieldRepositoryBaseClass):
     """
     Repository to stored elemental fields.
@@ -980,7 +963,6 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
 
     """
-
     def __init__(self):
         super(ElementFieldRepository, self).__init__()
 
@@ -1043,7 +1025,6 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
         return sub_fields
 
-
 class Field(object):
     """
     Definition of nodal or elemental fields.
@@ -1054,7 +1035,8 @@ class Field(object):
         Name of the field.
     field_values : Sequence
         Values of the field. In case the field will be added to a model, the
-        values must be in order of the respective node or element tags.
+        values must be in the order defined for the respective node or element 
+        tags.
     field_position : ParaqusConstant
         Position of the field, i.e. NODES or ELEMENTS.
     field_type : ParaqusConstant
@@ -1071,16 +1053,14 @@ class Field(object):
     field_values : numpy.ndarray
         Field values of the field.
 
-
     """
-
     def __init__(self,
                  field_name,
                  field_values,
                  field_position,
                  field_type):
 
-        self.field_name = field_name
+        self._field_name = field_name
 
         # Add position
         if field_position not in (NODES, ELEMENTS):
@@ -1096,7 +1076,7 @@ class Field(object):
 
         # Add values
         field_values = np.asarray(field_values)
-        if self.field_type == SCALAR:
+        if self._field_type == SCALAR:
             if np.squeeze(field_values).ndim > 1:
                 msg = "Data for scalar field is not 1d."
                 raise ValueError(msg)
@@ -1104,8 +1084,11 @@ class Field(object):
         else:
             self._field_values = field_values
 
-
     # Properties
+    @property
+    def field_name(self):
+        return self._field_name
+    
     @property
     def field_values(self):
         return self._field_values
@@ -1117,7 +1100,6 @@ class Field(object):
     @property
     def field_type(self):
         return self._field_type
-
 
     # Methods
     def __repr__(self):
@@ -1148,16 +1130,13 @@ class Field(object):
         elif self.field_type == VECTOR:
             nvals, ndim = self.field_values.shape
             if ndim < 3:
-                return np.hstack((self.field_values, np.zeros((nvals, 3-ndim))))
+                return np.hstack((self.field_values, np.zeros((nvals, 
+                                                               3 - ndim))))
             return self.field_values
 
         elif self.field_type == TENSOR:
             nvals, ndim = self.field_values.shape
             if ndim < 6:
-                return np.hstack((self.field_values, np.zeros((nvals, 6-ndim))))
+                return np.hstack((self.field_values, np.zeros((nvals, 
+                                                               6 - ndim))))
             return self.field_values
-
-        else:
-            raise NotImplementedError(
-                "Only SCALAR, VECTOR and TENSOR are supported."
-                )
