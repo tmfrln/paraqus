@@ -10,26 +10,38 @@
 #
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
-Helper functions/types to read results from abaqus odbs.
+Helper functions/types to read results from Abaqus ODBs.
 
-All of these can only be executed in abaqus python.
+All of these can only be executed in Abaqus Python.
 
 """
-import os.path
+import os
 from abaqus import session
 
 class ODBObject(object):
     """
-    Context manager for Abaqus odb objects.
+    Context manager for Abaqus ODB objects.
 
-    Opens an odb and closes it after we are done with it. If any exceptions
-    are raised while the odb is open, it is still closed afterwards.
-
-    The optional argument `readonly` can be set to ``False`` to be able to
-    write to the odb.
-
+    Opens an ODB and closes it after we are done with it. If any exceptions
+    are raised while the ODB is open, it is still closed afterwards.
+    
+    Parameters
+    ----------
+    file_name : str
+        Path to the Abaqus .odb file.
+    readonly : Bool, optional
+        If ``True`` writing to the ODB is prohibited. Default is ``True``.
+        
+    Attributes
+    ----------
+    file_path : str
+        Absolute path to the .odb file.
+    readonly : Bool
+        If ``True`` writing to the ODB is prohibited. 
+    already_open : Bool
+        A flag indicating wheter the ODB is already open or not.
+        
     """
-
     def __init__(self, file_name, readonly=True):
         self.file_path = os.path.abspath(file_name)
         self.readonly = readonly
@@ -53,7 +65,7 @@ class ODBObject(object):
         # deal with silent errors in the readonly status, this happens e.g.
         # when a lock file prevents write access
         assert odb.isReadOnly == self.readonly, \
-            "The odb could not be opened with option readonly=%s" % self.readonly
+            "The ODB could not be opened with option readonly=%s" % self.readonly
 
         self.odb = odb
 
@@ -64,28 +76,25 @@ class ODBObject(object):
         if not self.already_open:
             self.odb.close()
 
-
 def upgrade_odb(odb_file):
     """
-    Upgrade an odb if necessary.
+    Upgrade an ODB if necessary.
 
-    A subfolder is created for the original odb files if an upgrade is
+    A subfolder is created for the original ODB files if an upgrade is
     performed.
 
     Parameters
     ----------
     odb_file : str
-        Path to the Abaqus .odb
+        Path to the Abaqus ODB.
 
     Returns
     -------
     bool
-        Whether the odb was updated.
+        Whether the ODB was updated.
 
     """
-    import os
     import shutil
-    from abaqus import session
 
     upgrade_required = session.isUpgradeRequiredForOdb(odb_file)
 
@@ -111,12 +120,10 @@ def upgrade_odb(odb_file):
         session.upgradeOdb(existingOdbPath=backup_file_path,
                            upgradedOdbPath=odb_file)
 
-        print("The odb file '%s' has been updated." % odb_file)
+        print("The ODB file '%s' has been updated." % odb_file)
         print("The original file has been stored in the path '%s'"
               % backup_file_path)
 
         return True
 
-    else:
-        return False
-
+    return False
