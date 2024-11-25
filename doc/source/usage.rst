@@ -1,17 +1,17 @@
 Usage
 =====
 
-Usage with pure Python
-----------------------
+Usage with Python alone
+-----------------------
 
-The general workflow for the usage of paraqus always includes the following steps:
+The general workflow for the usage of Paraqus always includes the following steps:
 
-- Create one or more ``ParaqusModel`` instances, representing the geometry and data that will be exported to vtk
-- Create a writer for the desired file format (``AsciiWriter`` or ``BinaryWriter``)
-- Optional: Create a ``CollectionWriter`` to connect vtk files based on multiple ``ParaqusModel`` instances, e.g. when they represent different time steps for the same model
-- Write the vtk files to disk
+- Create one or more ``ParaqusModel`` instances, representing the geometry and data that will be exported to *vtk*.
+- Create a writer for the desired file format (``AsciiWriter`` or ``BinaryWriter``).
+- Optional: create a ``CollectionWriter`` to connect *vtk* files based on multiple ``ParaqusModel`` instances, e.g. when they represent different time steps for the same model.
+- Write the *vtk* files to disk.
 
-Have a look at the pure python examples (located in the subdirectory ``examples`` of paraqus) to learn how to create a ``ParaqusModel`` from scratch and how to write a vtk file based on it.
+Have a look at the pure Python examples (located in the subdirectory ``examples`` of Paraqus) to learn how to create a ``ParaqusModel`` from scratch and how to write a *vtk* file based on it.
 
 ===================================================================================================================     ==========================================================
 Example                                                                                                                 Contents
@@ -34,9 +34,9 @@ Example                                                                         
 Usage with Abaqus
 -----------------
 
-When used to export models from Abaqus, the creation of the ``ParaqusModel`` instances is handled by the ``ODBReader`` class. The following steps do not change compared to the usage with pure python. The following examples demonstrate how to use paraqus with Abaqus, and need a working Abaqus installation to run. 
+When used to export models from Abaqus, the creation of the ``ParaqusModel`` instances is handled by the ``ODBReader`` class. The following steps do not change compared to the usage with pure Python. The following examples demonstrate how to use Paraqus with Abaqus, and need a working Abaqus installation to run. 
 
-In general, the Abaqus input files must be downloaded and an Abaqus analysis must be performed for each example. Detailed instructions can be found in the individual python files. It is recommended to run the Abaqus analysis for each example, and then look at the output database to get a feel for the model. Only then should you go through the python code and try to understand what each line does, being able to reference e.g. part names with the output database.
+In general, the Abaqus input files must be downloaded and an Abaqus analysis must be performed for each example. Detailed instructions can be found in the individual Python files. It is recommended to run the Abaqus analysis for each example, and then look at the output database to get a feel for the model. Only then should you go through the Python code and try to understand what each line does, being able to reference e.g. part names with the output database.
 
 At the end of each of the Abaqus tutorials, an exemplary pipeline for Paraview is described to visualize the results.
 
@@ -54,7 +54,7 @@ Example                                           Contents
                                                                                                                                                           - Fields that are not defined at all nodes/elements
 
 `example_abaqus_rivet_forming <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_rivet_forming.py>`_                                    - CEL elements
-                                                                                                                                                          - Large models, parallel vtk files
+                                                                                                                                                          - Large models, parallel *vtk* files
 
 `example_abaqus_extrusion <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_extrusion.py>`_                                            - User materials
                                                                                                                                                           - Exporting large numbers of frames for video animations
