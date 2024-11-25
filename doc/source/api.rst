@@ -29,7 +29,7 @@ CollectionWriter
 
 ODBReader
 ---------
-The ODBReader class is only useable in the Abaqus python interpreter.
+The ODBReader class is only useable in the Abaqus Python interpreter.
 
 .. autoclass:: paraqus.abaqus.ODBReader
    :members:
