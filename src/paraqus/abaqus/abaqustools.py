@@ -18,30 +18,32 @@ All of these can only be executed in Abaqus Python.
 import os
 from abaqus import session
 
+
 class ODBObject(object):
     """
     Context manager for Abaqus ODB objects.
 
     Opens an ODB and closes it after we are done with it. If any exceptions
     are raised while the ODB is open, it is still closed afterwards.
-    
+
     Parameters
     ----------
     file_name : str
         Path to the Abaqus .odb file.
     readonly : Bool, optional
         If ``True`` writing to the ODB is prohibited. Default is ``True``.
-        
+
     Attributes
     ----------
     file_path : str
         Absolute path to the .odb file.
     readonly : Bool
-        If ``True`` writing to the ODB is prohibited. 
+        If ``True`` writing to the ODB is prohibited.
     already_open : Bool
         A flag indicating wheter the ODB is already open or not.
-        
+
     """
+
     def __init__(self, file_name, readonly=True):
         self.file_path = os.path.abspath(file_name)
         self.readonly = readonly
@@ -76,6 +78,7 @@ class ODBObject(object):
         if not self.already_open:
             self.odb.close()
 
+
 def upgrade_odb(odb_file):
     """
     Upgrade an ODB if necessary.
@@ -104,7 +107,7 @@ def upgrade_odb(odb_file):
 
         # create new directory for upgraded files
         new_directory = os.path.join(os.path.dirname(odb_file),
-                                    "odbs_before_upgrades")
+                                     "odbs_before_upgrades")
 
         if not os.path.isdir(new_directory):
             os.mkdir(new_directory)

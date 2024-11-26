@@ -23,6 +23,7 @@ from abc import ABCMeta, abstractmethod
 import paraqus.constants as constants
 from paraqus.constants import USER, NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
 
+
 class ParaqusModel(object):
     """
     Paraqus representation of a finite element model.
@@ -36,16 +37,16 @@ class ParaqusModel(object):
         Tags of all elements being part of the model. Tags have to be
         unique.
     connectivity : Sequence of Sequence
-        Connectivity list in the order defined for the element tags. The 
+        Connectivity list in the order defined for the element tags. The
         respective nodes have to be in order as defined for VTK cells.
     element_types : Sequence
-        The VTK cell types for all elements in the order defined for the 
+        The VTK cell types for all elements in the order defined for the
         element tags.
     node_tags : Sequence
         Tags of all nodes being part of the model. Tags have to be
         unique.
     node_coords : Sequence of Sequence
-        Nodal coordinates in the order defined for the node tags. The 
+        Nodal coordinates in the order defined for the node tags. The
         coordinates can be defined in 1d-, 2d- or 3d-space as an array of shape
         (number of nodes x number of dimensions).
     model_name : str, optional
@@ -114,6 +115,7 @@ class ParaqusModel(object):
     >>> writer.write(model)
 
     """
+
     def __init__(self,
                  element_tags,
                  connectivity,
@@ -142,49 +144,55 @@ class ParaqusModel(object):
         # Add field repositories
         self._node_fields = NodeFieldRepository()
         self._element_fields = ElementFieldRepository()
-        
-    # Properties
+
     @property
     def model_name(self):
         return self._model_name
-    
+
     @model_name.setter
     def model_name(self, model_name):
         self._model_name = model_name
-    
+
     @property
     def part_name(self):
         return self._part_name
-    
+
+    @part_name.setter
+    def part_name(self, part_name):
+        self._part_name = part_name
+
     @property
     def step_name(self):
         return self._step_name
-    
+
+    @step_name.setter
+    def step_name(self, step_name):
+        self._step_name = step_name
+
     @property
     def frame_time(self):
         return self._frame_time
-    
+
     @property
     def source(self):
         return self._source
-    
+
     @property
     def elements(self):
         return self._elements
-    
+
     @property
     def nodes(self):
         return self._nodes
-    
+
     @property
     def node_fields(self):
         return self._node_fields
-    
+
     @property
     def element_fields(self):
         return self._element_fields
 
-    # Methods
     def __str__(self):
         """String representation of the model."""
         description = ("ParaqusModel\n"
@@ -208,8 +216,8 @@ class ParaqusModel(object):
         field_tags : numpy.ndarray
             Tags of the nodes or elements at which the field is stored.
         field_values : Sequence
-            Values of the field in the order defined for the field tags. At 
-            nodes or elements that are not part of the field tags, the values 
+            Values of the field in the order defined for the field tags. At
+            nodes or elements that are not part of the field tags, the values
             will be set to NaN automatically.
         field_position : ParaqusConstant
             A constant defining the storage position of the field, i.e.
@@ -238,7 +246,7 @@ class ParaqusModel(object):
             # regarding the order of node tags
             field_values = self._pad_field_values(field_tags, field_values,
                                                   self.nodes.tags)
-            
+
             field = Field(field_name, field_values, field_position, field_type)
             self.node_fields.add_field(field)
 
@@ -258,7 +266,7 @@ class ParaqusModel(object):
 
             field = Field(field_name, field_values, field_position, field_type)
             self.element_fields.add_field(field)
-            
+
         else:
             msg = "Invalid field position: {}.".format(field_position)
             raise ValueError(msg)
@@ -473,17 +481,18 @@ class ParaqusModel(object):
         shape = (len(pad_tags), field_values.shape[1])
 
         new_field_values = np.empty(shape, dtype=field_values.dtype)
-        new_field_values[:,:] = np.nan
+        new_field_values[:, :] = np.nan
 
         # Fill in the old values
-        new_field_values[indices_original,:] = field_values
+        new_field_values[indices_original, :] = field_values
 
         return new_field_values
-    
+
+
 class MeshRepositoryBaseClass(object):
     """
     Base class for mesh repositories such as nodes or elements.
-    
+
     Parameters
     ----------
     tags : Sequence
@@ -495,14 +504,14 @@ class MeshRepositoryBaseClass(object):
         Tags of the nodes or elements.
     groups : dict
         Mapping group name -> tags.
-        
+
     """
     __metaclass__ = ABCMeta
-    
+
     def __init__(self, tags):
         self._tags = np.asarray(tags).reshape(-1)
         self._groups = {}
-    
+
     # Properties
     @property
     def tags(self):
@@ -511,7 +520,7 @@ class MeshRepositoryBaseClass(object):
     @property
     def groups(self):
         return self._groups
-    
+
     def __iter__(self):
         """Repository iterator."""
         for i in range(len(self)):
@@ -520,7 +529,7 @@ class MeshRepositoryBaseClass(object):
     def __len__(self):
         """Repository size."""
         return len(self.tags)
-    
+
     def add_group(self, group_name, tags):
         """
         Add a node or element group to the repository.
@@ -549,6 +558,7 @@ class MeshRepositoryBaseClass(object):
         tags = np.asarray(tags)
         tags.sort()
         self._groups[group_name] = tags
+
 
 class ElementRepository(MeshRepositoryBaseClass):
     """
@@ -591,6 +601,7 @@ class ElementRepository(MeshRepositoryBaseClass):
         repository.
 
     """
+
     def __init__(self,
                  element_tags,
                  connectivity,
@@ -723,6 +734,7 @@ class ElementRepository(MeshRepositoryBaseClass):
         tags.sort()
         return tags
 
+
 class NodeRepository(MeshRepositoryBaseClass):
     """
     Repository to store a set of nodes.
@@ -732,7 +744,7 @@ class NodeRepository(MeshRepositoryBaseClass):
     node_tags : Sequence
         Tags of all nodes that will be stored in the repository.
     node_coords : Sequence of Sequence
-        Nodal coordinates in the order defined for the node tags. The 
+        Nodal coordinates in the order defined for the node tags. The
         coordinates can be defined in 1d-, 2d- or 3d-space as an array of shape
         (number of nodes x number of dimensions).
 
@@ -747,8 +759,8 @@ class NodeRepository(MeshRepositoryBaseClass):
     groups : dict
         Mapping group name -> node tags.
 
-
     """
+
     def __init__(self,
                  node_tags,
                  node_coords):
@@ -820,6 +832,7 @@ class NodeRepository(MeshRepositoryBaseClass):
 
         return return_repo
 
+
 class FieldRepositoryBaseClass(object):
     """
     Base class for field repositories.
@@ -880,6 +893,7 @@ class FieldRepositoryBaseClass(object):
         """Export node or element fields for a subset of nodes or elements."""
         return
 
+
 class NodeFieldRepository(FieldRepositoryBaseClass):
     """
     Repository to stored nodal fields.
@@ -890,6 +904,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
         Mapping field name -> Field.
 
     """
+
     def __init__(self):
         super(NodeFieldRepository, self).__init__()
 
@@ -946,11 +961,12 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
         indices = np.array([index_mapper[i] for i in tags])
 
         sub_fields = [Field(f.field_name,
-                                  f.field_values[indices],
-                                  f.field_position,
-                                  f.field_type) for f in self.fields.values()]
+                            f.field_values[indices],
+                            f.field_position,
+                            f.field_type) for f in self.fields.values()]
 
         return sub_fields
+
 
 class ElementFieldRepository(FieldRepositoryBaseClass):
     """
@@ -963,6 +979,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
 
     """
+
     def __init__(self):
         super(ElementFieldRepository, self).__init__()
 
@@ -1019,11 +1036,12 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
         indices = np.array([index_mapper[i] for i in tags])
 
         sub_fields = [Field(f.field_name,
-                                  f.field_values[indices],
-                                  f.field_position,
-                                  f.field_type) for f in self.fields.values()]
+                            f.field_values[indices],
+                            f.field_position,
+                            f.field_type) for f in self.fields.values()]
 
         return sub_fields
+
 
 class Field(object):
     """
@@ -1035,7 +1053,7 @@ class Field(object):
         Name of the field.
     field_values : Sequence
         Values of the field. In case the field will be added to a model, the
-        values must be in the order defined for the respective node or element 
+        values must be in the order defined for the respective node or element
         tags.
     field_position : ParaqusConstant
         Position of the field, i.e. NODES or ELEMENTS.
@@ -1054,6 +1072,7 @@ class Field(object):
         Field values of the field.
 
     """
+
     def __init__(self,
                  field_name,
                  field_values,
@@ -1080,7 +1099,7 @@ class Field(object):
             if np.squeeze(field_values).ndim > 1:
                 msg = "Data for scalar field is not 1d."
                 raise ValueError(msg)
-            self._field_values = field_values.reshape((-1,1))
+            self._field_values = field_values.reshape((-1, 1))
         else:
             self._field_values = field_values
 
@@ -1088,7 +1107,7 @@ class Field(object):
     @property
     def field_name(self):
         return self._field_name
-    
+
     @property
     def field_values(self):
         return self._field_values
@@ -1130,13 +1149,13 @@ class Field(object):
         elif self.field_type == VECTOR:
             nvals, ndim = self.field_values.shape
             if ndim < 3:
-                return np.hstack((self.field_values, np.zeros((nvals, 
+                return np.hstack((self.field_values, np.zeros((nvals,
                                                                3 - ndim))))
             return self.field_values
 
         elif self.field_type == TENSOR:
             nvals, ndim = self.field_values.shape
             if ndim < 6:
-                return np.hstack((self.field_values, np.zeros((nvals, 
+                return np.hstack((self.field_values, np.zeros((nvals,
                                                                6 - ndim))))
             return self.field_values

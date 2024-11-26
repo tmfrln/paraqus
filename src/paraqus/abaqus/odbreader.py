@@ -11,12 +11,11 @@
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 The main purpose of this file is to implement a model class that is
-instantiated based on an abaqus odb.
+instantiated based on an Abaqus ODB.
 
 One model instance is created for each time frame that is exported.
 
 """
-
 # TODO: Looping over instances instead of set export requests makes it hard to
 # check if all requests were executed. Right now, no error is raised when a
 # set does not exist.
@@ -34,13 +33,11 @@ from paraqus.constants import (ABAQUS, NODES, ELEMENTS,
                                SCALAR, TENSOR, VECTOR,
                                MEAN, ABSMAX)
 
-from abaqusConstants import MISES, MAGNITUDE
-
 import abaqusConstants
 
 # lookup for invariants in field outputs
-ABAQUS_INVARIANTS = {"mises": MISES,
-                     "magnitude": MAGNITUDE}
+ABAQUS_INVARIANTS = {"mises": abaqusConstants.MISES,
+                     "magnitude": abaqusConstants.MAGNITUDE}
 
 # remark: surface tensors are not yet supported
 PARAQUS_FIELD_TYPES = {abaqusConstants.SCALAR: SCALAR,
@@ -52,39 +49,39 @@ PARAQUS_FIELD_TYPES = {abaqusConstants.SCALAR: SCALAR,
 
 class ODBReader():
     """
-    Reads an odb file and exports selected results to a ParaqusModel instance.
+    Reads an .odb file and exports selected results to a ParaqusModel instance.
+
+    Parameters
+    ----------
+    odb_path : str
+        Name of the underlying ODB.
+    model_name : str, optional
+        Name of the model returned by the reader. When `model_name` is omitted,
+        it is set based on `odb_path`. Default: None.
+    instance_names : list, optional
+        Instances that will be exported to individual models. If
+        `instance_names` is omitted, all instances in the ODB will be exported.
+        Default: None.
+    time_offset : float, optional
+        Assume the simulation started at this time when exporting. Useful to
+        create files in VTK format that are ordered in time from multiple ODBs.
+        Default: 0.0
 
     Attributes
     ----------
     odb_path : str
-        Path to the underlying odb.
+        Path to the underlying ODB.
     model_name : str
         Name of the model returned by the reader.
     field_export_requests : list
-        Contains one request per field that will be exported to vtk format.
+        Contains one request per field that will be exported to VTK format.
     group_export_requests : list
         Contains one request per node or element set that will be exported.
     instance_names : list
         Instances that will be exported to individual models.
     time_offset : float
         Assume the simulation started at this time when exporting. Useful to
-        create vtk files that are ordered in time from multiple odbs.
-
-    Parameters
-    ----------
-    odb_path : str
-        Name of the underlying odb.
-    model_name : str, optional
-        Name of the model returned by the reader. When `model_name` is omitted,
-        it is set based on `odb_path`. Default: None.
-    instance_names : list, optional
-        Instances that will be exported to individual models. If
-        `instance_names` is omitted, all instances in the odb will be exported.
-        Default: None.
-    time_offset : float, optional
-        Assume the simulation started at this time when exporting. Useful to
-        create vtk files that are ordered in time from multiple odbs.
-        Default: 0.0
+        create files in VTK format that are ordered in time from multiple ODBs.
 
     Examples
     --------
@@ -106,7 +103,6 @@ class ODBReader():
     >>>                       )
 
     """
-
     def __init__(self,
                  odb_path,
                  model_name=None,
@@ -123,14 +119,14 @@ class ODBReader():
 
     def get_number_of_frames(self, step_name):
         """
-        Return the number of frames for a given step in the underlying odb.
+        Return the number of frames for a given step in the underlying ODB.
 
         The reader does NOT check that all output is available in each frame.
 
         Parameters
         ----------
         step_name : str
-            Name of the step in the odb.
+            Name of the step in the ODB.
 
         Returns
         -------
@@ -146,28 +142,29 @@ class ODBReader():
     def get_frame_indices(self, step_name, how='all'):
         """
         Return the indices of the frames with at least one requested fiels.
-        
+
         Parameters
         ----------
         step_name : str
-            Name of the step in the odb.
+            Name of the step in the ODB.
         how : str
             Whether to get frame indices where 'any' or 'all' fields have
             values. Default: 'all'.
-        
+
         Returns
         -------
-        indices : List[int]
-        
+        frame_indices : List[int]
+            Indices of the frames with at least one requested field.
+
         """
         if len(self.field_export_requests) == 0:
             raise RuntimeError(
                 "Can not check for frame indices when no field export "
                 "requests are registered.")
-        
+
         # names of the fields
         field_names = [er.field_name for er in self.field_export_requests]
-        
+
         # function to check if at least one field is present in a frame
         if how=='all':
             reduction = all
@@ -175,17 +172,16 @@ class ODBReader():
             reduction = any
         else:
             raise ValueError("'how' argument must be 'any' or 'all'.")
-        
+
         def has_data(f):
             return reduction([n in f.fieldOutputs for n in field_names])
-                
-                
+
         with ODBObject(self.odb_path) as odb:
             step = odb.steps[step_name]
             frames = step.frames
-                        
+
             frame_indices = [i for (i,f) in enumerate(frames) if has_data(f)]
-        
+
         return frame_indices
 
 
@@ -222,12 +218,12 @@ class ODBReader():
         Parameters
         ----------
         set_name : str
-            Name of the set in the odb
+            Name of the set in the ODB.
         set_type : str
             Type of the set. Valid values are 'nodes' or 'elements'.
         instance_name : str, optional
             If `instance_name` is not None, look for an instance-level set
-            in the odb. Otherwise look for an assembly-level set.
+            in the ODB. Otherwise look for an assembly-level set.
             Default: None.
 
         Returns
@@ -250,12 +246,12 @@ class ODBReader():
         Parameters
         ----------
         surface_name : str
-            Name of the surface in the odb
+            Name of the surface in the ODB.
         surface_type : str
             Type of the surface. Valid values are 'nodes' or 'elements'.
         instance_name : str, optional
             If `instance_name` is not None, look for an instance-level surface
-            in the odb. Otherwise look for an assembly-level surface.
+            in the ODB. Otherwise look for an assembly-level surface.
             Default: None.
 
         Returns
@@ -273,7 +269,7 @@ class ODBReader():
 
     def get_frame_time(self, step_name, frame_index):
         """
-        Get the highest time value of any frame in the odb.
+        Get the highest time value of any frame in the ODB.
 
         The `time_offset` specified for the reader is added to the value.
 
@@ -300,7 +296,7 @@ class ODBReader():
 
     def read_instances(self, step_name, frame_index):
         """
-        Read a frame from the underlying odb.
+        Read a frame from the underlying ODB.
 
         Each instance is read separately and returns an individual
         ParaqusModel. Models are generated lazily, so memory-efficient
@@ -407,7 +403,6 @@ class ODBReader():
 
                 yield model
 
-
     def _get_group_tags(self, request, odb, instance):
         """
         Return the node/element tags for a node/element set.
@@ -416,8 +411,8 @@ class ODBReader():
         ----------
         request : GroupExportRequest
             Describes a set or surface that will be exported.
-        odb : Abaqus ODB object
-            The open odb.
+        odb : Abaqus ODB Object
+            The open ODB.
         instance : Abaqus part instance object
             The part instance that is currently exported.
 
@@ -500,7 +495,6 @@ class ODBReader():
             # The request was not for this instance
             return None
 
-
     def _get_field_output(self,
                           request,
                           frame,
@@ -530,7 +524,8 @@ class ODBReader():
             if request.field_position == NODES:
                 field_out = field_out.getSubset(position=abaqusConstants.NODAL)
             elif request.field_position == ELEMENTS:
-                field_out = field_out.getSubset(position=abaqusConstants.CENTROID)
+                field_out = field_out.getSubset(
+                    position=abaqusConstants.CENTROID)
             else:
                 raise ValueError("Position not implemented.")
 
@@ -540,7 +535,6 @@ class ODBReader():
 
         return field_out
 
-
     def _read_field_output(self, request, field_out, instance_mesh):
         """
         Read the data for one field output.
@@ -548,7 +542,7 @@ class ODBReader():
         Parameters
         ----------
         request : FieldExportRequest
-            Specifies which field will be read from the odb.
+            Specifies which field will be read from the ODB.
         field_out : Abaqus FieldOutput
             Field output corresponding to the request (may still have values
             at other points than requested etc).
@@ -614,7 +608,6 @@ class ODBReader():
 
         return labels, data, paraqus_position, field_type, field_description
 
-
     def _get_node_data(self, request, field_out, instance_mesh):
         """Extract node values from a FieldOutput."""
         instance_nodes = instance_mesh.node_labels
@@ -645,7 +638,6 @@ class ODBReader():
             data[indices,:] = block_data
 
         return instance_nodes, data, field_type, description_str
-
 
     def _get_element_data(self, request, field_out, instance_mesh):
         """Extract element values from a FieldOutput."""
@@ -696,7 +688,7 @@ class ODBReader():
             block_data = block.data
 
             assert len(np.setdiff1d(block_elements, instance_elements)) == 0, \
-                "not all block element labels are part of the instance."
+                "Not all block element labels are part of the instance."
 
             # indices iof the block elements in instance_elements
             # this assumes that instance_elements is sorted!
@@ -736,10 +728,16 @@ class ODBReader():
                     field_type,
                     description_str)
 
-
 class InstanceMesh():
     """
     Represent the mesh for one part instance.
+
+    Parameters
+    ----------
+    instance : Abaqus ODB Instance Object
+        The instance the mesh is extracted from.
+    sort_values : Bool, optional
+        Whether the nodes and elements are sorted by label. Default: True.
 
     Attributes
     ----------
@@ -755,15 +753,7 @@ class InstanceMesh():
     element_connectivities : List[Tuple[int]]
         Nodes in each element, in the same order as `element_labels`.
 
-    Parameters
-    ----------
-    instance : Abaqus odb instance object
-        The instance the mesh is extracted from.
-    sort_values : Bool, optional
-        Whether the nodes and elements are sorted by label. Default: True.
-
     """
-
     def __init__(self, instance, sort_values=True):
 
         self._read_nodes(instance, sort=sort_values)
@@ -779,7 +769,7 @@ class InstanceMesh():
 
         Parameters
         ----------
-        instance : abaqus odb instance object
+        instance : Abaqus ODB Instance Object
             The instance in question.
         sort : bool, optional
             Whether to sort the return by node label. Default: True.
@@ -800,7 +790,6 @@ class InstanceMesh():
         self.node_labels = labels
         self.node_coords = coords
 
-
     def _read_elements(self, instance, sort=True):
         """
         Extract element info.
@@ -810,7 +799,7 @@ class InstanceMesh():
 
         Parameters
         ----------
-        instance : abaqus odb instance object
+        instance : Abaqus ODB Instance Object
             The instance in question.
         sort : bool, optional
             Whether to sort the return by element label. Default: True.
@@ -846,7 +835,6 @@ class InstanceMesh():
         self.element_types = types
         self.element_connectivities = connectivities
 
-
     def _read_node_sets(self, instance):
         """
         Extract instance-level node sets as indicator arrays.
@@ -855,7 +843,7 @@ class InstanceMesh():
 
         Parameters
         ----------
-        instance : abaqus odb instance object
+        instance : Abaqus ODB Instance Object
             The instance in question.
 
         """
@@ -868,7 +856,6 @@ class InstanceMesh():
 
             self.node_sets[set_name] = set_indicators.astype(int)
 
-
     def _read_element_sets(self, instance):
         """
         Extract instance-level element sets as indicator arrays.
@@ -877,7 +864,7 @@ class InstanceMesh():
 
         Parameters
         ----------
-        instance : abaqus odb instance object
+        instance : Abaqus ODB Instance Object
             The instance in question.
 
         """
@@ -890,14 +877,9 @@ class InstanceMesh():
 
             self.element_sets[set_name] = set_indicators.astype(int)
 
-
 class FieldExportRequest():
     """
     Specify a field output that will be exported.
-
-    Attributes
-    ----------
-    See parameters.
 
     Parameters
     ----------
@@ -915,8 +897,23 @@ class FieldExportRequest():
         How to reduce values of multiple section points for the same node or
         element. Valid values are 'mean' or 'absmax'.
 
-    """
+    Attributes
+    ----------
+    field_name : str
+        Abaqus identifier for the field, e.g. 'S' for stress.
+    field_position : str, optional
+        What type of field. valid values: 'nodes' or 'elements'.
+    invariant : str, optional
+        Invariant of the field, if applicable. E.g. 'mises', 'magnitude'.
+    section_point_number : int, optional
+        Section point for shell elements. If no section point number is
+        specified, the section point values are reduced according to
+        `section_point_reduction`.
+    section_point_reduction : str
+        How to reduce values of multiple section points for the same node or
+        element. Valid values are 'mean' or 'absmax'.
 
+    """
     def __init__(self,
                  field_name,
                  field_position=None,
@@ -934,31 +931,40 @@ class FieldExportRequest():
 
         self.section_point_reduction = section_point_reduction
 
-
 class GroupExportRequest():
     """
-    Specify a group of nodes or elements that will be written to the vtk file.
-
-    Attributes
-    ----------
-    See parameters
+    Specify a group of nodes or elements that will be written to VTK file
+    format.
 
     Parameters
     ----------
     group_name : str
-        Name of the set or surface in the odb
+        Name of the set or surface in the ODB.
     group_type : str
-        Type of the set. valid values are 'nodes' or 'elements'.
+        Type of the set. Valid values are 'nodes' or 'elements'.
     instance_name : str, optional
         If `instance_name` is not None, look for an instance-level set
-        in the odb. Otherwise look for an assembly-level set.
+        in the ODB. Otherwise look for an assembly-level set.
+        Default: None.
+    surface_set : bool, optional
+        If `False`, export a set. If `True`, export nodes/elements of a
+        surface.
+
+    Attributes
+    ----------
+    group_name : str
+        Name of the set or surface in the ODB.
+    group_type : str
+        Type of the set. Valid values are 'nodes' or 'elements'.
+    instance_name : str, optional
+        If `instance_name` is not None, look for an instance-level set
+        in the ODB. Otherwise look for an assembly-level set.
         Default: None.
     surface_set : bool, optional
         If `False`, export a set. If `True`, export nodes/elements of a
         surface.
 
     """
-
     def __init__(self,
                  group_name,
                  group_type,
