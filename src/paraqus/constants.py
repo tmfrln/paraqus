@@ -16,8 +16,8 @@ The constants are derived from a custom type to make comparisons easier, e.g.
 when user input is compared to constants.
 
 """
-
 import sys
+
 
 class ParaqusConstant(object):
     """
@@ -34,6 +34,7 @@ class ParaqusConstant(object):
         Name of the constant, used for comparisons.
 
     """
+
     def __init__(self, name):
         self.name = name
 

@@ -10,13 +10,12 @@
 #
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
-Abaqus element library for paraqus.
+Abaqus element library for Paraqus.
 
 The module constant `ABQ_ELEMENT_LIBRARY` maps the abaqus element names to
-integer vtk element types.
+integer VTK element types.
 
 """
-
 # Identifiers:
 # 3: First-order line
 # 4: Second-order line
@@ -38,17 +37,17 @@ integer vtk element types.
 
 ABQ_ELEMENT_LIBRARY = {
 
-# =============================================================================
-#
-#
-#                   CONTINUUM ELEMENTS
-#
-#
-# =============================================================================
+    # =========================================================================
+    #
+    #
+    #                   CONTINUUM ELEMENTS
+    #
+    #
+    # =========================================================================
 
 
-#%% 1d solid elements
-# -----------------------------------------------------------------------------
+    # %% 1d solid elements
+    # -------------------------------------------------------------------------
 
     # Diffusive heat transfer elements
     "DC1D2": 3,
@@ -67,8 +66,8 @@ ABQ_ELEMENT_LIBRARY = {
     "AC1D3": 3,
 
 
-#%% 2d solid elements
-# -----------------------------------------------------------------------------
+    # %% 2d solid elements
+    # -------------------------------------------------------------------------
 
     # Plane strain elements
     "CPE3": 5,
@@ -210,8 +209,8 @@ ABQ_ELEMENT_LIBRARY = {
     "EMC2D4": 9,
 
 
-#%% 3d solid elements
-# -----------------------------------------------------------------------------
+    # %% 3d solid elements
+    # -------------------------------------------------------------------------
 
     # Stress/displacement elements
     "C3D4": 10,
@@ -361,7 +360,7 @@ ABQ_ELEMENT_LIBRARY = {
     # Coupled Eulerian Lagrangian elements - thermomechanical
     "EC3D8RT": 12,
 
-#%% Axisymmetric solid elements
+    # %% Axisymmetric solid elements
 
     # Stress/displacement elements without twist
     "CAX3": 5,
@@ -474,17 +473,17 @@ ABQ_ELEMENT_LIBRARY = {
     "CAX8RE": 23,
 
 
-# =============================================================================
-#
-#
-#                   STRUCTURAL ELEMENTS
-#
-#
-# =============================================================================
+    # =========================================================================
+    #
+    #
+    #                   STRUCTURAL ELEMENTS
+    #
+    #
+    # =========================================================================
 
 
-#%% Truss elements
-# -----------------------------------------------------------------------------
+    # %% Truss elements
+    # -------------------------------------------------------------------------
 
     # 2D stress/displacement truss elements
     "T2D2": 3,
@@ -515,8 +514,8 @@ ABQ_ELEMENT_LIBRARY = {
     "T3D3E": 4,
 
 
-#%% Beam elements
-# -----------------------------------------------------------------------------
+    # %% Beam elements
+    # -------------------------------------------------------------------------
 
     # Beams in a plane
     "B21": 3,
@@ -549,8 +548,8 @@ ABQ_ELEMENT_LIBRARY = {
     "B32OSH": 4,
 
 
-#%% Frame elements
-# -----------------------------------------------------------------------------
+    # %% Frame elements
+    # -------------------------------------------------------------------------
 
     # Frame in a plane
     "FRAME2D": 3,
@@ -559,8 +558,8 @@ ABQ_ELEMENT_LIBRARY = {
     "FRAME3D": 4,
 
 
-#%% Elbow elements
-# -----------------------------------------------------------------------------
+    # %% Elbow elements
+    # -------------------------------------------------------------------------
 
     "ELBOW31": 3,
     "ELBOW32": 4,
@@ -568,14 +567,14 @@ ABQ_ELEMENT_LIBRARY = {
     "ELBOW31C": 3,
 
 
-#%% Shear panel elements
-# -----------------------------------------------------------------------------
+    # %% Shear panel elements
+    # -------------------------------------------------------------------------
 
     "SHEAR4": 12,
 
 
-#%% 3d conventional shell elements
-# -----------------------------------------------------------------------------
+    # %% 3d conventional shell elements
+    # -----------------------------------------------------------------------------
 
     # Stress/displacement elements
     "STRI3": 5,
@@ -606,8 +605,8 @@ ABQ_ELEMENT_LIBRARY = {
     "S8RT": 23,
 
 
-#%% Continuum shell elements
-# -----------------------------------------------------------------------------
+    # %% Continuum shell elements
+    # -------------------------------------------------------------------------
 
     # Stress/displacement elements
     "SC6R": 13,
@@ -618,8 +617,8 @@ ABQ_ELEMENT_LIBRARY = {
     "SC8RT": 12,
 
 
-#%% Axisymmetric shell elements
-# -----------------------------------------------------------------------------
+    # %% Axisymmetric shell elements
+    # -------------------------------------------------------------------------
 
     # Stress/displacement elements
     "SAX1": 3,
@@ -630,17 +629,17 @@ ABQ_ELEMENT_LIBRARY = {
     "DSAX2": 4,
 
 
-# =============================================================================
-#
-#
-#                   Inertial, rigid, capacitance elements
-#
-#
-# =============================================================================
+    # =========================================================================
+    #
+    #
+    #                   Inertial, rigid, capacitance elements
+    #
+    #
+    # =========================================================================
 
 
-#%% Rigid elements
-# -----------------------------------------------------------------------------
+    # %% Rigid elements
+    # -------------------------------------------------------------------------
 
     # 2D rigid elements
     "R2D2": 3,
