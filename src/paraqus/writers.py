@@ -11,12 +11,11 @@
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 This module keeps all writers for the different output format, e.g.
-ascii and binary. Related tools like VtkFileManager should also be
+ASCII and binary. Related tools like VtkFileManager should also be
 stored here. Note, that currently only unstructured grids are
 supported.
 
 """
-
 import os
 import sys
 from os import path
@@ -29,8 +28,7 @@ import struct
 import base64
 
 from paraqus.constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER,
-                               BASE64, RAW, UINT64)
-
+                               BASE64, RAW, UINT64, NODES, ELEMENTS)
 
 # Version string for the vtk version that is supported
 VTK_VERSION_MAJOR = 1
@@ -69,7 +67,7 @@ BINARY_HEADER_SIZE_MAPPER = {"uint32": 4,
 
 
 class VtkFileManager(object):
-    r"""
+    """
     Context manager for VTK file reading and writing.
 
     Can handle all kinds of supported VTK files, i.e. .vtu, .pvtu and
@@ -110,9 +108,17 @@ class VtkFileManager(object):
                 "File format '{}' is not a supported VTK file format."
                 .format(extension))
 
-        self.file_path = path.abspath(file_name)
-        self.fmt = fmt
-        self.file = None
+        self._file_path = path.abspath(file_name)
+        self._fmt = fmt
+        self._file = None
+
+    @property
+    def file_path(self):
+        return self._file_path
+
+    @property
+    def fmt(self):
+        return self._fmt
 
     def __enter__(self):
         """Open the file, in binary mode if needed."""
@@ -121,9 +127,9 @@ class VtkFileManager(object):
         # stream, thus just keep this as it is without checking the
         # version.
         if self.fmt == ASCII:
-            self.file = open(self.file_path, "w")
+            self._file = open(self.file_path, "w")
         elif self.fmt == BINARY:
-            self.file = open(self.file_path, "wb")
+            self._file = open(self.file_path, "wb")
         else:
             raise ValueError("Format '{}' not supported.".format(self.fmt))
 
@@ -131,11 +137,11 @@ class VtkFileManager(object):
 
     def __exit__(self, type, value, traceback):
         """Close the file."""
-        self.file.close()
+        self._file.close()
 
     def write(self, output):
         """
-        Write ascii or binary data into the corresponding VTK file.
+        Write ASCII or binary data into the corresponding VTK file.
 
         Parameters
         ----------
@@ -152,15 +158,15 @@ class VtkFileManager(object):
         # difference anyway (see comment in methode __enter__). In
         # Python 3 binary string are obligatory.
         if sys.version_info >= (3,):
-            if isinstance(output, str) and self.fmt == BINARY:
-                self.file.write((output).encode("ascii"))
-            elif isinstance(output, str) and self.fmt == ASCII:
-                self.file.write(output)
+            if isinstance(output, str) and self.fmt is BINARY:
+                self._file.write((output).encode("ascii"))
+            elif isinstance(output, str) and self.fmt is ASCII:
+                self._file.write(output)
             else:
-                self.file.write(output)
+                self._file.write(output)
 
         else:
-            self.file.write(output)
+            self._file.write(output)
 
 
 class WriterBaseClass(object):
@@ -173,12 +179,14 @@ class WriterBaseClass(object):
 
     Parameters
     ----------
+    fmt : ParaqusConstant
+        Format of the writer. Can be `ASCII` or `BINARY`.
     output_dir : str, optional
         Directory, where all exported VTK files will be stored. The
         default is 'vtk_files'.
     clear_output_dir : bool, optional
-        If this is True, the output directory will be cleared before
-        exporting any files. The default is False.
+        If this is `True`, the output directory will be cleared before
+        exporting any files. The default is `False`.
     number_of_pieces : int, optional
         Number of pieces each model will be split into. The default
         is 1.
@@ -197,14 +205,21 @@ class WriterBaseClass(object):
     __metaclass__ = ABCMeta
 
     def __init__(self,
+                 fmt,
                  output_dir="vtk_files",
                  clear_output_dir=False,
                  number_of_pieces=1):
 
+        if fmt not in (ASCII, BINARY):
+            raise ValueError("Writer format not supported: {}.".format(fmt))
+
         self.number_of_pieces = number_of_pieces
         self.output_dir = os.path.abspath(output_dir)
         self._part_frame_counter = {}
-        self.FORMAT = None
+        self._header_type = None
+        self._encoding = None
+        self._byte_offset = 0
+        self._fmt = fmt
 
         # Delete the output folder if requested
         if clear_output_dir and path.isdir(self.output_dir):
@@ -219,10 +234,12 @@ class WriterBaseClass(object):
                 shutil.rmtree(self.output_dir)
             except PermissionError:
                 raise PermissionError(
-                    "Could not remove directory '" + self.output_dir + "'.")
+                    "Could not remove directory '{}'.".format(self.output_dir))
 
+    @property
+    def FORMAT(self):
+        return self._fmt
 
-    # Properties
     @property
     def number_of_pieces(self):
         return self._number_of_pieces
@@ -233,8 +250,6 @@ class WriterBaseClass(object):
             raise ValueError("Number of pieces must be positive.")
         self._number_of_pieces = number_of_pieces
 
-
-    # Methods
     @abstractmethod
     def _write_vtu_file(self, piece, piece_tag=0):
         """
@@ -244,6 +259,41 @@ class WriterBaseClass(object):
         the context manager so that a .vtu file is created.
         """
         return
+
+    def _update_byte_offset(self, array):
+        """
+        Update the byte offset of data arrays. This method is only needed for
+        binary file formats.
+
+        Parameters
+        ----------
+        array : numpy.ndarray
+            The data array.
+
+        Returns
+        -------
+        None.
+
+        """
+        self._byte_offset += (array.dtype.itemsize*array.size
+                              + BINARY_HEADER_SIZE_MAPPER[str(
+                                  self._header_type).lower()])
+
+    def _get_special_xml_attributes(self):
+        """
+        Get special attributes for XML elements in dependence on the writer.
+
+        Returns
+        -------
+        dict
+            A dictionary mapping attribute names to attribute values.
+
+        """
+        if self._encoding == BASE64:
+            return {"format": "binary"}
+        elif self._encoding == RAW:
+            return {"format": "appended", "offset": self._byte_offset}
+        return {"format": "ascii"}
 
     def _create_folder(self, folder):
         """
@@ -298,6 +348,9 @@ class WriterBaseClass(object):
             vtu_file_path = self._write_vtu_file(piece, piece_tag)
             vtu_files.append(vtu_file_path)
 
+        # reset byte offset
+        self._byte_offset = 0
+
         # Connect different pieces in a pvtu file
         if self.number_of_pieces == 1:
             return vtu_file_path
@@ -305,6 +358,88 @@ class WriterBaseClass(object):
         if self.number_of_pieces > 1:
             pvtu_file_path = self._write_pvtu_file(model, vtu_files)
             return pvtu_file_path
+
+    def _add_field_data_to_pvtu_file(self, model, xml, field_position):
+        """
+        Add node or element field data to the .pvtu file.
+
+        Parameters
+        ----------
+        model : ParaqusModel
+            The main model the .pvtu file is referring to.
+        xml : XmlFactory
+            The factory writing the .pvtu file in XML format.
+        field_position : ParaqusConstant
+            Position of the field values, i.e. `NODES` or `ELEMENTS`.
+
+        Returns
+        -------
+        None.
+
+        """
+        if field_position == NODES:
+            fields = model.node_fields
+            groups = model.nodes.groups
+            xml_element_name = "PPointData"
+            tags_name = "_node_tags"
+        elif field_position == ELEMENTS:
+            fields = model.element_fields
+            groups = model.elements.groups
+            xml_element_name = "PCellData"
+            tags_name = "_element_tags"
+        else:
+            msg = "Invalid field position: {}.".format(field_position)
+            raise ValueError(msg)
+
+        xml.add_element(xml_element_name)
+        for f in fields:
+            name = f.field_name
+            values = f.get_3d_field_values()
+            components = len(values[0])
+            dtype = values.dtype.name
+            xml.add_and_finish_element("PDataArray",
+                                       type=VTK_TYPE_MAPPER[dtype],
+                                       Name=name,
+                                       NumberOfComponents=components)
+
+        for group_name in groups:
+            dtype = "uint8"
+            xml.add_and_finish_element("PDataArray",
+                                       type=VTK_TYPE_MAPPER[dtype],
+                                       Name="_group " + group_name,
+                                       NumberOfComponents=1)
+
+        dtype = model.nodes.tags.dtype.name
+        xml.add_and_finish_element("PDataArray",
+                                   type=VTK_TYPE_MAPPER[dtype],
+                                   Name=tags_name,
+                                   NumberOfComponents=1)
+
+        xml.finish_element()
+
+    def _add_points_to_pvtu_file(self, model, xml):
+        """
+        Add information on node points to the .pvtu file.
+
+        Parameters
+        ----------
+        model : ParaqusModel
+            The main model the .pvtu file is referring to.
+        xml : XmlFactory
+            The factory writing the .pvtu file in XML format.
+
+        Returns
+        -------
+        None.
+
+        """
+        xml.add_element("PPoints")
+        coordinates = model.nodes.coordinates
+        dtype = coordinates.dtype.name
+        xml.add_and_finish_element("PDataArray",
+                                   type=VTK_TYPE_MAPPER[dtype],
+                                   NumberOfComponents=3)
+        xml.finish_element()
 
     def _write_pvtu_file(self, model, vtu_files):
         """
@@ -358,74 +493,17 @@ class WriterBaseClass(object):
                             version=VTK_VERSION_STRING, byte_order=BYTE_ORDER)
             xml.add_element("PUnstructuredGrid")
 
-            # Add node fields
-            xml.add_element("PPointData")
-            for nf in model.node_fields:
-                name = nf.field_name
-                values = nf.get_3d_field_values()
-                components = len(values[0])
-                dtype = values.dtype.name
-                xml.add_and_finish_element("PDataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           Name=name,
-                                           NumberOfComponents=components)
-
-            for group_name in model.nodes.groups:
-                dtype = "uint8"
-                xml.add_and_finish_element("PDataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           Name="_group " + group_name,
-                                           NumberOfComponents=1)
-
-            dtype = model.nodes.tags.dtype.name
-            xml.add_and_finish_element("PDataArray",
-                                       type=VTK_TYPE_MAPPER[dtype],
-                                       Name="_node_tags",
-                                       NumberOfComponents=1)
-
-            xml.finish_element()  # Finish node fields
-
-            # Add element fields
-            xml.add_element("PCellData")
-            for ef in model.element_fields:
-                name = ef.field_name
-                values = ef.get_3d_field_values()
-                components = len(values[0])
-                dtype=values.dtype.name
-                xml.add_and_finish_element("PDataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           Name=name,
-                                           NumberOfComponents=components)
-
-            for group_name in model.elements.groups:
-                dtype = "uint8"
-                xml.add_and_finish_element("PDataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           Name="_group " + group_name,
-                                           NumberOfComponents=1)
-
-            dtype = model.elements.tags.dtype.name
-            xml.add_and_finish_element("PDataArray",
-                                       type=VTK_TYPE_MAPPER[dtype],
-                                       Name="_element_tags",
-                                       NumberOfComponents=1)
-
-            xml.finish_element()  # Finish element fields
+            # Add fields
+            self._add_field_data_to_pvtu_file(model, xml, NODES)
+            self._add_field_data_to_pvtu_file(model, xml, ELEMENTS)
 
             # Add nodes
-            xml.add_element("PPoints")
-            coordinates = model.nodes.coordinates
-            dtype=coordinates.dtype.name
-            xml.add_and_finish_element("PDataArray",
-                                       type=VTK_TYPE_MAPPER[dtype],
-                                       NumberOfComponents=3)
-            xml.finish_element()
+            self._add_points_to_pvtu_file(model, xml)
 
             # Add pieces
             for piece_file in vtu_files:
                 src = path.basename(piece_file)
                 xml.add_and_finish_element("Piece", Source=src)
-
             xml.finish_all_elements()
 
         return file_path
@@ -445,23 +523,6 @@ class WriterBaseClass(object):
         -------
         file_path : str
             The path to the resulting .vtu file.
-        nel : int
-            Number of elements.
-        nnp : int
-            Number of node points.
-        element_tags : numpy.ndarray
-            The original element tags.
-        node_tags : numpy.ndarray
-            The original node tags.
-        node_coords : numpy.ndarray
-            Nodal coordinates in shape (nnp,3).
-        element_types : numpy.ndarray
-            The VTK cell types.
-        element_offsets : numpy.ndarray
-            The offsets between the elements regarding the node points
-            in order of the element types.
-        connectivity : list of numpy.ndarray
-            The connectivity list in order of the element types.
 
         """
         # Create a storage folder if there isn't one already
@@ -483,10 +544,38 @@ class WriterBaseClass(object):
         # Update the virtual frame
         self._part_frame_counter.update({key: virtual_frame + 1})
 
-        # Number of elements and nodes
-        nel = len(piece.elements.tags)
-        nnp = len(piece.nodes.tags)
+        return file_path
 
+    def _get_piece_mesh_information(self, piece):
+        """
+        Get the mesh information needed to write a .vtu file.
+
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The model or model piece to prepare for the export.
+
+        Returns
+        -------
+        nel : int
+            Number of elements.
+        nnp : int
+            Number of node points.
+        element_tags : numpy.ndarray
+            The original element tags.
+        node_tags : numpy.ndarray
+            The original node tags.
+        node_coords : numpy.ndarray
+            Nodal coordinates in shape (nnp,3).
+        element_types : numpy.ndarray
+            The VTK cell types.
+        element_offsets : numpy.ndarray
+            The offsets between the elements regarding the node points
+            in order of the element types.
+        connectivity : list of numpy.ndarray
+            The connectivity list in order of the element types.
+
+        """
         # Extract some relevant arrays for the vtu output
         element_tags = piece.elements.tags
         node_tags = piece.nodes.tags
@@ -499,19 +588,207 @@ class WriterBaseClass(object):
         # Make 3d nodal coordinates
         rows, columns = node_coords.shape
         if columns == 2:
-            node_coords = np.hstack((node_coords, np.zeros((rows,1))))
+            node_coords = np.hstack((node_coords, np.zeros((rows, 1))))
         elif columns == 1:
-            node_coords = np.hstack((node_coords, np.zeros((rows,2))))
+            node_coords = np.hstack((node_coords, np.zeros((rows, 2))))
 
         # Create connectivity expressed in terms of the node indices
         node_index_mapper = piece.nodes.index_mapper
         connectivity = []
         for conn in tag_based_conn:
             connectivity.append(np.array([node_index_mapper[i] for i in conn],
-                                    dtype=tag_based_conn[0].dtype))
+                                         dtype=tag_based_conn[0].dtype))
 
-        return (file_path, nel, nnp, element_tags, node_tags, node_coords,
-                element_types, element_offsets, connectivity)
+        return (element_tags, node_tags, node_coords, element_types,
+                element_offsets, connectivity)
+
+    def _add_array_data_to_vtu_file(self, xml, array):
+        """
+        Add array data for e.g. fields or mesh information to the .vtu file.
+
+        Parameters
+        ----------
+        xml : XmlFactory
+            The factory writing the .vtu file in XML format.
+        array : numpy.ndarray
+            The array data to add.
+
+        Returns
+        -------
+        None.
+
+        """
+        special_attributes = self._get_special_xml_attributes()
+        if special_attributes.get("format") == "appended":
+            self._update_byte_offset(array)
+            return
+        xml.add_array_data_to_element(array)
+
+    def _add_time_data_to_vtu_file(self, piece, xml):
+        """
+        Add time data to the .vtu file.
+
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The piece or submodel to export.
+        xml : XmlFactory
+            The factory writing the .vtu file in XML format.
+
+        Returns
+        -------
+        None.
+
+        """
+        time_array = np.array([piece.frame_time])
+        xml.add_element("FieldData")
+        xml.add_element("DataArray",
+                        Name="TimeValue",
+                        NumberOfTuples=1,
+                        type=VTK_TYPE_MAPPER[time_array.dtype.name],
+                        **self._get_special_xml_attributes())
+        self._add_array_data_to_vtu_file(xml, time_array)
+        xml.finish_element()
+        xml.finish_element()  # finish FieldData
+
+    def _add_mesh_data_to_vtu_file(self, piece, xml):
+        """
+        Add all relevant mesh data to the .vtu file.
+
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The piece or submodel to export.
+        xml : XmlFactory
+            The factory writing the .vtu file in XML format.
+
+        Returns
+        -------
+        None.
+
+        """
+        (element_tags,
+         node_tags,
+         node_coords,
+         element_types,
+         element_offsets,
+         connectivity) = self._get_piece_mesh_information(piece)
+
+        # The connectivity is needed as one flattened array that is
+        # expressed in terms of the node indices. One big 1d array
+        # will be fine for binary output.
+        if self.FORMAT == BINARY:
+            connectivity = np.array(list(itertools.chain(*connectivity)),
+                                    dtype=piece.elements.connectivity[0].dtype)
+
+        # Add nodes
+        xml.add_element("Points")
+        xml.add_element("DataArray",
+                        type=VTK_TYPE_MAPPER[node_coords.dtype.name],
+                        Name="nodes", NumberOfComponents=3,
+                        **self._get_special_xml_attributes())
+        self._add_array_data_to_vtu_file(xml, node_coords)
+        xml.finish_element()
+        xml.finish_element()  # Finish Points
+
+        # Add connectivity
+        xml.add_element("Cells")
+        dtype = (connectivity.dtype.name if self.FORMAT == BINARY
+                 else connectivity[0].dtype.name)
+        xml.add_element("DataArray",
+                        type=VTK_TYPE_MAPPER[dtype],
+                        Name="connectivity",
+                        **self._get_special_xml_attributes())
+        self._add_array_data_to_vtu_file(xml, connectivity)
+        xml.finish_element()
+
+        # Add element offsets
+        xml.add_element("DataArray",
+                        type=VTK_TYPE_MAPPER[element_offsets.dtype.name],
+                        Name="offsets",
+                        **self._get_special_xml_attributes())
+        self._add_array_data_to_vtu_file(xml, element_offsets)
+        xml.finish_element()
+
+        # Add element types
+        xml.add_element("DataArray",
+                        type=VTK_TYPE_MAPPER[element_types.dtype.name],
+                        Name="types",
+                        **self._get_special_xml_attributes())
+        self._add_array_data_to_vtu_file(xml, element_types)
+        xml.finish_element()
+
+        xml.finish_element()  # Finish Cells
+
+    def _add_field_data_to_vtu_file(self, piece, xml, field_position):
+        """
+        Add field data for node or element fields to the .vtu file.
+
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The piece or submodel to export.
+        xml : XmlFactory
+            The factory writing the .vtu file in XML format.
+        field_position : ParaqusConstant
+            Position of the field values, i.e. `NODES` or `ELEMENTS`.
+
+        Returns
+        -------
+        None.
+
+        """
+        if field_position == NODES:
+            fields = piece.node_fields
+            groups = piece.nodes.groups
+            xml_element_name = "PointData"
+            tags_name = "_node_tags"
+            tags = piece.nodes.tags
+        elif field_position == ELEMENTS:
+            fields = piece.element_fields
+            groups = piece.elements.groups
+            xml_element_name = "CellData"
+            tags_name = "_element_tags"
+            tags = piece.elements.tags
+        else:
+            msg = "Invalid field position: {}.".format(field_position)
+            raise ValueError(msg)
+
+        # add fields
+        xml.add_element(xml_element_name)
+        for f in fields:
+            field_vals = f.get_3d_field_values()
+            components = len(field_vals[0])
+            xml.add_element("DataArray",
+                            Name=f.field_name,
+                            NumberOfComponents=components,
+                            type=VTK_TYPE_MAPPER[field_vals.dtype.name],
+                            **self._get_special_xml_attributes())
+            self._add_array_data_to_vtu_file(xml, field_vals)
+            xml.finish_element()
+
+        # Add fields based on groups
+        for group_name, group_tags in groups.items():
+            field_vals = np.in1d(tags,
+                                 group_tags).astype(np.uint8)
+            xml.add_element("DataArray",
+                            Name="_group " + group_name,
+                            NumberOfComponents=1,
+                            type=VTK_TYPE_MAPPER[field_vals.dtype.name],
+                            **self._get_special_xml_attributes())
+            self._add_array_data_to_vtu_file(xml, field_vals)
+            xml.finish_element()
+
+        # Add node tags as field
+        xml.add_element("DataArray",
+                        Name=tags_name,
+                        NumberOfComponents=1,
+                        type=VTK_TYPE_MAPPER[tags.dtype.name],
+                        **self._get_special_xml_attributes())
+        self._add_array_data_to_vtu_file(xml, tags)
+        xml.finish_element()
+
+        xml.finish_element()  # Finish PointData or CellData
 
 
 class BinaryWriter(WriterBaseClass):
@@ -524,8 +801,8 @@ class BinaryWriter(WriterBaseClass):
         Directory, where all exported VTK files will be stored. The
         default is 'vtk_files'.
     clear_output_dir : bool, optional
-        If this is True, the output directory will be cleared before
-        exporting any files. The default is False.
+        If `True`, the output directory will be cleared before
+        exporting any files. The default is `False`.
     number_of_pieces : int, optional
         Number of pieces each model will be split into. The default
         is 1.
@@ -577,15 +854,13 @@ class BinaryWriter(WriterBaseClass):
                  encoding=BASE64,
                  header_type=UINT64):
 
-        super(BinaryWriter, self).__init__(output_dir,
+        super(BinaryWriter, self).__init__(BINARY,
+                                           output_dir,
                                            clear_output_dir,
                                            number_of_pieces)
         self.header_type = header_type
         self.encoding = encoding
-        self.FORMAT = BINARY
 
-
-    # Properties
     @property
     def header_type(self):
         return self._header_type
@@ -593,7 +868,6 @@ class BinaryWriter(WriterBaseClass):
     @header_type.setter
     def header_type(self, header_type):
         self._header_type = str(header_type).lower()
-        self._header_size = BINARY_HEADER_SIZE_MAPPER[str(header_type).lower()]
 
     @property
     def encoding(self):
@@ -601,14 +875,109 @@ class BinaryWriter(WriterBaseClass):
 
     @encoding.setter
     def encoding(self, encoding):
-
         if not encoding in (BASE64, RAW):
             raise ValueError("Invalid binary encoding.")
 
         self._encoding = encoding
 
+    def _append_raw_mesh_data(self, piece, xml):
+        """
+        Append the data for the mesh to the .vtu file.
 
-    # Methods
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The piece or submodel to export.
+        xml : XmlFactory
+            The factory writing the .vtu file in XML format.
+
+        Returns
+        -------
+        None.
+
+        """
+        (_, _, node_coords, element_types, element_offsets,
+         connectivity) = self._get_piece_mesh_information(piece)
+
+        # The connectivity is needed as one flattened array that is
+        # expressed in terms of the node indices. One big 1d array
+        # will be fine for binary output.
+        connectivity = np.array(list(itertools.chain(*connectivity)),
+                                dtype=piece.elements.connectivity[0].dtype)
+
+        for array in [node_coords, connectivity, element_offsets,
+                      element_types]:
+            xml.add_array_data_to_element(array, break_line=False)
+
+    def _append_raw_field_data(self, piece, xml, field_position):
+        """
+        Append the data for node and element fields to the .vtu file.
+
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The piece or submodel to export.
+        xml : XmlFactory
+            The factory writing the .vtu file in XML format.
+        field_position : ParaqusConstant
+            Position of the field values, i.e. `NODES` or `ELEMENTS`.
+
+        Returns
+        -------
+        None.
+
+        """
+        if field_position == NODES:
+            fields = piece.node_fields
+            groups = piece.nodes.groups
+            tags = piece.nodes.tags
+        elif field_position == ELEMENTS:
+            fields = piece.element_fields
+            groups = piece.elements.groups
+            tags = piece.elements.tags
+        else:
+            msg = "Invalid field position: {}.".format(field_position)
+            raise ValueError(msg)
+
+        # append field data
+        for f in fields:
+            field_vals = f.get_3d_field_values()
+            xml.add_array_data_to_element(field_vals, break_line=False)
+
+        # append group data
+        for group_name, group_tags in groups.items():
+            field_vals = np.in1d(tags, group_tags).astype(np.uint8)
+            xml.add_array_data_to_element(field_vals, break_line=False)
+
+        # append tags field
+        xml.add_array_data_to_element(tags, break_line=False)
+
+    def _append_raw_model_data(self, piece, xml):
+        """
+        Append all data to the .vtu file, i.e. time data, mesh data and field
+        data.
+
+        Parameters
+        ----------
+        piece : ParaqusModel
+            The piece or submodel to export.
+        xml : XmlFactory
+            The factory writing the .vtu file in XML format.
+
+        Returns
+        -------
+        None.
+
+        """
+        xml.add_element("AppendedData", encoding="raw")
+        xml.add_content_to_element("_", False)
+        time_array = time_array = np.array([piece.frame_time])
+        xml.add_array_data_to_element(time_array, break_line=False)
+        self._append_raw_mesh_data(piece, xml)
+        self._append_raw_field_data(piece, xml, NODES)
+        self._append_raw_field_data(piece, xml, ELEMENTS)
+        xml.finish_element()  # finish AppendedData
+
     def _write_vtu_file(self, piece, piece_tag=0):
         """
         Write a .vtu file for a specified piece or submodel of a paraqus model.
@@ -627,381 +996,48 @@ class BinaryWriter(WriterBaseClass):
             The path to the exported .vtu file.
 
         """
-        (file_path,
-         nel,
-         nnp,
-         element_tags,
-         node_tags,
-         node_coords,
-         element_types,
-         element_offsets,
-         connectivity) = self._prepare_to_write_vtu_file(piece, piece_tag)
-
-        # The connectivity is needed as one flattened array that is
-        # expressed in terms of the node indices. One big 1d array
-        # will be fine for binary output.
-        connectivity = np.array(list(itertools.chain(*connectivity)),
-                                dtype=piece.elements.connectivity[0].dtype)
+        file_path = self._prepare_to_write_vtu_file(piece, piece_tag)
 
         # Write the file
         with VtkFileManager(file_path, BINARY) as vtu_file:
+            xml = XmlFactory(vtu_file, self.encoding, self.header_type)
 
-            xml = XmlFactory(vtu_file, self.encoding,
-                             self.header_type)
+            # initialize file
+            xml.add_element("VTKFile", type="UnstructuredGrid",
+                            version=VTK_VERSION_STRING,
+                            byte_order=BYTE_ORDER,
+                            header_type=VTK_TYPE_MAPPER[self.header_type])
+            xml.add_element("UnstructuredGrid")
 
-            # Xml attribute 'offset' breaks base64 encoded vtu files,
-            # thus separate the definition of base64 encoded vtu files
-            # and raw encoded vtu files.
+            # add time data
+            self._add_time_data_to_vtu_file(piece, xml)
 
-            # Write base64 encoded file
-            if self.encoding == BASE64:
+            # initialize model geometry
+            nnp, nel = len(piece.nodes.tags), len(piece.elements.tags)
+            xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
 
-                # File header
-                xml.add_element("VTKFile", type="UnstructuredGrid",
-                                version=VTK_VERSION_STRING,
-                                byte_order=BYTE_ORDER,
-                                header_type=VTK_TYPE_MAPPER[self.header_type])
-                xml.add_element("UnstructuredGrid")
+            # add nodes and elements
+            self._add_mesh_data_to_vtu_file(piece, xml)
 
-                # Add time data
-                time_array = np.array([piece.frame_time])
-                dtype = VTK_TYPE_MAPPER[time_array.dtype.name]
-                xml.add_element("FieldData")
-                xml.add_element("DataArray", Name="TimeValue",
-                                NumberOfTuples=1, type=dtype, format="binary")
-                xml.add_array_data_to_element(time_array)
-                xml.finish_element()
-                xml.finish_element()  # Finish definition of time data
+            # add node and element fields
+            self._add_field_data_to_vtu_file(piece, xml, NODES)
+            self._add_field_data_to_vtu_file(piece, xml, ELEMENTS)
 
-                # Initialize model geometry
-                xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
+            xml.finish_element()  # finish Piece
+            xml.finish_element()  # finish UnstructuredGrid
 
-                # Add nodes
-                xml.add_element("Points")
-                dtype = node_coords.dtype.name
-                xml.add_element("DataArray",
-                                type=VTK_TYPE_MAPPER[dtype],
-                                Name="nodes", NumberOfComponents=3,
-                                format="binary")
-                xml.add_array_data_to_element(node_coords)
-                xml.finish_element()
-                xml.finish_element()  # Finish node definitions
+            # append data in case of raw encoding
+            if self.encoding == RAW:
+                self._append_raw_model_data(piece, xml)
 
-                # Add connectivity
-                xml.add_element("Cells")
-                dtype = connectivity.dtype.name
-                xml.add_element("DataArray",
-                                type=VTK_TYPE_MAPPER[dtype],
-                                Name="connectivity",
-                                format="binary")
-                xml.add_array_data_to_element(connectivity)
-                xml.finish_element()
-
-                # Add element offsets
-                dtype = element_offsets.dtype.name
-                xml.add_element("DataArray",
-                                type=VTK_TYPE_MAPPER[dtype],
-                                Name="offsets",
-                                format="binary")
-                xml.add_array_data_to_element(element_offsets)
-                xml.finish_element()
-
-                # Add element types
-                dtype = element_types.dtype.name
-                xml.add_element("DataArray",
-                                type=VTK_TYPE_MAPPER[dtype],
-                                Name="types",
-                                format="binary")
-                xml.add_array_data_to_element(element_types)
-                xml.finish_element()
-                xml.finish_element()  # Finish cell definitions
-
-                # Add node fields
-                xml.add_element("PointData")
-                for nf in piece.node_fields:
-                    field_vals = nf.get_3d_field_values()
-                    components = len(field_vals[0])
-                    dtype = field_vals.dtype.name
-
-                    xml.add_element("DataArray",
-                                    Name=nf.field_name,
-                                    NumberOfComponents=components,
-                                    type=VTK_TYPE_MAPPER[dtype],
-                                    format="binary")
-
-                    xml.add_array_data_to_element(field_vals)
-                    xml.finish_element()
-
-                # Add node fields based on groups
-                for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.in1d(piece.nodes.tags,
-                                         group_nodes).astype(np.uint8)
-                    dtype = field_vals.dtype.name
-
-                    xml.add_element("DataArray",
-                                    Name="_group " + group_name,
-                                    NumberOfComponents=1,
-                                    type=VTK_TYPE_MAPPER[dtype],
-                                    format="binary")
-
-                    xml.add_array_data_to_element(field_vals)
-                    xml.finish_element()
-
-                # Add node tags as field
-                dtype = node_tags.dtype.name
-                xml.add_element("DataArray",
-                                Name="_node_tags",
-                                NumberOfComponents=1,
-                                type=VTK_TYPE_MAPPER[dtype],
-                                format="binary")
-                xml.add_array_data_to_element(node_tags)
-                xml.finish_element()
-
-                xml.finish_element()  # Finish node fields
-
-                # Add element fields
-                xml.add_element("CellData")
-                for ef in piece.element_fields:
-                    field_vals = ef.get_3d_field_values()
-                    components = len(field_vals[0])
-                    dtype=field_vals.dtype.name
-
-                    xml.add_element("DataArray",
-                                    Name=ef.field_name,
-                                    NumberOfComponents=components,
-                                    type=VTK_TYPE_MAPPER[dtype],
-                                    format="binary")
-
-                    xml.add_array_data_to_element(field_vals)
-                    xml.finish_element()
-
-                for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.in1d(piece.elements.tags,
-                                         group_elems).astype(np.uint8)
-                    dtype = field_vals.dtype.name
-
-                    xml.add_element("DataArray",
-                                    Name="_group " + group_name,
-                                    NumberOfComponents=1,
-                                    type=VTK_TYPE_MAPPER[dtype],
-                                    format="binary")
-
-                    xml.add_array_data_to_element(field_vals)
-                    xml.finish_element()
-
-                # Add element tags as field
-                dtype = element_tags.dtype.name
-                xml.add_element("DataArray",
-                                Name="_element_tags",
-                                NumberOfComponents=1,
-                                type=VTK_TYPE_MAPPER[dtype],
-                                format="binary")
-                xml.add_array_data_to_element(element_tags)
-                xml.finish_element()
-
-                xml.finish_all_elements()
-
-            # Write raw encoded file
-            elif self.encoding == RAW:
-
-                # Byte offset is needed to identify data from appended list
-                byte_offset = 0
-                update_byte_offset = (lambda array:
-                                      byte_offset
-                                      + array.dtype.itemsize*array.size
-                                      + self._header_size)
-
-                # File header
-                xml.add_element("VTKFile", type="UnstructuredGrid",
-                                version=VTK_VERSION_STRING,
-                                byte_order=BYTE_ORDER,
-                                header_type=VTK_TYPE_MAPPER[self.header_type])
-                xml.add_element("UnstructuredGrid")
-
-                # Add time data
-                time_array = np.array([piece.frame_time])
-                dtype = time_array.dtype.name
-                xml.add_element("FieldData")
-                xml.add_and_finish_element("DataArray",
-                                           Name="TimeValue",
-                                           NumberOfTuples=1,
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           format="appended",
-                                           offset=byte_offset)
-                byte_offset = update_byte_offset(time_array)
-                xml.finish_element()
-
-                # Initialize model geometry
-                xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
-
-                # Add nodes
-                xml.add_element("Points")
-                dtype = node_coords.dtype.name
-                xml.add_and_finish_element("DataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           NumberOfComponents=3,
-                                           format="appended",
-                                           offset=byte_offset)
-                byte_offset = update_byte_offset(node_coords)
-                xml.finish_element()
-
-                # Add connectivity
-                xml.add_element("Cells")
-                dtype = connectivity.dtype.name
-                xml.add_and_finish_element("DataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           Name="connectivity",
-                                           format="appended",
-                                           offset=byte_offset)
-                byte_offset = update_byte_offset(connectivity)
-
-                # Add element offsets
-                dtype = element_offsets.dtype.name
-                xml.add_and_finish_element("DataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           Name="offsets",
-                                           format="appended",
-                                           offset=byte_offset)
-                byte_offset = update_byte_offset(element_offsets)
-
-                # Add element types
-                dtype = element_types.dtype.name
-                xml.add_and_finish_element("DataArray",
-                                           type=VTK_TYPE_MAPPER[dtype],
-                                           Name="types",
-                                           format="appended",
-                                           offset=byte_offset)
-                byte_offset = update_byte_offset(element_types)
-                xml.finish_element()
-
-                # Add node fields
-                xml.add_element("PointData")
-                for nf in piece.node_fields:
-                    field_vals = nf.get_3d_field_values()
-                    components = len(field_vals[0])
-                    dtype = field_vals.dtype.name
-
-                    xml.add_and_finish_element("DataArray", Name=nf.field_name,
-                                               NumberOfComponents=components,
-                                               type=VTK_TYPE_MAPPER[dtype],
-                                               format="appended",
-                                               offset=byte_offset)
-                    byte_offset = update_byte_offset(field_vals)
-
-                # Node fields for groups
-                for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.in1d(piece.nodes.tags,
-                                         group_nodes).astype(np.uint8)
-                    dtype = field_vals.dtype.name
-
-                    xml.add_and_finish_element("DataArray",
-                                               Name="_group " + group_name,
-                                               NumberOfComponents=1,
-                                               type=VTK_TYPE_MAPPER[dtype],
-                                               format="appended",
-                                               offset=byte_offset)
-                    byte_offset = update_byte_offset(field_vals)
-
-                # Add node tags as field
-                dtype = node_tags.dtype.name
-                xml.add_and_finish_element("DataArray",
-                                            Name="_node_tags",
-                                            NumberOfComponents=1,
-                                            type=VTK_TYPE_MAPPER[dtype],
-                                            format="appended",
-                                            offset=byte_offset)
-                byte_offset = update_byte_offset(node_tags)
-
-                xml.finish_element()  # Finish node fields
-
-                # Add element fields
-                xml.add_element("CellData")
-                for ef in piece.element_fields:
-                    field_vals = ef.get_3d_field_values()
-                    components = len(field_vals[0])
-                    dtype = field_vals.dtype.name
-
-                    xml.add_and_finish_element("DataArray",
-                                               Name=ef.field_name,
-                                               NumberOfComponents=components,
-                                               type=VTK_TYPE_MAPPER[dtype],
-                                               format="appended",
-                                               offset=byte_offset)
-                    byte_offset = update_byte_offset(field_vals)
-
-                # Element_fields for groups
-                for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.in1d(piece.elements.tags,
-                                         group_elems).astype(np.uint8)
-                    dtype = field_vals.dtype.name
-
-                    xml.add_and_finish_element("DataArray",
-                                               Name="_group " + group_name,
-                                               NumberOfComponents=1,
-                                               type=VTK_TYPE_MAPPER[dtype],
-                                               format="appended",
-                                               offset=byte_offset)
-                    byte_offset = update_byte_offset(field_vals)
-
-                # Add element tags as field
-                dtype = element_tags.dtype.name
-                xml.add_and_finish_element("DataArray",
-                                            Name="_element_tags",
-                                            NumberOfComponents=1,
-                                            type=VTK_TYPE_MAPPER[dtype],
-                                            format="appended",
-                                            offset=byte_offset)
-                byte_offset = update_byte_offset(element_tags)
-
-                xml.finish_element()  # Finish cell data
-                xml.finish_element()  # Finish piece
-                xml.finish_element()  # Finish unstructured grid
-
-                # Append geometry data
-                xml.add_element("AppendedData", encoding="raw")
-                xml.add_content_to_element("_", False)
-                for array in [time_array, node_coords, connectivity,
-                              element_offsets, element_types]:
-                    xml.add_array_data_to_element(array, break_line=False)
-
-                # Append node field data
-                for nf in piece.node_fields:
-                    field_vals = nf.get_3d_field_values()
-                    xml.add_array_data_to_element(field_vals,
-                                                  break_line=False)
-
-                # Append node group data
-                for group_name, group_nodes in piece.nodes.groups.items():
-                    field_vals = np.in1d(piece.nodes.tags,
-                                         group_nodes).astype(np.uint8)
-                    xml.add_array_data_to_element(field_vals, break_line=False)
-
-                # Append node tags field
-                xml.add_array_data_to_element(node_tags, break_line=False)
-
-                # Append element field data
-                for ef in piece.element_fields:
-                    field_vals = ef.get_3d_field_values()
-                    xml.add_array_data_to_element(field_vals,
-                                                  break_line=False)
-
-                # Append element group data
-                for group_name, group_elems in piece.elements.groups.items():
-                    field_vals = np.in1d(piece.elements.tags,
-                                         group_elems).astype(np.uint8)
-                    xml.add_array_data_to_element(field_vals, break_line=False)
-
-                # Add element tags field
-                xml.add_array_data_to_element(element_tags)
-
-                xml.finish_all_elements()
+            xml.finish_element()  # finish VTKFile
 
         return file_path
 
 
 class AsciiWriter(WriterBaseClass):
     """
-    Writer for the export of paraqus models to ascii .vtu file format.
+    Writer for the export of paraqus models to ASCII .vtu file format.
 
     Parameters
     ----------
@@ -1009,8 +1045,8 @@ class AsciiWriter(WriterBaseClass):
         Directory, where all exported VTK files will be stored. The
         default is 'vtk_files'.
     clear_output_dir : bool, optional
-        If this is True, the output directory will be cleared before
-        exporting any files. The default is False.
+        If this is `True`, the output directory will be cleared before
+        exporting any files. The default is `False`.
     number_of_pieces : int, optional
         Number of pieces each model will be split into. The default
         is 1.
@@ -1038,13 +1074,11 @@ class AsciiWriter(WriterBaseClass):
                  clear_output_dir=False,
                  number_of_pieces=1):
 
-        super(AsciiWriter, self).__init__(output_dir,
+        super(AsciiWriter, self).__init__(ASCII,
+                                          output_dir,
                                           clear_output_dir,
                                           number_of_pieces)
-        self.FORMAT = ASCII
 
-
-    # Methods
     def _write_vtu_file(self, piece, piece_tag=0):
         """
         Write a .vtu file for a specified piece or submodel of a paraqus model.
@@ -1063,157 +1097,32 @@ class AsciiWriter(WriterBaseClass):
             The path to the exported .vtu file.
 
         """
-        (file_path,
-         nel,
-         nnp,
-         element_tags,
-         node_tags,
-         node_coords,
-         element_types,
-         element_offsets,
-         connectivity) = self._prepare_to_write_vtu_file(piece, piece_tag)
-
-        # Write the file
+        file_path = self._prepare_to_write_vtu_file(piece, piece_tag)
         with VtkFileManager(file_path, ASCII) as vtu_file:
-
-            # File header
             xml = XmlFactory(vtu_file)
+
+            # initialize file
             xml.add_element("VTKFile", type="UnstructuredGrid",
                             version=VTK_VERSION_STRING, byte_order=BYTE_ORDER)
             xml.add_element("UnstructuredGrid")
 
-            # Add time data
-            time_array = np.array([piece.frame_time])
-            xml.add_element("FieldData")
-            xml.add_element("DataArray", Name="TimeValue", NumberOfTuples=1,
-                            type=VTK_TYPE_MAPPER[time_array.dtype.name],
-                            format="ascii")
-            xml.add_array_data_to_element(time_array)
-            xml.finish_element()
-            xml.finish_element()  # Finish definition of time data
+            # add time data
+            self._add_time_data_to_vtu_file(piece, xml)
 
-            # Initialize model geometry
+            # initialize model geometry
+            nnp, nel = len(piece.nodes.tags), len(piece.elements.tags)
             xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
 
-            # Add nodes
-            xml.add_element("Points")
-            xml.add_element("DataArray",
-                            type=VTK_TYPE_MAPPER[node_coords.dtype.name],
-                            Name="nodes", NumberOfComponents=3, format="ascii")
-            xml.add_array_data_to_element(node_coords)
-            xml.finish_element()
-            xml.finish_element()  # Finish definition of nodes
+            # add nodes and elements
+            self._add_mesh_data_to_vtu_file(piece, xml)
 
-            # Add connectivity
-            xml.add_element("Cells")
-            xml.add_element("DataArray",
-                            type=VTK_TYPE_MAPPER[connectivity[0].dtype.name],
-                            Name="connectivity", format="ascii")
-            xml.add_array_data_to_element(connectivity)
-            xml.finish_element()
+            # add node and element fields
+            self._add_field_data_to_vtu_file(piece, xml, NODES)
+            self._add_field_data_to_vtu_file(piece, xml, ELEMENTS)
 
-            # Add element offsets
-            xml.add_element("DataArray",
-                            type=VTK_TYPE_MAPPER[element_offsets.dtype.name],
-                            Name="offsets", format="ascii")
-            xml.add_array_data_to_element(element_offsets)
-            xml.finish_element()
-
-            # Add element types
-            xml.add_element("DataArray",
-                            type=VTK_TYPE_MAPPER[element_types.dtype.name],
-                            Name="types", format="ascii")
-            xml.add_array_data_to_element(element_types)
-            xml.finish_element()
-            xml.finish_element()  # Finish definition of cells
-
-            # Add node fields
-            xml.add_element("PointData")
-
-            for nf in piece.node_fields:
-                field_vals = nf.get_3d_field_values()
-                components = len(field_vals[0])
-                dtype = field_vals.dtype.name
-
-                xml.add_element("DataArray",
-                                Name=nf.field_name,
-                                NumberOfComponents=components,
-                                type=VTK_TYPE_MAPPER[dtype],
-                                format="ascii")
-
-                xml.add_array_data_to_element(field_vals)
-                xml.finish_element()
-
-            # Add node fields based on groups
-            for group_name, group_nodes in piece.nodes.groups.items():
-                field_vals = np.in1d(piece.nodes.tags,
-                                     group_nodes).astype(np.uint8)
-                dtype = field_vals.dtype.name
-
-                xml.add_element("DataArray",
-                                Name="_group " + group_name,
-                                NumberOfComponents=1,
-                                type=VTK_TYPE_MAPPER[dtype],
-                                format="ascii")
-
-                xml.add_array_data_to_element(field_vals)
-                xml.finish_element()
-
-            # Add node tags as field
-            dtype = node_tags.dtype.name
-            xml.add_element("DataArray",
-                            Name="_node_tags",
-                            NumberOfComponents=1,
-                            type=VTK_TYPE_MAPPER[dtype],
-                            format="ascii")
-            xml.add_array_data_to_element(node_tags)
-            xml.finish_element()
-
-            xml.finish_element()  # Finish node fields
-
-            # Add element fields
-            xml.add_element("CellData")
-
-            for ef in piece.element_fields:
-                field_vals = ef.get_3d_field_values()
-                components = len(field_vals[0])
-                dtype=field_vals.dtype.name
-
-                xml.add_element("DataArray",
-                                Name=ef.field_name,
-                                NumberOfComponents=components,
-                                type=VTK_TYPE_MAPPER[dtype],
-                                format="ascii")
-
-                xml.add_array_data_to_element(field_vals)
-                xml.finish_element()
-
-            # Add element fields based on groups
-            for group_name, group_elems in piece.elements.groups.items():
-                field_vals = np.in1d(piece.elements.tags,
-                                     group_elems).astype(np.uint8)
-                dtype = field_vals.dtype.name
-
-                xml.add_element("DataArray",
-                                Name="_goup " + group_name,
-                                NumberOfComponents=1,
-                                type= VTK_TYPE_MAPPER[dtype],
-                                format="ascii")
-
-                xml.add_array_data_to_element(field_vals)
-                xml.finish_element()
-
-            # Add element tags as field
-            dtype = element_tags.dtype.name
-            xml.add_element("DataArray",
-                            Name="_element_tags",
-                            NumberOfComponents=1,
-                            type=VTK_TYPE_MAPPER[dtype],
-                            format="ascii")
-            xml.add_array_data_to_element(element_tags)
-            xml.finish_element()
-
-            xml.finish_all_elements()
+            xml.finish_element()  # finish Piece
+            xml.finish_element()  # finish UnstructuredGrid
+            xml.finish_element()  # finish VTKFile
 
         return file_path
 
@@ -1249,6 +1158,7 @@ class CollectionWriter(object):
     >>>     writer.write(random_paraqus_model_frame_3)
 
     """
+
     def __init__(self, writer, collection_name):
         self.writer = writer
         self.collection_name = collection_name
@@ -1263,12 +1173,12 @@ class CollectionWriter(object):
 
     def write(self, model):
         """
-        Write a ParaqusModel to a vtk file using the underlying writer.
+        Write a ParaqusModel to a VTK file using the underlying writer.
 
         Parameters
         ----------
         model : ParaqusModel
-            The model that will be converted to a vtk file.
+            The model that will be converted to a VTK file.
 
         Returns
         -------
@@ -1396,21 +1306,22 @@ class XmlFactory(object):
     encoding : ParaqusConstant, optional
         The binary encoding used for data arrays. Currently supported
         are RAW and BASE64. This is not needed in case of writing
-        VTK ascii files. The default is None.
+        VTK ASCII files. The default is None.
     header_type : ParaqusConstant, optional
         The data type used for the headers of the binary data blocks.
         Currently supported are UINT32 and UINT64. This is not needed in
-        case of writing VTK ascii files. The default is None.
+        case of writing VTK ASCII files. The default is None.
 
     """
 
     def __init__(self, stream, encoding=None, header_type=None):
 
-        assert isinstance(stream, VtkFileManager)
+        assert isinstance(stream, VtkFileManager), \
+            "Stream is not a VtkFileManager object."
 
         if stream.fmt == BINARY:
-            assert encoding is not None
-            assert header_type is not None
+            assert encoding is not None, "Binary ending is None."
+            assert header_type is not None, "Binary data header is None."
 
         self._stream = stream
         self._lvl = 0
@@ -1418,7 +1329,7 @@ class XmlFactory(object):
         self._elements = []
         self._active_element = None
         self._header_type = header_type
-        self._encoding=encoding
+        self._encoding = encoding
 
     def add_element(self, name, break_line=True, **attributes):
         """
@@ -1429,8 +1340,8 @@ class XmlFactory(object):
         name : str
             Name of the element section.
         break_line : bool, optional
-            If True, a linebreak will be inserted after the element
-            section has been added. The default is True.
+            If `True`, a linebreak will be inserted after the element
+            section has been added. The default is `True`.
         **attributes : Text, Numeric
             Attributes of the element section. The keys will be the
             attribute's name, the values will be the attribute's value.
@@ -1466,8 +1377,8 @@ class XmlFactory(object):
         Parameters
         ----------
         break_line : bool, optional
-            If True, a linebreak will be inserted after the element
-            section has been closed. The default is True.
+            If `True`, a linebreak will be inserted after the element
+            section has been closed. The default is `True`.
 
         Returns
         -------
@@ -1501,8 +1412,8 @@ class XmlFactory(object):
         Parameters
         ----------
         break_line : bool, optional
-            If True, a linebreak will be inserted after each closed
-            element section. The default is True.
+            If `True`, a linebreak will be inserted after each closed
+            element section. The default is `True`.
 
         Returns
         -------
@@ -1521,8 +1432,8 @@ class XmlFactory(object):
         name : str
             Name of the element section.
         break_line : bool, optional
-            If True, a linebreak will be inserted after each element
-            section. The default is True.
+            If `True`, a linebreak will be inserted after each element
+            section. The default is `True`.
         **attributes : Text, Numeric
             Attributes of the element section. The keys will be the
             attribute's name, the values will be the attribute's value.
@@ -1553,8 +1464,8 @@ class XmlFactory(object):
         content : Text, Numeric
             The content to add.
         break_line : bool, optional
-            If True, a linebreak will be inserted after the content hase
-            been written. The default is True.
+            If `True`, a linebreak will be inserted after the content hase
+            been written. The default is `True`.
 
         Returns
         -------
@@ -1580,8 +1491,8 @@ class XmlFactory(object):
         array : numpy.ndarray
             The array data to add.
         break_line : bool, optional
-            If True, a linebreak will be inserted after the array data.
-            The default is True.
+            If `True`, a linebreak will be inserted after the array data.
+            The default is `True`.
 
         Returns
         -------
@@ -1606,8 +1517,8 @@ class XmlFactory(object):
         array : numpy.ndarray
             The array to add to the output file.
         break_line : bool, optional
-            If True, a linebreak will be inserted after the array data
-            has been written.
+            If `True`, a linebreak will be inserted after the array data
+            has been written. The default is `True`.
 
         Returns
         -------
@@ -1617,7 +1528,7 @@ class XmlFactory(object):
         # Somehow references are writing about vtk expecting fortran array ,
         # order in binary format, but in my tests this did not work and
         # c-type arrays yield the expected results. Maybe this has been
-        # updated over time since the  references are quite old.
+        # updated over time since the references are quite old.
         # binary_data = struct.pack(format_string, *np.ravel(array, order="F"))
 
         # Create a 32 or 64 bit length indicator of type unsigned int for
@@ -1654,15 +1565,15 @@ class XmlFactory(object):
 
     def _write_ascii_array_data(self, array, break_line=True):
         """
-        Add array data in ascii format to the XML file.
+        Add array data in ASCII format to the XML file.
 
         Parameters
         ----------
         array : numpy.ndarray
             The array to add to the output file.
         line_break : bool, optional
-            If True, a line break will be inserted after each line of
-            the array.
+            If `True`, a line break will be inserted after each line of
+            the array. The default is `True`.
 
         Returns
         -------
@@ -1674,7 +1585,7 @@ class XmlFactory(object):
         # e.g. in case of the connectivity
         try:
             if 1 in array.shape or len(array.shape) == 1:
-                array = array.reshape(1,-1)
+                array = array.reshape(1, -1)
         except AttributeError:
             pass
 
