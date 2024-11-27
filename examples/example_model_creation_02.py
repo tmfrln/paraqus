@@ -15,14 +15,15 @@ Example 02 - field data
 This example demonstrates how to add field data to ParaqusModels.
 
 """
-# # Uncomment this if you cannot add paraqus to the python path, and set
-# # the paraqus source directory for your system
+# uncomment this if you can not add paraqus to the Python path, and set
+# the Paraqus source directory for your system
 # import sys
 # sys.path.append("...")
 
 import numpy as np
 
 from paraqus import ParaqusModel, AsciiWriter
+
 
 # =============================================================================
 #           we start by creating the same model as in example 1
@@ -31,21 +32,18 @@ from paraqus import ParaqusModel, AsciiWriter
 # specify node tags and corresponding coordinates (2d in this case)
 node_tags = [1, 2, 3, 4, 5, 6, 7, 8]
 
-# we use a numpy array for the coordinates now, because we want to process them
-# later. In general, paraqus takes arguments as sequences and converts them to
-# array internally anyways.
-node_coords = np.array([[0, 0],
-                        [1, 0],
-                        [2, 0],
-                        [0, 1],
-                        [1, 1],
-                        [2, 1],
-                        [0.5, 1.5],
-                        [1.5, 1.5]])
+node_coords = [[0, 0],
+               [1, 0],
+               [2, 0],
+               [0, 1],
+               [1, 1],
+               [2, 1],
+               [0.5, 1.5],
+               [1.5, 1.5]]
 
 # the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
-element_types = [9, 9, 5, 5, 5] # two quads, three triangles
+element_types = [9, 9, 5, 5, 5]  # two quads, three triangles
 
 # specify cell tags and the nodes of each cell
 element_tags = [1, 2, 3, 4, 5]
@@ -63,8 +61,8 @@ model_name = "example_model_02"
 # name of the part - this will be the file name for the vtu files
 part_name = "example_part_02"
 
-# now we have everything we need to create an instance of ParaqusModel, which
-# is the type used to store all model data in paraqus
+# now you have everything you need to create an instance of ParaqusModel, which
+# is the type used to store all model data in Paraqus
 model = ParaqusModel(element_tags,
                      connectivity,
                      element_types,
@@ -73,15 +71,16 @@ model = ParaqusModel(element_tags,
                      model_name=model_name,
                      part_name=part_name)
 
+
 # =============================================================================
 #             the part different from example 1 starts here :-)
 # =============================================================================
 
-# we create a field called u representing the displacement of each node
+# create a field called u representing the displacement of each node
 field_name = "u"
-field_tags = [1,2,3,4,5,6,7,8] # node tags, since we create a node field
+field_tags = node_tags  # node tags, since we create a node field
 
-# we prescribe x-displacements as 0
+# prescribe x-displacements as 0
 ux = np.zeros(len(node_tags))
 
 # prescribe the y-displacement as 20% of the distance to the origin for each
@@ -91,7 +90,7 @@ uy = 0.2*np.linalg.norm(node_coords, axis=1)
 # combine ux and uy into a (number_of_nodes,2) array
 field_values = np.vstack((ux, uy)).T
 
-# specify that we add a node field with vector values
+# specify that you add a node field with vector values
 field_position = "nodes"
 field_type = "vector"
 
@@ -102,12 +101,12 @@ model.add_field(field_name,
                 field_position,
                 field_type)
 
-# now we add a scalar element field called T (representing e.g. a temperature)
+# now add a scalar element field called T (representing e.g. a temperature)
 field_name = "T"
-field_tags = [1,2,3,4,5] # these are now the element tags
+field_tags = element_tags  # these are now the element tags
 field_values = [25., 25., 30., 30., 35.]
 
-# specify that we add a node field with vector values
+# specify that you add an element field with scalar values
 field_position = "elements"
 field_type = "scalar"
 
@@ -119,13 +118,12 @@ model.add_field(field_name,
                 field_type)
 
 
-
-
 # create an instance of the AsciiWriter (i.e. the vtu files are human readable)
 writer = AsciiWriter(output_dir="vtu_examples")
 
 # write the model to disk
 writer.write(model)
 
-# if you open the vtu file in paraview, you can use the "warp by vector"
+
+# if you open the .vtu file in ParaView, you can use the "warp by vector"
 # filter to visualize the displacements
