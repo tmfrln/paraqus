@@ -82,8 +82,8 @@ model_2 = ParaqusModel(element_tags_2,
 vtu_writer = AsciiWriter(output_dir="vtu_examples")
 
 # but now also create a CollectionWriter, which takes the writer as an
-# argument (and uses it to write each file in the collection).
-# the CollectionWriter is a context manager, which means it is used in a with
+# argument (and uses it to write each file in the collection). The
+# CollectionWriter is a context manager, which means it is used in a with
 # statement as shown below:
 collection_name = "example_model_04_combined"
 with CollectionWriter(vtu_writer, collection_name) as collection_writer:
@@ -94,4 +94,4 @@ with CollectionWriter(vtu_writer, collection_name) as collection_writer:
 # the collection name replaces the model name of the ParaqusModels in the
 # folder structure. In addition to the .vtu files for each individual part, a
 # .pvd file is created. Opening this .pvd file in ParaView combines both parts
-# in one view
+# in one view.

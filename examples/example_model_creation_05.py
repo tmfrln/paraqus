@@ -68,7 +68,7 @@ part_name = "example_part_05"
 # now loop over fake time steps and create a time-dependent displacement
 # field. A new ParaqusModel is created for each time step. Since the .vtu files
 # will be grouped, all of this happens within a with statement for the
-# CollectionWriter
+# CollectionWriter.
 
 # we specify all field data here and scale the values later
 
