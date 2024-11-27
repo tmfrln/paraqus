@@ -13,15 +13,16 @@
 Example 01 - model creation
 
 This example demonstrates how to create a ParaqusModel instance from scratch.
-The model is then written to a vtu file.
+The model is then written to a .vtu file.
 
 """
-# # Uncomment this if you cannot add paraqus to the python path, and set
-# # the paraqus source directory for your system
+# uncomment this if you can not add Paraqus to the Python path, and set
+# the Paraqus source directory for your system
 # import sys
 # sys.path.append("...")
 
 from paraqus import ParaqusModel, AsciiWriter, BinaryWriter
+
 
 # specify node tags and corresponding coordinates (2d in this case)
 node_tags = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -37,7 +38,7 @@ node_coords = [[0, 0],
 
 # the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
-element_types = [9, 9, 5, 5, 5] # two quads, three triangles
+element_types = [9, 9, 5, 5, 5]  # two quads, three triangles
 
 # specify cell tags and the nodes of each cell
 element_tags = [1, 2, 3, 4, 5]
@@ -55,8 +56,8 @@ model_name = "example_model_01"
 # name of the part - this will be the file name for the vtu files
 part_name = "example_part_01"
 
-# now we have everything we need to create an instance of ParaqusModel, which
-# is the type used to store all model data in paraqus
+# now you have everything you need to create an instance of ParaqusModel, which
+# is the type used to store all model data in Paraqus
 model = ParaqusModel(element_tags,
                      connectivity,
                      element_types,
@@ -66,13 +67,17 @@ model = ParaqusModel(element_tags,
                      part_name=part_name)
 
 
-# create an instance of the AsciiWriter (i.e. the vtu files are human readable)
-# we specify the output directory, where paraqus will create subfolders for the
+# create an instance of AsciiWriter (i.e. the .vtu files are human readable)
+# we specify the output directory, where Paraqus will create subfolders for the
 # results
-# writer = AsciiWriter(output_dir="vtu_examples")
-writer = BinaryWriter(output_dir="vtu_examples")
+writer = AsciiWriter(output_dir="vtu_examples")
+
+# alternatively you can store all data arrays inside the .vtu file in binary
+# format by creating an instance of BinaryWriter
+# writer = BinaryWriter(output_dir="vtu_examples")
 
 # write the model to disk
 writer.write(model)
 
-# you can now use e.g. paraview to have a look at the vtu file
+
+# you can now use e.g. ParaView to have a look at the .vtu file
