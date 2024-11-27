@@ -13,15 +13,15 @@
 """
 This script sets up a 2d example model for an extrusion process, and
 performs the calculations in Abaqus. The material model is provided as
-as separate Abaqus user material, i.e. a fortran file. This example is
+as separate Abaqus user material, i.e. a Fortran file. This example is
 chosen to demonstrate the capability of Paraqus to export results based
 on user materials.
 
-The user material describes a large-strain plasticity with isotropic
-hardening. The details of the plasticity formulations are not discussed
-at this point, since the example will work with pretty much any user
-material. The only important information is the ordering of the internal
-state variables (SDVs), which will be exported to the vtk file:
+The user material describes large-strain plasticity with isotropic hardening.
+The details of the plasticity formulations are not discussed at this point,
+since the example will work with pretty much any user material. The only
+important information is the ordering of the internal state variables (SDVs),
+which will be exported to the .vtu file:
 
  SDV #  |             Description
 -------------------------------------------------
@@ -32,15 +32,14 @@ state variables (SDVs), which will be exported to the vtk file:
 Special thanks go to Lennart Sobisch for contributing this example to
 Paraqus.
 
-Note: To run the example, make sure that the fortran file
+Note: To run the example, make sure that the Fortran file
 UMAT_VMPlasti_LargeStrain.f is present in the working directory!
 
 To run this example, open a terminal in the example folder and type
-abaqus cae script=run_example_abaqus_extrusion.py
+    abaqus cae noGUI=run_example_abaqus_extrusion.py
 
 Alternatively, you can also use the "run script" menu item in Abaqus CAE
 to run it. Make sure to set the correct working directory (see above).
-
 
 """
 import os
@@ -153,7 +152,7 @@ matrixPart = model.Part(name='matrixPart',
 matrixPart.BaseShell(sketch=sketch)
 del model.sketches['matrixSketch']
 
-sketch = model.ConstrainedSketch(name='extrudeSketch',sheetSize=200.0)
+sketch = model.ConstrainedSketch(name='extrudeSketch', sheetSize=200.0)
 sketch.sketchOptions.setValues(viewStyle=AXISYM)
 sketch.ConstructionLine(point1=(0.0, -100.0), point2=(0.0, 100.0))
 sketch.Line(point1=(0.0, 0.0), point2=(d0/2-0.1, 0.0))
@@ -162,8 +161,8 @@ sketch.Line(point1=(d0/2-0.1, l1), point2=(0.0, l1))
 sketch.Line(point1=(0.0, l1), point2=(0.0, 0.0))
 
 extrudePart = model.Part(name='extrudePart',
-                          dimensionality=AXISYMMETRIC,
-                          type=DEFORMABLE_BODY)
+                         dimensionality=AXISYMMETRIC,
+                         type=DEFORMABLE_BODY)
 extrudePart.BaseShell(sketch=sketch)
 del model.sketches['extrudeSketch']
 
@@ -171,28 +170,26 @@ del model.sketches['extrudeSketch']
 matrixPart.Set(faces=matrixPart.faces, name='matrixCells')
 extrudePart.Set(faces=extrudePart.faces, name='extrudeCells')
 
-upperExtrudeFace = extrudePart.edges.findAt(((d0/4,le,0.0),))
+upperExtrudeFace = extrudePart.edges.findAt(((d0/4, le, 0.0),))
 extrudePart.Set(edges=upperExtrudeFace, name='upperExtrudeFace')
 
-leftExtrudeFace = extrudePart.edges.findAt(((0.0,le/2,0),))
+leftExtrudeFace = extrudePart.edges.findAt(((0.0, le/2, 0),))
 extrudePart.Set(edges=leftExtrudeFace, name='leftExtrudeFace')
 
-rightExtrudeFace = extrudePart.edges.findAt(((d0/2-0.1,le/2,0),))
+rightExtrudeFace = extrudePart.edges.findAt(((d0/2-0.1, le/2, 0),))
 extrudePart.Set(edges=rightExtrudeFace, name='rightExtrudeFace')
 
-masterContactFace1 = matrixPart.edges.findAt(((d1/2,l1/2,0),))
+masterContactFace1 = matrixPart.edges.findAt(((d1/2, l1/2, 0),))
 masterContactFace2 = matrixPart.edges.findAt(((x1[0] + (x2[0]-x1[0])*0.5,
-                                                x1[1] + (x2[1]-x1[1])*0.5,
-                                                0.),))
-masterContactFace3 = matrixPart.edges.findAt(((d0/2,x2[1] + (x3[1]-x2[1])*0.5,0.),))
+                                               x1[1] + (x2[1]-x1[1])*0.5,
+                                               0.),))
+masterContactFace3 = matrixPart.edges.findAt(
+    ((d0/2, x2[1] + (x3[1]-x2[1])*0.5, 0.),))
 matrixPart.Set(edges=(masterContactFace1,
                       masterContactFace2,
                       masterContactFace3,
                       ),
-                name='masterContactFace')
-
-
-
+               name='masterContactFace')
 
 
 # ----------------------------------------------------------------------------
@@ -202,7 +199,7 @@ matrixPart.Set(edges=(masterContactFace1,
 extrudeMat = model.Material(name='extrudeMaterial')
 extrudeMat.Depvar(n=11)
 extrudeMat.UserMaterial(type=MECHANICAL,
-                        mechanicalConstants=(E,nu,q0,q_sat,alpha_u,h))
+                        mechanicalConstants=(E, nu, q0, q_sat, alpha_u, h))
 
 
 model.HomogeneousSolidSection(name='extrudeSection',
@@ -218,18 +215,18 @@ extrudePart.SectionAssignment(region=extrudePart.sets['extrudeCells'],
 
 
 matrixMat = model.Material(name='matrixMaterial')
-matrixMat.Elastic(table=((1000000.0,0.3), ))
+matrixMat.Elastic(table=((1000000.0, 0.3), ))
 
 model.HomogeneousSolidSection(name='matrixSection',
                               material='matrixMaterial',
                               thickness=None)
 
 matrixPart.SectionAssignment(region=matrixPart.sets['matrixCells'],
-                              sectionName='matrixSection',
-                              offset=0.0,
-                              offsetType=MIDDLE_SURFACE,
-                              offsetField='',
-                              thicknessAssignment=FROM_SECTION)
+                             sectionName='matrixSection',
+                             offset=0.0,
+                             offsetType=MIDDLE_SURFACE,
+                             offsetField='',
+                             thicknessAssignment=FROM_SECTION)
 
 # ----------------------------------------------------------------------------
 #  Assembly
@@ -237,8 +234,10 @@ matrixPart.SectionAssignment(region=matrixPart.sets['matrixCells'],
 
 assembly = model.rootAssembly
 
-extrudeInstance = assembly.Instance(name='extrudeInstance', part=extrudePart, dependent=ON)
-matrixInstance = assembly.Instance(name='matrixInstance', part=matrixPart, dependent=ON)
+extrudeInstance = assembly.Instance(
+    name='extrudeInstance', part=extrudePart, dependent=ON)
+matrixInstance = assembly.Instance(
+    name='matrixInstance', part=matrixPart, dependent=ON)
 assembly.translate(instanceList=('extrudeInstance', ), vector=(0.0, 95.0, 0.0))
 
 # ----------------------------------------------------------------------------
@@ -276,7 +275,7 @@ elemType1 = mesh.ElemType(elemCode=CAX4, elemLibrary=STANDARD)
 elemType2 = mesh.ElemType(elemCode=CAX3, elemLibrary=STANDARD)
 
 matrixPart.setElementType(regions=matrixPart.sets['matrixCells'],
-                          elemTypes=(elemType1,elemType2))
+                          elemTypes=(elemType1, elemType2))
 
 matrixPart.seedPart(size=lc_m,
                     deviationFactor=0.1,
@@ -285,51 +284,50 @@ matrixPart.seedPart(size=lc_m,
 matrixPart.generateMesh()
 
 extrudePart.setElementType(regions=extrudePart.sets['extrudeCells'],
-                          elemTypes=(elemType1,elemType2))
+                           elemTypes=(elemType1, elemType2))
 
 extrudePart.seedPart(size=lc_e,
-                    deviationFactor=0.1,
-                    minSizeFactor=0.1)
+                     deviationFactor=0.1,
+                     minSizeFactor=0.1)
 
 extrudePart.generateMesh()
 
 assembly.regenerate()
 
-# # ----------------------------------------------------------------------------
-# # Boundary and initial conditions
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Boundary and initial conditions
+# ----------------------------------------------------------------------------
 
 model.DisplacementBC(name='matrixFix',
-                      createStepName='Step-1',
-                      region=assembly.sets['matrixInstance.matrixCells'],
-                      u1=0.0, u2=0.0, ur3=UNSET,
-                      amplitude=UNSET,
-                      fixed=OFF,
-                      distributionType=UNIFORM,
-                      fieldName='',
-                      localCsys=None)
+                     createStepName='Step-1',
+                     region=assembly.sets['matrixInstance.matrixCells'],
+                     u1=0.0, u2=0.0, ur3=UNSET,
+                     amplitude=UNSET,
+                     fixed=OFF,
+                     distributionType=UNIFORM,
+                     fieldName='',
+                     localCsys=None)
 
 model.DisplacementBC(name='xFix',
-                      createStepName='Step-1',
-                      region=assembly.sets['extrudeInstance.leftExtrudeFace'],
-                      u1=0.0, u2=UNSET, ur3=UNSET,
-                      amplitude=UNSET,
-                      fixed=OFF,
-                      distributionType=UNIFORM,
-                      fieldName='',
-                      localCsys=None)
-
+                     createStepName='Step-1',
+                     region=assembly.sets['extrudeInstance.leftExtrudeFace'],
+                     u1=0.0, u2=UNSET, ur3=UNSET,
+                     amplitude=UNSET,
+                     fixed=OFF,
+                     distributionType=UNIFORM,
+                     fieldName='',
+                     localCsys=None)
 
 
 model.DisplacementBC(name='Load',
-                      createStepName='Step-1',
-                      region=assembly.sets['extrudeInstance.upperExtrudeFace'],
-                      u1=UNSET, u2=-disp, ur3=UNSET,
-                      amplitude=UNSET,
-                      fixed=OFF,
-                      distributionType=UNIFORM,
-                      fieldName='',
-                      localCsys=None)
+                     createStepName='Step-1',
+                     region=assembly.sets['extrudeInstance.upperExtrudeFace'],
+                     u1=UNSET, u2=-disp, ur3=UNSET,
+                     amplitude=UNSET,
+                     fixed=OFF,
+                     distributionType=UNIFORM,
+                     fieldName='',
+                     localCsys=None)
 
 # Contact
 
@@ -340,13 +338,13 @@ intProp.NormalBehavior(pressureOverclosure=HARD, allowSeparation=ON,
 
 
 intProp.TangentialBehavior(formulation=PENALTY, directionality=ISOTROPIC,
-                            slipRateDependency=OFF, pressureDependency=OFF,
-                            temperatureDependency=OFF, dependencies=0,
-                            table=((friction, ), ), shearStressLimit=None,
-                            maximumElasticSlip=FRACTION, fraction=0.005,
-                            elasticSlipStiffness=None)
+                           slipRateDependency=OFF, pressureDependency=OFF,
+                           temperatureDependency=OFF, dependencies=0,
+                           table=((friction, ), ), shearStressLimit=None,
+                           maximumElasticSlip=FRACTION, fraction=0.005,
+                           elasticSlipStiffness=None)
 
-if friction== 0.0:
+if friction == 0.0:
     intProp.tangentialBehavior.setValues(formulation=FRICTIONLESS)
 
 
@@ -356,9 +354,9 @@ model.interactions['Int-1'].includedPairs.setValuesInStep(stepName='Initial',
 model.interactions['Int-1'].contactPropertyAssignments.appendInStep(stepName='Initial',
                                                                     assignments=((GLOBAL, SELF, 'IntProp-1'), ))
 
-# # ----------------------------------------------------------------------------
-# # Job
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Job
+# ----------------------------------------------------------------------------
 
 job = mdb.Job(name=jobName,
               model='extrusion',
