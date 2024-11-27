@@ -19,7 +19,7 @@ import os
 from abaqus import session
 
 
-class ODBObject(object):
+class OdbObject(object):
     """
     Context manager for Abaqus ODB objects.
 
