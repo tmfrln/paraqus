@@ -84,8 +84,8 @@ group_name = "triangle elements"
 element_tags = [3, 4, 5]
 model.add_element_group(group_name, element_tags)
 
-# the groups will be exported to the .vtu files as indicator functions.
-# for example, for the group "nodes lower edge", there will be a field
+# the groups will be exported to the .vtu files as indicator functions. For
+# example, for the group "nodes lower edge", there will be a field
 # "_group nodes lower edge", which takes the value 1 at all nodes in the group,
 # and the value 0 on all other nodes.
 
