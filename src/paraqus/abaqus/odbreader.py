@@ -27,7 +27,7 @@ import numpy as np
 
 from paraqus.paraqusmodel import ParaqusModel
 
-from paraqus.abaqus.abaqustools import ODBObject
+from paraqus.abaqus.abaqustools import OdbObject
 from paraqus.abaqus.elementlibrary import ABQ_ELEMENT_LIBRARY
 from paraqus.constants import (ABAQUS, NODES, ELEMENTS,
                                SCALAR, TENSOR, VECTOR,
@@ -47,7 +47,7 @@ PARAQUS_FIELD_TYPES = {abaqusConstants.SCALAR: SCALAR,
                        abaqusConstants.TENSOR_2D_PLANAR: TENSOR}
 
 
-class ODBReader():
+class OdbReader():
     """
     Reads an .odb file and exports selected results to a ParaqusModel instance.
 
@@ -85,9 +85,9 @@ class ODBReader():
 
     Examples
     --------
-    >>> from paraqus.abaqus import ODBReader
+    >>> from paraqus.abaqus import OdbReader
     >>> # Define the odb/model/instances that will be read
-    >>> reader = ODBReader(odb_path="example.odb",
+    >>> reader = OdbReader(odb_path="example.odb",
     >>>                    model_name="example model",
     >>>                    instance_names=["instance-1", "instance-2"],
     >>>                    )
@@ -134,7 +134,7 @@ class ODBReader():
             Number of frames in the step, including the initial (0th) frame.
 
         """
-        with ODBObject(self.odb_path) as odb:
+        with OdbObject(self.odb_path) as odb:
             step = odb.steps[step_name]
             return len(step.frames)
 
@@ -176,7 +176,7 @@ class ODBReader():
         def has_data(f):
             return reduction([n in f.fieldOutputs for n in field_names])
 
-        with ODBObject(self.odb_path) as odb:
+        with OdbObject(self.odb_path) as odb:
             step = odb.steps[step_name]
             frames = step.frames
 
@@ -286,7 +286,7 @@ class ODBReader():
             The total time passed (includes time offset).
 
         """
-        with ODBObject(self.odb_path) as odb:
+        with OdbObject(self.odb_path) as odb:
             step = odb.steps[step_name]
             frame = step.frames[frame_index]
             frame_time =  self.time_offset + step.totalTime + frame.frameValue
@@ -321,7 +321,7 @@ class ODBReader():
         else:
             model_name = self.model_name
 
-        with ODBObject(self.odb_path) as odb:
+        with OdbObject(self.odb_path) as odb:
             # TODO: Input checking
             step = odb.steps[step_name]
             frame = step.frames[frame_index]
