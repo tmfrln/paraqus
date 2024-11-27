@@ -11,18 +11,22 @@
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Export selected results from the cylindrical billet example output database.
+Datails on this example are available in the Abaqus Example Problems Guide:
 
-Run this file in the Abaqus python interpreter. It is assumed that the
-output dabase 'cylbillet_cax4rt_slow_dense.odb' is located in the current
-work directory. Visit the paraqus documentation for a full description on
-how to run the example before using this script to export results.
+    Example Problems -> Static Stress/Displacement Analysis -> Forming analyses
+    -> Upsetting of a cylindrical billet: coupled temperature-displacement and
+    adiabatic analysis
 
-To create the output database for this example, execute the following
-commands in the examples folder:
+To create the output database for this example, set your current work directory
+to the Paraqus examples folder and execute the following:
     abaqus fetch job=cylbillet_cax4rt_slow_dense.inp
     abaqus job=cylbillet_cax4rt_slow_dense interactive
 
-The following pipeline can be used in Paraview to visualize the results:
+After the file 'cylbillet_cax4rt_slow_dense.odb' has been created, run this
+script in the Abaqus Python interpreter via:
+    abaqus cae noGUI=example_abaqus_cylindrical_billet.py
+
+The following pipeline can be used in ParaView to visualize the results:
 - Apply deformation (Warp By Vector filter)
 - Rotate model around z-axis by -90° (Transform filter)
 - Reflect model at y-axis (Reflect filter)
@@ -33,32 +37,32 @@ The following pipeline can be used in Paraview to visualize the results:
 - Coloring according to the variable TEMP
 
 """
-# # Uncomment this if you cannot add paraqus to the python path, and set
-# # the paraqus source directory for your system
+# uncomment this if you can not add paraqus to the Python path, and set
+# the Paraqus source directory for your system
 # import sys
 # sys.path.append("...")
 
-# we will use the ODBReader class to extract information from the odb
-from paraqus.abaqus import ODBReader
+# you will use the OdbReader class to extract information from the ODB
+from paraqus.abaqus import OdbReader
 from paraqus.writers import AsciiWriter
 
 print("EXPORT RUNNING...")
 
-# set some constants based on the odb that will be exported
-ODB_PATH = "cylbillet_cax4rt_slow_dense.odb" # path to the odb
-MODEL_NAME = "Cylindrical-Billet" # can be chosen freely
-INSTANCE_NAMES = ["PART-1-1"] # which instances will be exported
-STEP_NAME = "Step-1" # name of the step that will be exported
-FRAME_INDEX = -1 # export the last frame of the step
+# set some constants based on the ODB that will be exported
+ODB_PATH = "cylbillet_cax4rt_slow_dense.odb"  # path to the ODB
+MODEL_NAME = "Cylindrical-Billet"  # can be chosen freely
+INSTANCE_NAMES = ["PART-1-1"]  # which instances will be exported
+STEP_NAME = "Step-1"  # name of the step that will be exported
+FRAME_INDEX = -1  # export the last frame of the step
 
-# the class ODBReader is used to export results from Abaqus odbs.
-reader = ODBReader(odb_path=ODB_PATH,
+# the class OdbReader is used to export results from Abaqus ODBs
+reader = OdbReader(odb_path=ODB_PATH,
                    model_name=MODEL_NAME,
                    instance_names=INSTANCE_NAMES,
                    )
 
-# we start configuring the reader instance by specifying field outputs
-# and node/element groups that will be exported. These must of course be
+# start configuring the reader instance by specifying field outputs and
+# node/element groups that will be exported. These must of course be
 # available in the output database.
 
 # field export requests
@@ -73,7 +77,7 @@ reader.add_set_export_request("ESID", set_type="elements",
 reader.add_set_export_request("ETOP", set_type="elements",
                               instance_name="PART-1-1")
 
-# create a writer that will write the exported results to a vtk file
+# create a writer that will write the exported results to a .vtu file
 vtu_writer = AsciiWriter("vtk_output_billet", clear_output_dir=True)
 
 # the method read_instances loops over all part instances for one
@@ -85,7 +89,7 @@ instance_models = list(reader.read_instances(step_name=STEP_NAME,
                                              frame_index=FRAME_INDEX))
 
 # instance_models has length 1, since there is only 1 instance with a mesh
-instance_model = instance_models[0] # this is a ParaqusModel
+instance_model = instance_models[0]  # this is a ParaqusModel
 
 # use the writer to write the file to disk
 vtu_writer.write(instance_model)

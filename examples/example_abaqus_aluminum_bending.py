@@ -11,64 +11,69 @@
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 Export selected results from the aluminum bending example output database.
+Datails on this example are available in the Abaqus Example Problems Guide:
+
+    Example Problems -> Dynamic Stress/Displacement Analyses -> Dynamic stress
+    analysis -> Progressive failure analysis of thin-wall aluminum extrusion
+    under quasi-static and dynamic loads
 
 The model contains shell elements, including rigid elements and damage.
-This example demonstrates how paraqus deals with these challenges.
+This example demonstrates how Paraqus deals with these challenges.
 
-Run this file in the Abaqus python interpreter. It is assumed that the
-output dabase 'threepointbending_alextrusion.odb' is located in the current
-work directory. Visit the paraqus documentation for a full description on how
-to run the example before using this script to export results.
-
-To create the output database for this example, execute the following
-commands in the examples folder:
+To create the output database for this example, set your current work directory
+to the Paraqus examples folder and execute the following:
     abaqus fetch job=threepointbending_alextrusion.inp
     abaqus job=threepointbending_alextrusion parallel=domain domains=4 cpus=4 mp_mode=threads interactive
 
-Caution: This might take a few minutes. If you machine has less than
-4 CPUs, adjust the domains and cpus parameters.
+Caution: This might take a few minutes. If you machine has less than 4 CPUs,
+adjust the domains and cpus parameters.
 
-The following pipeline can be used in Paraview to visualize the results:
+After the file 'threepointbending_alextrusion.odb' has been created run this
+script in the Abaqus Python interpreter via:
+    abaqus cae noGUI=example_abaqus_aluminum_bending.py
+
+The following pipeline can be used in ParaView to visualize the results:
 - Apply deformation (Warp By Vector filter)
 - Remove failed elements (Threshold filter based on STATUS variable > 0.5)
-- Alternative: Threshold based on STATUS < 0.5 and invert (keeps the rigid bodies)
+- Alternative: Threshold based on STATUS < 0.5 and invert (keeps the rigid
+  bodies)
 - Coloring according to the variable S_mides_absmax
 
 """
-# # Uncomment this if you cannot add paraqus to the python path, and set
-# # the paraqus source directory for your system
+# uncomment this if you can not add Paraqus to the Python path, and set
+# the Paraqus source directory for your system
 # import sys
 # sys.path.append("...")
 
-# we will use the ODBReader class to extract information from the odb
-from paraqus.abaqus import ODBReader
+# you will use the OdbReader class to extract information from the ODB
+from paraqus.abaqus import OdbReader
 from paraqus.writers import BinaryWriter
 
-# set some constants based on the odb that will be exported
-ODB_PATH = "threepointbending_alextrusion.odb" # path to the odb
-MODEL_NAME = "Aluminum-Bending" # can be chosen freely
-INSTANCE_NAMES = None # None will choose all instances
-STEP_NAME = "Step-1" # name of the step that will be exported
-FRAME_INDEX = -1 # export the last frame of the step
+# set some constants based on the ODB that will be exported
+ODB_PATH = "threepointbending_alextrusion.odb"  # path to the ODB
+MODEL_NAME = "Aluminum-Bending"  # can be chosen freely
+INSTANCE_NAMES = None  # None will choose all instances
+STEP_NAME = "Step-1"  # name of the step that will be exported
+FRAME_INDEX = -1  # export the last frame of the step
 
 # create the reader
-reader = ODBReader(odb_path=ODB_PATH,
+reader = OdbReader(odb_path=ODB_PATH,
                    model_name=MODEL_NAME,
                    instance_names=INSTANCE_NAMES,
                    )
 
 # for shell elements, output is stored at different section points,
-# representing different points along the element thickness. We can
+# representing different points along the element thickness. You can
 # either export the results for a specified point, or use a reduction to
 # obtain a field based on all section points.
 
-# Note that the rigid elements do not have stress output - paraqus will
-# fill the results for these elements with nans
+# note that the rigid elements do not have stress output - Paraqus will
+# fill the results for these elements with NaNs
 
 # specify which fields will be exported
-reader.add_field_export_request("S", # S = stress
-                                invariant="mises", # export the von Mises norm
-                                section_point_reduction='absmax', # reduction: use maximum absolute value
+reader.add_field_export_request("S",  # S = stress
+                                invariant="mises",  # export the von Mises norm
+                                section_point_reduction="absmax",  # reduction: use maximum absolute value
                                 )
 
 # same output, but only for one section point
@@ -77,8 +82,8 @@ reader.add_field_export_request("S",
                                 section_point_number=1,
                                 )
 
-reader.add_field_export_request("U") # displacements
-reader.add_field_export_request("STATUS") # indicates element failure
+reader.add_field_export_request("U")  # displacements
+reader.add_field_export_request("STATUS")  # indicates element failure
 
 # add some element groups, representing different parts of the model
 reader.add_set_export_request(set_name="P1_DOUBLECHAMBEREXTRUSION",
@@ -97,12 +102,10 @@ reader.add_set_export_request(set_name="P4_RIGHTSUPPORT",
                               set_type="elements",
                               instance_name="PART-1-1")
 
-# create a writer that will write the exported results to a vtk file
+# create a writer that will write the exported results to a .vtu file
 vtu_writer = BinaryWriter("vtk_output_bending", clear_output_dir=True)
 
 # loop over all instances and export the results
-instance_models = list(reader.read_instances(step_name=STEP_NAME,
-                                             frame_index=FRAME_INDEX))
-
-# instance_models has length 1, since there is only 1 instance
-vtu_writer.write(instance_models[0])
+for instance_model in reader.read_instances(step_name=STEP_NAME,
+                                            frame_index=FRAME_INDEX):
+    vtu_writer.write(instance_model)
