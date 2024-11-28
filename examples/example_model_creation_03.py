@@ -15,7 +15,7 @@ Example 03 - Node and element groups
 This example demonstrates how node/element groups are specified.
 
 """
-# uncomment this if you can not add paraqus to the Python path, and set
+# Uncomment this if you can not add paraqus to the Python path, and set
 # the Paraqus source directory for your system
 # import sys
 # sys.path.append("...")
@@ -23,11 +23,11 @@ This example demonstrates how node/element groups are specified.
 from paraqus import ParaqusModel, AsciiWriter
 
 
-# =============================================================================
+# ======================================================================
 #           we start by creating the same model as in example 1
-# =============================================================================
+# ======================================================================
 
-# specify node tags and corresponding coordinates (2d in this case)
+# Specify node tags and corresponding coordinates (2d in this case)
 node_tags = [1, 2, 3, 4, 5, 6, 7, 8]
 
 node_coords = [[0, 0],
@@ -41,9 +41,9 @@ node_coords = [[0, 0],
 
 # the element types are chosen based on the vtk specification, see e.g.
 # https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
-element_types = [9, 9, 5, 5, 5]  # two quads, three triangles
+element_types = [9, 9, 5, 5, 5]  # Two quads, three triangles
 
-# specify cell tags and the nodes of each cell
+# Specify cell tags and the nodes of each cell
 element_tags = [1, 2, 3, 4, 5]
 
 connectivity = [[1, 2, 5, 4],
@@ -53,14 +53,15 @@ connectivity = [[1, 2, 5, 4],
                 [5, 8, 7]]
 
 
-# name of the model - this will be the folder name for the vtu files
+# Name of the model - this will be the folder name for the vtu files
 model_name = "example_model_03"
 
-# name of the part - this will be the file name for the vtu files
+# Name of the part - this will be the file name for the vtu files
 part_name = "example_part_03"
 
-# now you have everything you need to create an instance of ParaqusModel, which
-# is the type used to store all model data in Paraqus
+# Now you have everything you need to create an instance of
+# ParaqusModel, which is the type used to store all model data in
+# Paraqus
 model = ParaqusModel(element_tags,
                      connectivity,
                      element_types,
@@ -70,11 +71,11 @@ model = ParaqusModel(element_tags,
                      part_name=part_name)
 
 
-# =============================================================================
+# ======================================================================
 #             the part different from example 1 starts here :-)
-# =============================================================================
+# ======================================================================
 
-# it is often desirable to mark groups of nodes or elements, e.g. where
+# It is often desirable to mark groups of nodes or elements, e.g. where
 # boundary conditions are applied
 group_name = "nodes lower edge"
 node_tags = [1, 2, 3]
@@ -84,17 +85,18 @@ group_name = "triangle elements"
 element_tags = [3, 4, 5]
 model.add_element_group(group_name, element_tags)
 
-# the groups will be exported to the .vtu files as indicator functions. For
-# example, for the group "nodes lower edge", there will be a field
-# "_group nodes lower edge", which takes the value 1 at all nodes in the group,
-# and the value 0 on all other nodes.
+# The groups will be exported to the .vtu files as indicator functions.
+# For example, for the group "nodes lower edge", there will be a field
+# "_group nodes lower edge", which takes the value 1 at all nodes in the
+# group, and the value 0 on all other nodes
 
-# create an instance of the AsciiWriter (i.e. the vtu files are human readable)
+# create an instance of the AsciiWriter (i.e. the vtu files are human
+# readable)
 writer = AsciiWriter(output_dir="vtu_examples")
 
 # write the model to disk
 writer.write(model)
 
 
-# you can now use e.g. ParaView to have a look at the .vtu file and check that
-# the groups can be visualized
+# You can now use e.g. ParaView to have a look at the .vtu file and
+# check that the groups can be visualized

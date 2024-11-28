@@ -10,20 +10,21 @@
 #
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
-Export selected results from the cylindrical billet example output database.
-Datails on this example are available in the Abaqus Example Problems Guide:
+Export selected results from the cylindrical billet example output
+database. Datails on this example are available in the Abaqus Example
+Problems Guide:
 
-    Example Problems -> Static Stress/Displacement Analysis -> Forming analyses
-    -> Upsetting of a cylindrical billet: coupled temperature-displacement and
-    adiabatic analysis
+    Example Problems -> Static Stress/Displacement Analysis -> Forming
+    analyses -> Upsetting of a cylindrical billet: coupled
+    temperature-displacement and adiabatic analysis
 
-To create the output database for this example, set your current work directory
-to the Paraqus examples folder and execute the following:
+To create the output database for this example, set your current work
+directory to the Paraqus examples folder and execute the following:
     abaqus fetch job=cylbillet_cax4rt_slow_dense.inp
     abaqus job=cylbillet_cax4rt_slow_dense interactive
 
-After the file 'cylbillet_cax4rt_slow_dense.odb' has been created, run this
-script in the Abaqus Python interpreter via:
+After the file 'cylbillet_cax4rt_slow_dense.odb' has been created, run
+this script in the Abaqus Python interpreter via:
     abaqus cae noGUI=example_abaqus_cylindrical_billet.py
 
 The following pipeline can be used in ParaView to visualize the results:
@@ -37,61 +38,63 @@ The following pipeline can be used in ParaView to visualize the results:
 - Coloring according to the variable TEMP
 
 """
-# uncomment this if you can not add paraqus to the Python path, and set
+# Uncomment this if you can not add paraqus to the Python path, and set
 # the Paraqus source directory for your system
 # import sys
 # sys.path.append("...")
 
-# you will use the OdbReader class to extract information from the ODB
+# You will use the OdbReader class to extract information from the ODB
 from paraqus.abaqus import OdbReader
 from paraqus.writers import AsciiWriter
 
 print("EXPORT RUNNING...")
 
-# set some constants based on the ODB that will be exported
-ODB_PATH = "cylbillet_cax4rt_slow_dense.odb"  # path to the ODB
-MODEL_NAME = "Cylindrical-Billet"  # can be chosen freely
-INSTANCE_NAMES = ["PART-1-1"]  # which instances will be exported
-STEP_NAME = "Step-1"  # name of the step that will be exported
-FRAME_INDEX = -1  # export the last frame of the step
+# Set some constants based on the ODB that will be exported
+ODB_PATH = "cylbillet_cax4rt_slow_dense.odb"  # Path to the ODB
+MODEL_NAME = "Cylindrical-Billet"  # Can be chosen freely
+INSTANCE_NAMES = ["PART-1-1"]  # Which instances will be exported
+STEP_NAME = "Step-1"  # Name of the step that will be exported
+FRAME_INDEX = -1  # Export the last frame of the step
 
-# the class OdbReader is used to export results from Abaqus ODBs
+# The class OdbReader is used to export results from Abaqus ODBs
 reader = OdbReader(odb_path=ODB_PATH,
                    model_name=MODEL_NAME,
                    instance_names=INSTANCE_NAMES,
                    )
 
-# start configuring the reader instance by specifying field outputs and
+# Start configuring the reader instance by specifying field outputs and
 # node/element groups that will be exported. These must of course be
 # available in the output database.
 
-# field export requests
+# Field export requests
 reader.add_field_export_request("U", field_position="nodes")
 reader.add_field_export_request("PEEQ", field_position="elements")
 reader.add_field_export_request("TEMP", field_position="elements")
 reader.add_field_export_request("PE", field_position="elements")
 
-# request some element sets, so you can have a closer look at these elements
+# Request some element sets, so you can have a closer look at these
+# elements
 reader.add_set_export_request("ESID", set_type="elements",
                               instance_name="PART-1-1")
 reader.add_set_export_request("ETOP", set_type="elements",
                               instance_name="PART-1-1")
 
-# create a writer that will write the exported results to a .vtu file
+# Create a writer that will write the exported results to a .vtu file
 vtu_writer = AsciiWriter("vtk_output_billet", clear_output_dir=True)
 
-# the method read_instances loops over all part instances for one
+# The method read_instances loops over all part instances for one
 # point in time, and returns ParaqusModel instances for each of them.
-# we put them in a list here, so they can be inspected, but it is more
+# You put them in a list here, so they can be inspected, but it is more
 # memory-efficient to use them one after another in a for loop (see
 # following tutorials)
 instance_models = list(reader.read_instances(step_name=STEP_NAME,
                                              frame_index=FRAME_INDEX))
 
-# instance_models has length 1, since there is only 1 instance with a mesh
-instance_model = instance_models[0]  # this is a ParaqusModel
+# instance_models has length 1, since there is only 1 instance with a
+# mesh
+instance_model = instance_models[0]  # This is a ParaqusModel
 
-# use the writer to write the file to disk
+# Use the writer to write the file to disk
 vtu_writer.write(instance_model)
 
 print("*** FINISHED ***")
