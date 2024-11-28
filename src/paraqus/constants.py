@@ -12,8 +12,8 @@
 """
 Collection of constants defined for Paraqus.
 
-The constants are derived from a custom type to make comparisons easier, e.g.
-when user input is compared to constants.
+The constants are derived from a custom type to make comparisons easier,
+e.g. when user input is compared to constants.
 
 """
 import sys
