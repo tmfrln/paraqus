@@ -16,6 +16,7 @@ All of these can only be executed in Abaqus Python.
 
 """
 import os
+
 from abaqus import session
 
 
@@ -23,23 +24,25 @@ class OdbObject(object):
     """
     Context manager for Abaqus ODB objects.
 
-    Opens an ODB and closes it after we are done with it. If any exceptions
-    are raised while the ODB is open, it is still closed afterwards.
+    Opens an ODB and closes it after we are done with it. If any
+    exceptions are raised while the ODB is open, it is still closed
+    afterwards.
 
     Parameters
     ----------
     file_name : str
         Path to the Abaqus .odb file.
-    readonly : Bool, optional
-        If ``True`` writing to the ODB is prohibited. Default is ``True``.
+    readonly : bool, optional
+        If ``True`` writing to the ODB is prohibited. Default is
+        ``True``.
 
     Attributes
     ----------
     file_path : str
         Absolute path to the .odb file.
-    readonly : Bool
+    readonly : bool
         If ``True`` writing to the ODB is prohibited.
-    already_open : Bool
+    already_open : bool
         A flag indicating wheter the ODB is already open or not.
 
     """
@@ -51,21 +54,22 @@ class OdbObject(object):
 
     def __enter__(self):
 
-        # make sure to compare with absolute paths
+        # Make sure to compare with absolute paths
         keys = [os.path.abspath(k) for k in session.odbs.keys()]
 
-        # if the odb is already open, just return the odb object
+        # If the odb is already open, just return the odb object
         if self.file_path in keys:
-            # odb is already open
+            # ODB is already open
             self.already_open = True
             return session.odbs[self.file_path]
 
-        # otherwise, open it and return the object
+        # Otherwise, open it and return the object
         upgrade_odb(self.file_path)
-        odb = session.openOdb(name=self.file_path, readOnly=self.readonly)
+        odb = session.openOdb(name=self.file_path,
+                              readOnly=self.readonly)
 
-        # deal with silent errors in the readonly status, this happens e.g.
-        # when a lock file prevents write access
+        # Deal with silent errors in the readonly status, this happens
+        # e.g. when a lock file prevents write access
         assert odb.isReadOnly == self.readonly, \
             "The ODB could not be opened with option readonly=%s" % self.readonly
 
@@ -74,7 +78,7 @@ class OdbObject(object):
         return odb
 
     def __exit__(self, type, value, traceback):
-        # only close the odb if it was not open before we "opened" it
+        # Only close the odb if it was not open before we "opened" it
         if not self.already_open:
             self.odb.close()
 
@@ -102,10 +106,10 @@ def upgrade_odb(odb_file):
     upgrade_required = session.isUpgradeRequiredForOdb(odb_file)
 
     if upgrade_required:
-        # make sure we work with absolute paths
+        # Make sure we work with absolute paths
         odb_file = os.path.abspath(odb_file)
 
-        # create new directory for upgraded files
+        # Create new directory for upgraded files
         new_directory = os.path.join(os.path.dirname(odb_file),
                                      "odbs_before_upgrades")
 
@@ -116,10 +120,10 @@ def upgrade_odb(odb_file):
 
         backup_file_path = os.path.join(new_directory, backup_file_name)
 
-        # move the original odb to the backup folder
+        # Move the original odb to the backup folder
         shutil.move(odb_file, backup_file_path)
 
-        # upgrade the odb file
+        # Upgrade the odb file
         session.upgradeOdb(existingOdbPath=backup_file_path,
                            upgradedOdbPath=odb_file)
 
