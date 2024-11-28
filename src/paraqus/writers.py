@@ -11,7 +11,7 @@
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
 This module keeps all writers for the different output format, e.g.
-ASCII and binary. Related tools like VtkFileManager should also be
+ASCII and binary. Related tools such as VtkFileManager should also be
 stored here. Note, that currently only unstructured grids are
 supported.
 
@@ -22,10 +22,10 @@ from os import path
 import shutil
 import itertools
 from abc import ABCMeta, abstractmethod
-
-import numpy as np
 import struct
 import base64
+
+import numpy as np
 
 from paraqus.constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER,
                                BASE64, RAW, UINT64, NODES, ELEMENTS)
@@ -33,7 +33,8 @@ from paraqus.constants import (BYTE_ORDER_CHAR, ASCII, BINARY, BYTE_ORDER,
 # Version string for the vtk version that is supported
 VTK_VERSION_MAJOR = 1
 VTK_VERSION_MINOR = 0
-VTK_VERSION_STRING = str(VTK_VERSION_MAJOR) + "." + str(VTK_VERSION_MINOR)
+VTK_VERSION_STRING = str(VTK_VERSION_MAJOR) + \
+    "." + str(VTK_VERSION_MINOR)
 
 # Mapper for data types used in vtk files
 VTK_TYPE_MAPPER = {"int8":    "Int8",
@@ -67,7 +68,7 @@ BINARY_HEADER_SIZE_MAPPER = {"uint32": 4,
 
 
 class VtkFileManager(object):
-    """
+    r"""
     Context manager for VTK file reading and writing.
 
     Can handle all kinds of supported VTK files, i.e. .vtu, .pvtu and
@@ -79,7 +80,7 @@ class VtkFileManager(object):
         The name of the VTK file that will be written.
     fmt : ParaqusConstant
         Constant defining the output format of array data, i.e.
-        ASCII or BINARY.
+        ``ASCII`` or ``BINARY``.
 
     Attributes
     ----------
@@ -87,7 +88,7 @@ class VtkFileManager(object):
         The absolute path to the VTK file.
     fmt : ParaqusConstant
         Constant defining the output format of array data, i.e.
-        ASCII or BINARY.
+        ``ASCII`` or ``BINARY``.
 
     Example
     -------
@@ -123,15 +124,16 @@ class VtkFileManager(object):
     def __enter__(self):
         """Open the file, in binary mode if needed."""
         # In Python 2.7 it seems to make no difference whether one is
-        # iting pure string via a binary file stream or an ascii file
+        # writing pure string via a binary file stream or an ascii file
         # stream, thus just keep this as it is without checking the
-        # version.
+        # version
         if self.fmt == ASCII:
             self._file = open(self.file_path, "w")
         elif self.fmt == BINARY:
             self._file = open(self.file_path, "wb")
         else:
-            raise ValueError("Format '{}' not supported.".format(self.fmt))
+            raise ValueError(
+                "Format '{}' not supported.".format(self.fmt))
 
         return self
 
@@ -145,7 +147,7 @@ class VtkFileManager(object):
 
         Parameters
         ----------
-        output : str or binary data
+        output : str or bytes
             The output that will be written into the file.
 
         Returns
@@ -154,9 +156,9 @@ class VtkFileManager(object):
 
         """
         # In Python 2.7 struct.pack returns a string, that somehow
-        # cannot be converted to a binary string but it makes no
+        # can not be converted to a binary string but it makes no
         # difference anyway (see comment in methode __enter__). In
-        # Python 3 binary string are obligatory.
+        # Python 3 binary string are obligatory
         if sys.version_info >= (3,):
             if isinstance(output, str) and self.fmt is BINARY:
                 self._file.write((output).encode("ascii"))
@@ -180,16 +182,15 @@ class WriterBaseClass(object):
     Parameters
     ----------
     fmt : ParaqusConstant
-        Format of the writer. Can be `ASCII` or `BINARY`.
+        Format of the writer. Can be ``ASCII`` or ``BINARY``.
     output_dir : str, optional
-        Directory, where all exported VTK files will be stored. The
-        default is 'vtk_files'.
+        Directory, where all exported VTK files will be stored. Default:
+        ``'vtk_files'``.
     clear_output_dir : bool, optional
-        If this is `True`, the output directory will be cleared before
-        exporting any files. The default is `False`.
+        If ``True``, the output directory will be cleared before
+        exporting any files. Default: ``False``.
     number_of_pieces : int, optional
-        Number of pieces each model will be split into. The default
-        is 1.
+        Number of pieces each model will be split into. Default: ``1``.
 
     Attributes
     ----------
@@ -202,6 +203,7 @@ class WriterBaseClass(object):
         This is only for informational purposes.
 
     """
+
     __metaclass__ = ABCMeta
 
     def __init__(self,
@@ -211,7 +213,8 @@ class WriterBaseClass(object):
                  number_of_pieces=1):
 
         if fmt not in (ASCII, BINARY):
-            raise ValueError("Writer format not supported: {}.".format(fmt))
+            raise ValueError(
+                "Writer format not supported: {}.".format(fmt))
 
         self.number_of_pieces = number_of_pieces
         self.output_dir = os.path.abspath(output_dir)
@@ -253,21 +256,22 @@ class WriterBaseClass(object):
     @abstractmethod
     def _write_vtu_file(self, piece, piece_tag=0):
         """
-        Abstract method to write a .vtu file to disk.
+        Write a .vtu file to disk.
 
         The method will deliver the respective strings and array data to
         the context manager so that a .vtu file is created.
+
         """
         return
 
     def _update_byte_offset(self, array):
         """
-        Update the byte offset of data arrays. This method is only needed for
-        binary file formats.
+        Update the byte offset of data arrays. This method is only
+        needed for RAW binary file formats.
 
         Parameters
         ----------
-        array : numpy.ndarray
+        array : numpy.ndarray[int or float]
             The data array.
 
         Returns
@@ -281,11 +285,11 @@ class WriterBaseClass(object):
 
     def _get_special_xml_attributes(self):
         """
-        Get special attributes for XML elements in dependence on the writer.
+        Get special attributes for XML elements.
 
         Returns
         -------
-        dict
+        dict[str, str or int]
             A dictionary mapping attribute names to attribute values.
 
         """
@@ -297,7 +301,7 @@ class WriterBaseClass(object):
 
     def _create_folder(self, folder):
         """
-        Create a new folder on the disk in case it does not exist already.
+        Create a new folder in case it does not exist already.
 
         Parameters
         ----------
@@ -330,9 +334,9 @@ class WriterBaseClass(object):
         Returns
         -------
         file_path : str
-            If the model is exported as one piece, this is the file path of the
-            vtu file. If there are multiple pieces, it is the path to the
-            corresponding pvtu file.
+            If the model is exported as one piece, this is the file path
+            of the .vtu file. If there are multiple pieces, it is the
+            path to the corresponding .pvtu file.
 
         """
         # Create pieces and write them to file
@@ -348,7 +352,7 @@ class WriterBaseClass(object):
             vtu_file_path = self._write_vtu_file(piece, piece_tag)
             vtu_files.append(vtu_file_path)
 
-        # reset byte offset
+        # Reset byte offset
         self._byte_offset = 0
 
         # Connect different pieces in a pvtu file
@@ -370,7 +374,8 @@ class WriterBaseClass(object):
         xml : XmlFactory
             The factory writing the .pvtu file in XML format.
         field_position : ParaqusConstant
-            Position of the field values, i.e. `NODES` or `ELEMENTS`.
+            Position of the field values, i.e. ``NODES`` or
+            ``ELEMENTS``.
 
         Returns
         -------
@@ -443,7 +448,7 @@ class WriterBaseClass(object):
 
     def _write_pvtu_file(self, model, vtu_files):
         """
-        Write the .pvtu for multiple model pieces (and their .vtu files).
+        Write the .pvtu and .vtu files for multiple model pieces.
 
         Combine different submodels or pieces to the main model they
         are referring to by writing a .pvtu file.
@@ -452,7 +457,7 @@ class WriterBaseClass(object):
         ----------
         model : ParaqusModel
             The main model the different pieces are referring to.
-        vtu_files : list of str
+        vtu_files : list[str]
             The paths to all exported .vtu files of the submodels.
 
         Returns
@@ -468,18 +473,21 @@ class WriterBaseClass(object):
         for f in vtu_files:
 
             if not path.splitext(f)[1] == ".vtu":
-                raise ValueError("File '{}' is not a .vtu file.".format(f))
+                raise ValueError(
+                    "File '{}' is not a .vtu file.".format(f))
 
             if not path.isfile(path.join(
                     path.dirname(vtu_files[0]), path.basename(f))):
-                raise ValueError("Vtu files not stored in the same folder.")
+                raise ValueError(
+                    "Vtu files not stored in the same folder.")
 
         # Create file name
         folder_name = path.dirname(vtu_files[0])
         virtual_frame = self._part_frame_counter[(model.model_name,
                                                  model.part_name, 0)]
 
-        pvtu_file_name = model.part_name + "_{}.pvtu".format(virtual_frame - 1)
+        pvtu_file_name = model.part_name + \
+            "_{}.pvtu".format(virtual_frame - 1)
         file_path = path.join(folder_name, pvtu_file_name)
 
         # Since no array data will be written into the pvtu file
@@ -531,7 +539,8 @@ class WriterBaseClass(object):
                                 "vtu")
         self._create_folder(folder_name)
 
-        # Generate a virtual frame number, so that frames are consecutive
+        # Generate a virtual frame number, so that frames are
+        # consecutive
         key = (piece.model_name, piece.part_name, piece_tag)
         virtual_frame = self._part_frame_counter.get(key, 0)
 
@@ -561,18 +570,18 @@ class WriterBaseClass(object):
             Number of elements.
         nnp : int
             Number of node points.
-        element_tags : numpy.ndarray
+        element_tags : numpy.ndarray[int]
             The original element tags.
-        node_tags : numpy.ndarray
+        node_tags : numpy.ndarray[int]
             The original node tags.
-        node_coords : numpy.ndarray
-            Nodal coordinates in shape (nnp,3).
-        element_types : numpy.ndarray
+        node_coords : numpy.ndarray[float]
+            Nodal coordinates in shape (number of nodes, 3).
+        element_types : numpy.ndarray[int]
             The VTK cell types.
-        element_offsets : numpy.ndarray
+        element_offsets : numpy.ndarray[int]
             The offsets between the elements regarding the node points
             in order of the element types.
-        connectivity : list of numpy.ndarray
+        connectivity : list[numpy.ndarray[int]]
             The connectivity list in order of the element types.
 
         """
@@ -604,13 +613,14 @@ class WriterBaseClass(object):
 
     def _add_array_data_to_vtu_file(self, xml, array):
         """
-        Add array data for e.g. fields or mesh information to the .vtu file.
+        Add array data for e.g. fields or mesh information to the .vtu
+        file.
 
         Parameters
         ----------
         xml : XmlFactory
             The factory writing the .vtu file in XML format.
-        array : numpy.ndarray
+        array : numpy.ndarray[int or float]
             The array data to add.
 
         Returns
@@ -649,7 +659,7 @@ class WriterBaseClass(object):
                         **self._get_special_xml_attributes())
         self._add_array_data_to_vtu_file(xml, time_array)
         xml.finish_element()
-        xml.finish_element()  # finish FieldData
+        xml.finish_element()  # Finish FieldData
 
     def _add_mesh_data_to_vtu_file(self, piece, xml):
         """
@@ -676,7 +686,7 @@ class WriterBaseClass(object):
 
         # The connectivity is needed as one flattened array that is
         # expressed in terms of the node indices. One big 1d array
-        # will be fine for binary output.
+        # will be fine for binary output
         if self.FORMAT == BINARY:
             connectivity = np.array(list(itertools.chain(*connectivity)),
                                     dtype=piece.elements.connectivity[0].dtype)
@@ -731,7 +741,8 @@ class WriterBaseClass(object):
         xml : XmlFactory
             The factory writing the .vtu file in XML format.
         field_position : ParaqusConstant
-            Position of the field values, i.e. `NODES` or `ELEMENTS`.
+            Position of the field values, i.e. ``NODES`` or
+            ``ELEMENTS``.
 
         Returns
         -------
@@ -754,7 +765,7 @@ class WriterBaseClass(object):
             msg = "Invalid field position: {}.".format(field_position)
             raise ValueError(msg)
 
-        # add fields
+        # Add fields
         xml.add_element(xml_element_name)
         for f in fields:
             field_vals = f.get_3d_field_values()
@@ -798,21 +809,20 @@ class BinaryWriter(WriterBaseClass):
     Parameters
     ----------
     output_dir : str, optional
-        Directory, where all exported VTK files will be stored. The
-        default is 'vtk_files'.
+        Directory, where all exported VTK files will be stored. Default:
+        ``'vtk_files'``.
     clear_output_dir : bool, optional
-        If `True`, the output directory will be cleared before
-        exporting any files. The default is `False`.
+        If ``True``, the output directory will be cleared before
+        exporting any files. Default: ``False``.
     number_of_pieces : int, optional
-        Number of pieces each model will be split into. The default
-        is 1.
+        Number of pieces each model will be split into. Default: ``1``.
     encoding : ParaqusConstant, optional
         The binary encoding used for data arrays. Currently supported
-        are RAW and BASE64. The default is BASE64.
+        are ``RAW`` and ``BASE64``. Default: ``BASE64``.
     header_type : ParaqusConstant, optional
         The data type used for the headers of the binary data blocks.
-        Currently supported are UINT32 and UINT64. The default is
-        UINT64.
+        Currently supported are ``UINT32`` and ``UINT64``. Default:
+        ``UINT64``.
 
     Attributes
     ----------
@@ -836,16 +846,12 @@ class BinaryWriter(WriterBaseClass):
     >>> writer.write(random_paraqus_model)
 
     """
+
     # References:
     # https://mathema.tician.de/what-they-dont-tell-you-about-vtk-xml-binary-formats/
     # https://public.kitware.com/pipermail/paraview/2005-April/001391.html
     # https://github.com/paulo-herrera/PyEVTK
     # https://docs.python.org/2.7/library/struct.html
-
-    # Somehow references are writing about vtk expecting fortran array ,
-    # order in binary format, but in my tests this did not work and
-    # c-type arrays yield the expected results. Maybe this has been
-    # updated over time since the  references are quite old.
 
     def __init__(self,
                  output_dir="vtk_files",
@@ -901,7 +907,7 @@ class BinaryWriter(WriterBaseClass):
 
         # The connectivity is needed as one flattened array that is
         # expressed in terms of the node indices. One big 1d array
-        # will be fine for binary output.
+        # will be fine for binary output
         connectivity = np.array(list(itertools.chain(*connectivity)),
                                 dtype=piece.elements.connectivity[0].dtype)
 
@@ -939,23 +945,22 @@ class BinaryWriter(WriterBaseClass):
             msg = "Invalid field position: {}.".format(field_position)
             raise ValueError(msg)
 
-        # append field data
+        # Append field data
         for f in fields:
             field_vals = f.get_3d_field_values()
             xml.add_array_data_to_element(field_vals, break_line=False)
 
-        # append group data
+        # Append group data
         for group_name, group_tags in groups.items():
             field_vals = np.in1d(tags, group_tags).astype(np.uint8)
             xml.add_array_data_to_element(field_vals, break_line=False)
 
-        # append tags field
+        # Append tags field
         xml.add_array_data_to_element(tags, break_line=False)
 
     def _append_raw_model_data(self, piece, xml):
         """
-        Append all data to the .vtu file, i.e. time data, mesh data and field
-        data.
+        Append all data to the .vtu file (time, mesh and field data).
 
         Parameters
         ----------
@@ -976,19 +981,19 @@ class BinaryWriter(WriterBaseClass):
         self._append_raw_mesh_data(piece, xml)
         self._append_raw_field_data(piece, xml, NODES)
         self._append_raw_field_data(piece, xml, ELEMENTS)
-        xml.finish_element()  # finish AppendedData
+        xml.finish_element()  # Finish AppendedData
 
     def _write_vtu_file(self, piece, piece_tag=0):
         """
-        Write a .vtu file for a specified piece or submodel of a paraqus model.
+        Write a .vtu file for a piece or submodel of a paraqus model.
 
         Parameters
         ----------
         piece : ParaqusModel
             The piece or submodel to export.
         piece_tag : int, optional
-            The identifier of the currently processed piece. The
-            default is 0.
+            The identifier of the currently processed piece. Default:
+            ``0``.
 
         Returns
         -------
@@ -1002,35 +1007,36 @@ class BinaryWriter(WriterBaseClass):
         with VtkFileManager(file_path, BINARY) as vtu_file:
             xml = XmlFactory(vtu_file, self.encoding, self.header_type)
 
-            # initialize file
+            # Initialize file
             xml.add_element("VTKFile", type="UnstructuredGrid",
                             version=VTK_VERSION_STRING,
                             byte_order=BYTE_ORDER,
                             header_type=VTK_TYPE_MAPPER[self.header_type])
             xml.add_element("UnstructuredGrid")
 
-            # add time data
+            # Add time data
             self._add_time_data_to_vtu_file(piece, xml)
 
-            # initialize model geometry
+            # Initialize model geometry
             nnp, nel = len(piece.nodes.tags), len(piece.elements.tags)
-            xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
+            xml.add_element("Piece", NumberOfPoints=nnp,
+                            NumberOfCells=nel)
 
-            # add nodes and elements
+            # Add nodes and elements
             self._add_mesh_data_to_vtu_file(piece, xml)
 
-            # add node and element fields
+            # Add node and element fields
             self._add_field_data_to_vtu_file(piece, xml, NODES)
             self._add_field_data_to_vtu_file(piece, xml, ELEMENTS)
 
-            xml.finish_element()  # finish Piece
-            xml.finish_element()  # finish UnstructuredGrid
+            xml.finish_element()  # Finish Piece
+            xml.finish_element()  # Finish UnstructuredGrid
 
-            # append data in case of raw encoding
+            # Append data in case of raw encoding
             if self.encoding == RAW:
                 self._append_raw_model_data(piece, xml)
 
-            xml.finish_element()  # finish VTKFile
+            xml.finish_element()  # Finish VTKFile
 
         return file_path
 
@@ -1042,14 +1048,14 @@ class AsciiWriter(WriterBaseClass):
     Parameters
     ----------
     output_dir : str, optional
-        Directory, where all exported VTK files will be stored. The
-        default is 'vtk_files'.
+        Directory, where all exported VTK files will be stored. Default:
+        ``'vtk_files'``.
     clear_output_dir : bool, optional
-        If this is `True`, the output directory will be cleared before
-        exporting any files. The default is `False`.
+        If ``True``, the output directory will be cleared before
+        exporting any files. Default: ``False``.
     number_of_pieces : int, optional
         Number of pieces each model will be split into. The default
-        is 1.
+        is ``1``.
 
     Attributes
     ----------
@@ -1058,7 +1064,7 @@ class AsciiWriter(WriterBaseClass):
     output_dir : str
         The path to the folder where all VTK files will be stored.
     FORMAT : ParaqusConstant
-        This is a constant with value ASCII and is only used for
+        This is a constant with value ``ASCII`` and is only used for
         informational purposes.
 
     Example
@@ -1081,15 +1087,15 @@ class AsciiWriter(WriterBaseClass):
 
     def _write_vtu_file(self, piece, piece_tag=0):
         """
-        Write a .vtu file for a specified piece or submodel of a paraqus model.
+        Write a .vtu file for a piece or submodel of a paraqus model.
 
         Parameters
         ----------
         piece : ParaqusModel
             The piece or submodel to export.
         piece_tag : int, optional
-            The identifier of the currently processed piece. The
-            default is 0.
+            The identifier of the currently processed piece. Default:
+            ``0``.
 
         Returns
         -------
@@ -1101,28 +1107,29 @@ class AsciiWriter(WriterBaseClass):
         with VtkFileManager(file_path, ASCII) as vtu_file:
             xml = XmlFactory(vtu_file)
 
-            # initialize file
+            # Initialize file
             xml.add_element("VTKFile", type="UnstructuredGrid",
                             version=VTK_VERSION_STRING, byte_order=BYTE_ORDER)
             xml.add_element("UnstructuredGrid")
 
-            # add time data
+            # Add time data
             self._add_time_data_to_vtu_file(piece, xml)
 
-            # initialize model geometry
+            # Initialize model geometry
             nnp, nel = len(piece.nodes.tags), len(piece.elements.tags)
-            xml.add_element("Piece", NumberOfPoints=nnp, NumberOfCells=nel)
+            xml.add_element("Piece", NumberOfPoints=nnp,
+                            NumberOfCells=nel)
 
-            # add nodes and elements
+            # Add nodes and elements
             self._add_mesh_data_to_vtu_file(piece, xml)
 
-            # add node and element fields
+            # Add node and element fields
             self._add_field_data_to_vtu_file(piece, xml, NODES)
             self._add_field_data_to_vtu_file(piece, xml, ELEMENTS)
 
-            xml.finish_element()  # finish Piece
-            xml.finish_element()  # finish UnstructuredGrid
-            xml.finish_element()  # finish VTKFile
+            xml.finish_element()  # Finish Piece
+            xml.finish_element()  # Finish UnstructuredGrid
+            xml.finish_element()  # Finish VTKFile
 
         return file_path
 
@@ -1131,15 +1138,16 @@ class CollectionWriter(object):
     """
     Writer for the export of a collection of .pvtu or .vtu files.
 
-    This writer can be used as a context manager to generate a .pvd file.
+    This writer can be used as a context manager to generate a .pvd
+    file.
 
     Parameters
     ----------
     writer : BinaryWriter or AsciiWriter
         The writer that is used to generate .pvtu and .vtu files.
     collection_name : str
-        The name of the collection. This is used for the .pdv file's
-        name.
+        The name of the collection. This is used for the name of the
+        .pvd file.
 
     Attributes
     ----------
@@ -1195,7 +1203,7 @@ class CollectionWriter(object):
 
     def _initialize_collection(self):
         """
-        Initialize a new collection of ParaqusModels exported to .vtu files.
+        Initialize a new collection of ParaqusModels.
 
         A .pvd file that combines multiple .vtu or .pvtu files is
         generated from the collection when ``finalize_collection()``
@@ -1249,11 +1257,13 @@ class CollectionWriter(object):
 
         # Some input checking
         if path.splitext(file_path)[1] not in [".vtu", ".pvtu"]:
-            raise ValueError("File is neither a .vtu file nor a .pvtu file.")
+            raise ValueError(
+                "File is neither a .vtu file nor a .pvtu file.")
         if not path.isfile(abspath):
-            raise ValueError("File '{}' does not exist.".format(abspath))
+            raise ValueError(
+                "File '{}' does not exist.".format(abspath))
 
-        # for each part, repo is a list of (time, file_path) tuples
+        # For each part, repo is a list of (time, file_path) tuples
         repo = self._collection_items.get(model.part_name)
         if repo is None:
             repo = self._collection_items[model.part_name] = []
@@ -1288,7 +1298,8 @@ class CollectionWriter(object):
 
                 for frame_time, file in self._collection_items[part_name]:
 
-                    rel_path = path.relpath(file, path.dirname(pvd_file_path))
+                    rel_path = path.relpath(
+                        file, path.dirname(pvd_file_path))
                     xml.add_and_finish_element("DataSet", timestep=frame_time,
                                                part=i, file=rel_path)
 
@@ -1305,12 +1316,12 @@ class XmlFactory(object):
         The output stream of the file that is written.
     encoding : ParaqusConstant, optional
         The binary encoding used for data arrays. Currently supported
-        are RAW and BASE64. This is not needed in case of writing
-        VTK ASCII files. The default is None.
+        are ``RAW`` and ``BASE64``. This is not needed in case of
+        writing VTK ASCII files. Default: ``None``.
     header_type : ParaqusConstant, optional
         The data type used for the headers of the binary data blocks.
-        Currently supported are UINT32 and UINT64. This is not needed in
-        case of writing VTK ASCII files. The default is None.
+        Currently supported are ``UINT32`` and ``UINT64``. This is not
+        needed in case of writing VTK ASCII files. Default: ``None``.
 
     """
 
@@ -1340,11 +1351,12 @@ class XmlFactory(object):
         name : str
             Name of the element section.
         break_line : bool, optional
-            If `True`, a linebreak will be inserted after the element
-            section has been added. The default is `True`.
-        **attributes : Text, Numeric
-            Attributes of the element section. The keys will be the
-            attribute's name, the values will be the attribute's value.
+            If ``True``, a linebreak will be inserted after the element
+            section has been added. Default: ``True``.
+        **attributes : str or int or float
+            Attributes of the element section. The key will be the
+            name of the attribute, the value will be the value of the
+            attribute.
 
         Returns
         -------
@@ -1377,8 +1389,8 @@ class XmlFactory(object):
         Parameters
         ----------
         break_line : bool, optional
-            If `True`, a linebreak will be inserted after the element
-            section has been closed. The default is `True`.
+            If ``True``, a linebreak will be inserted after the element
+            section has been closed. Default: ``True``.
 
         Returns
         -------
@@ -1412,8 +1424,8 @@ class XmlFactory(object):
         Parameters
         ----------
         break_line : bool, optional
-            If `True`, a linebreak will be inserted after each closed
-            element section. The default is `True`.
+            If ``True``, a linebreak will be inserted after each closed
+            element section. Default: ``True``.
 
         Returns
         -------
@@ -1432,11 +1444,12 @@ class XmlFactory(object):
         name : str
             Name of the element section.
         break_line : bool, optional
-            If `True`, a linebreak will be inserted after each element
-            section. The default is `True`.
-        **attributes : Text, Numeric
-            Attributes of the element section. The keys will be the
-            attribute's name, the values will be the attribute's value.
+            If ``True``, a linebreak will be inserted after each element
+            section. Default: ``True``.
+        **attributes : str or int or float
+            Attributes of the element section. The key will be the
+            name of the attribute, the value will be the value of the
+            attribute.
 
         Returns
         -------
@@ -1461,11 +1474,11 @@ class XmlFactory(object):
 
         Parameters
         ----------
-        content : Text, Numeric
+        content : str or int or float
             The content to add.
         break_line : bool, optional
-            If `True`, a linebreak will be inserted after the content hase
-            been written. The default is `True`.
+            If ``True``, a linebreak will be inserted after the content
+            has been written. Default: ``True``.
 
         Returns
         -------
@@ -1488,11 +1501,11 @@ class XmlFactory(object):
 
         Parameters
         ----------
-        array : numpy.ndarray
+        array : ArrayLike[int or float]
             The array data to add.
         break_line : bool, optional
-            If `True`, a linebreak will be inserted after the array data.
-            The default is `True`.
+            If ``True``, a linebreak will be inserted after the array
+            data. Default: ``True``.
 
         Returns
         -------
@@ -1514,25 +1527,26 @@ class XmlFactory(object):
 
         Parameters
         ----------
-        array : numpy.ndarray
+        array : ArrayLike[int or float]
             The array to add to the output file.
         break_line : bool, optional
-            If `True`, a linebreak will be inserted after the array data
-            has been written. The default is `True`.
+            If ``True``, a linebreak will be inserted after the array
+            data has been written. Default: ``True``.
 
         Returns
         -------
         None.
 
         """
-        # Somehow references are writing about vtk expecting fortran array ,
-        # order in binary format, but in my tests this did not work and
-        # c-type arrays yield the expected results. Maybe this has been
-        # updated over time since the references are quite old.
-        # binary_data = struct.pack(format_string, *np.ravel(array, order="F"))
+        # Somehow references are writing about vtk expecting fortran
+        # array order in binary format, but in my tests this did not
+        # work and c-type arrays yield the expected results. Maybe this
+        # has been updated over time since the references are quite old.
+        # binary_data = struct.pack(format_string, *np.ravel(array,
+        #                                                    order="F"))
 
-        # Create a 32 or 64 bit length indicator of type unsigned int for
-        # the header and create the header
+        # Create a 32 or 64 bit length indicator of type unsigned int
+        # for the header and create the header
         length_indicator = (BYTE_ORDER_CHAR
                             + BINARY_TYPE_MAPPER[self._header_type])
         block_size = array.dtype.itemsize*array.size
@@ -1569,11 +1583,11 @@ class XmlFactory(object):
 
         Parameters
         ----------
-        array : numpy.ndarray
+        array : ArrayLike[int or float]
             The array to add to the output file.
         line_break : bool, optional
-            If `True`, a line break will be inserted after each line of
-            the array. The default is `True`.
+            If ``True``, a line break will be inserted after each line
+            of the array. Default: ``True``.
 
         Returns
         -------
@@ -1592,7 +1606,8 @@ class XmlFactory(object):
         for i, line in enumerate(array):
 
             try:
-                data_string = ''.join(str(val) + '    ' for val in line)[0:-4]
+                data_string = ''.join(
+                    str(val) + '    ' for val in line)[0:-4]
             except TypeError:  # In case of only one value per line
                 data_string = str(line)
 

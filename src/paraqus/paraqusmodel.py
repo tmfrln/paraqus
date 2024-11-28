@@ -17,8 +17,9 @@ elements and fields.
 """
 import itertools
 import warnings
-import numpy as np
 from abc import ABCMeta, abstractmethod
+
+import numpy as np
 
 import paraqus.constants as constants
 from paraqus.constants import USER, NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
@@ -33,35 +34,35 @@ class ParaqusModel(object):
 
     Parameters
     ----------
-    element_tags : Sequence
+    element_tags : Sequence[int]
         Tags of all elements being part of the model. Tags have to be
         unique.
-    connectivity : Sequence of Sequence
+    connectivity : Sequence[Sequence[int]]
         Connectivity list in the order defined for the element tags. The
         respective nodes have to be in order as defined for VTK cells.
-    element_types : Sequence
+    element_types : Sequence[int]
         The VTK cell types for all elements in the order defined for the
         element tags.
-    node_tags : Sequence
+    node_tags : Sequence[int]
         Tags of all nodes being part of the model. Tags have to be
         unique.
-    node_coords : Sequence of Sequence
+    node_coords : Sequence[Sequence[float]]
         Nodal coordinates in the order defined for the node tags. The
-        coordinates can be defined in 1d-, 2d- or 3d-space as an array of shape
-        (number of nodes x number of dimensions).
+        coordinates can be defined in 1d-, 2d- or 3d-space as an array
+        of shape (number of nodes, number of dimensions).
     model_name : str, optional
         Name of the main model. In case of multiple frames or parts
-        every Paraqus model should have the same model name. Default is
-        'MODEL NAME'.
+        every Paraqus model should have the same model name. Default:
+        ``'MODEL NAME'``.
     part_name : str, optional
-        Name of the part instance. Default is 'PART NAME'.
+        Name of the part instance. Default: ``'PART NAME'``.
     step_name : str, optional
-        Name of the load step. Default is 'STEP NAME'.
+        Name of the load step. Default: ``'STEP NAME'``.
     frame_time : float, optional
-        Current frame time. Default is 0.0.
+        Current frame time. Default: ``0.0``.
     source : ParaqusConstant, optional
         This is just for informational purpose and defines the source
-        of the model, e.g. ABAQUS. Default is USER.
+        of the model, e.g. ``ABAQUS``. Default: ``USER``.
 
     Attributes
     ----------
@@ -75,7 +76,7 @@ class ParaqusModel(object):
         Current frame time of the model frame.
     source : ParaqusConstant
         This is a constant for informational purpose and describes the
-        source of the model, e.g. ABAQUS or USER.
+        source of the model, e.g. ``ABAQUS`` or ``USER``.
     elements : ElementRepository
         A repository storing all information on elements, e.g. tags and
         element types.
@@ -133,7 +134,8 @@ class ParaqusModel(object):
 
         # Check for unrecognized kwargs
         if len(kwargs) > 0:
-            err_msg = "Unrecognized kwarg: '{}'.".format(str(kwargs.keys()[0]))
+            err_msg = "Unrecognized kwarg: '{}'.".format(
+                str(kwargs.keys()[0]))
             raise ValueError(err_msg)
 
         # Create model geometry
@@ -213,18 +215,18 @@ class ParaqusModel(object):
         ----------
         field_name : str
             Name of the field.
-        field_tags : numpy.ndarray
+        field_tags : Sequence[int]
             Tags of the nodes or elements at which the field is stored.
-        field_values : Sequence
-            Values of the field in the order defined for the field tags. At
-            nodes or elements that are not part of the field tags, the values
-            will be set to NaN automatically.
+        field_values : Sequence[Sequence[float]]
+            Values of the field in the order defined for the field tags.
+            At nodes or elements that are not part of the field tags,
+            the values will be set to ``NaN`` automatically.
         field_position : ParaqusConstant
             A constant defining the storage position of the field, i.e.
-            NODES or ELEMENTS.
+            ``NODES`` or ``ELEMENTS``.
         field_type : ParaqusConstant
-            A constant defining the field type, i.e. SCALAR, VECTOR or
-            TENSOR.
+            A constant defining the field type, i.e. ``SCALAR``,
+            ``VECTOR`` or ``TENSOR``.
 
         Returns
         -------
@@ -247,7 +249,8 @@ class ParaqusModel(object):
             field_values = self._pad_field_values(field_tags, field_values,
                                                   self.nodes.tags)
 
-            field = Field(field_name, field_values, field_position, field_type)
+            field = Field(field_name, field_values,
+                          field_position, field_type)
             self.node_fields.add_field(field)
 
         # Add an element field
@@ -264,7 +267,8 @@ class ParaqusModel(object):
             field_values = self._pad_field_values(field_tags, field_values,
                                                   self.elements.tags)
 
-            field = Field(field_name, field_values, field_position, field_type)
+            field = Field(field_name, field_values,
+                          field_position, field_type)
             self.element_fields.add_field(field)
 
         else:
@@ -282,7 +286,7 @@ class ParaqusModel(object):
         ----------
         group_name : str
             Name of the group. Must be unique.
-        node_tags : Sequence
+        node_tags : Sequence[int]
             Integer tags of the nodes in the group.
 
         Returns
@@ -303,7 +307,7 @@ class ParaqusModel(object):
         ----------
         group_name : str
             Name of the group. Must be unique.
-        element_tags : Sequence
+        element_tags : Sequence[int]
             Integer tags of the elements in the group.
 
         Returns
@@ -315,11 +319,11 @@ class ParaqusModel(object):
 
     def split_model(self, number_of_pieces):
         """
-        Split the model into number_of_pieces parts.
+        Split the model into ``number_of_pieces`` different parts.
 
         The split is performed based on element numbers, so that the
         resulting model pieces are not necessarily continuous (i.e. they
-        might have holes etc).
+        might have holes etc.).
 
         Parameters
         ----------
@@ -329,8 +333,8 @@ class ParaqusModel(object):
         Yields
         ------
         piece : ParaqusModel
-            The resulting submodel for one piece including all fields and
-            groups.
+            The resulting submodel for one piece including all fields
+            and groups.
 
         """
         # Split list of element tags regarding the number of pieces
@@ -340,7 +344,8 @@ class ParaqusModel(object):
         for piece_element_tags in element_tags_per_piece:
             # Create the piece
             if number_of_pieces > 1:
-                piece = self._extract_submodel_by_elements(piece_element_tags)
+                piece = self._extract_submodel_by_elements(
+                    piece_element_tags)
             else:
                 piece = self
 
@@ -352,7 +357,7 @@ class ParaqusModel(object):
 
         Parameters
         ----------
-        element_tags : Sequence
+        element_tags : Sequence[int]
             List of tags of the elements that will be part of the
             submodel.
 
@@ -397,21 +402,22 @@ class ParaqusModel(object):
 
     def get_fields_by_type(self, field_type, field_position):
         """
-        Return all fields of a specific type, e.g. of type SCALAR.
+        Return all fields of a specific type, e.g. of type ``SCALAR``.
 
-        Fields stored at nodes as well as fields stored at elements can be
-        returned.
+        Fields stored at nodes as well as fields stored at elements can
+        be returned.
 
         Parameters
         ----------
         field_type : ParaqusConstant
-            Type of the field, i.e. TENSOR, VECTOR or SCALAR.
+            Type of the field, i.e. ``TENSOR``, ``VECTOR`` or
+            ``SCALAR``.
         field_position : ParaqusConstant
-            Position of the field, i.e. NODES or ELEMENTS.
+            Position of the field, i.e. ``NODES`` or ``ELEMENTS``.
 
         Returns
         -------
-        list of Field
+        list[Field]
             All fields that match the requested type and position.
 
         """
@@ -468,9 +474,10 @@ class ParaqusModel(object):
         # TODO: force sorting early to remove the need for index juggling
         field_values = field_values.reshape(len(field_values), -1)
 
-        # make sure the padded tags contain all of the field tags
+        # Make sure the padded tags contain all of the field tags
         if not all(np.in1d(field_tags, pad_tags)):
-            raise ValueError("Cannot pad values: not all tags are found.")
+            raise ValueError(
+                "Cannot pad values: not all tags are found.")
 
         # Indices of the field_tags in pad_tags
         sorter = np.argsort(pad_tags)
@@ -495,24 +502,25 @@ class MeshRepositoryBaseClass(object):
 
     Parameters
     ----------
-    tags : Sequence
-        Tags of all nodes or elements that will be stored in the repository.
+    tags : Sequence[int]
+        Tags of all nodes or elements that will be stored in the
+        repository.
 
     Attributes
     ----------
-    tags : numpy.ndarray
+    tags : numpy.ndarray[int]
         Tags of the nodes or elements.
-    groups : dict
+    groups : dict[str, numpy.ndarray[int]]
         Mapping group name -> tags.
 
     """
+
     __metaclass__ = ABCMeta
 
     def __init__(self, tags):
-        self._tags = np.asarray(tags).reshape(-1)
+        self._tags = np.asarray(tags, dtype=int).reshape(-1)
         self._groups = {}
 
-    # Properties
     @property
     def tags(self):
         return self._tags
@@ -534,14 +542,15 @@ class MeshRepositoryBaseClass(object):
         """
         Add a node or element group to the repository.
 
-        The nodes or elements must have been added beforehand, this method just
-        stores the information that the nodes or elements form a named group.
+        The nodes or elements must have been added beforehand, this
+        method just stores the information that the nodes or elements
+        form a named group.
 
         Parameters
         ----------
         group_name : str
             Name of the group. Must be unique.
-        tags : Sequence
+        tags : Sequence[int]
             Integer tags of the nodes or elements in the group.
 
         Returns
@@ -555,7 +564,7 @@ class MeshRepositoryBaseClass(object):
         assert set(tags) <= set(self.tags), \
             "Some element tags in the set are not in the model."
 
-        tags = np.asarray(tags)
+        tags = np.asarray(tags, dtype=int)
         tags.sort()
         self._groups[group_name] = tags
 
@@ -566,39 +575,26 @@ class ElementRepository(MeshRepositoryBaseClass):
 
     Parameters
     ----------
-    element_tags : Sequence
+    element_tags : Sequence[int]
         Tags of all elements that will be stored in the repository.
-    connectivity : Sequence of Sequence
-        Connectivity of all elements in the order defined for the element tags.
-    element_types : Sequence
+    connectivity : Sequence[Sequence[int]]
+        Connectivity of all elements in the order defined for the
+        element tags.
+    element_types : Sequence[int]
         Type of all elements in the order defined for the element tags.
 
     Attributes
     ----------
-    tags : numpy.ndarray
+    tags : numpy.ndarray[int]
         Tags of all elements stored in the repository.
-    connectivity : list of numpy.ndarray
+    connectivity : list[numpy.ndarray[int]]
         Connectivity list of all elements in the same order as the tags.
-    types : numpy.ndarray
+    types : numpy.ndarray[int]
         Types of all elements in the same order as the tags.
-    index_mapper : dict
+    index_mapper : dict[int, int]
         Mapping element tag -> index in list of tags.
-    groups : dict
+    groups : dict[str, numpy.ndarray[int]]
         Mapping group name -> element tags.
-
-    Methods
-    -------
-    add_group
-        Add an element group to the repository.
-    get_subset
-        Create a new ElementRepository containing only a subset of
-        elements based on element tags.
-    get_subset_by_type
-        Create a new ElementRepository containing only a subset of
-        elements based on element types.
-    get_node_tags
-        Get the tags of the nodes needed for all elements in the
-        repository.
 
     """
 
@@ -614,11 +610,13 @@ class ElementRepository(MeshRepositoryBaseClass):
         # The connectivity cannot be stored as one array in case of
         # elements with different numbers of element nodes
         super(ElementRepository, self).__init__(element_tags)
-        self._index_mapper = dict(zip(element_tags, range(len(element_tags))))
-        self._connectivity = [np.asarray(c).reshape(-1) for c in connectivity]
-        self._types = np.asarray(element_types, dtype=np.uint8).reshape(-1)
+        self._index_mapper = dict(
+            zip(element_tags, range(len(element_tags))))
+        self._connectivity = [np.asarray(c, dtype=int).reshape(-1)
+                              for c in connectivity]
+        self._types = np.asarray(
+            element_types, dtype=np.uint8).reshape(-1)
 
-    # Properties
     @property
     def index_mapper(self):
         return self._index_mapper
@@ -631,7 +629,6 @@ class ElementRepository(MeshRepositoryBaseClass):
     def types(self):
         return self._types
 
-    # Methods
     def __getitem__(self, key):
         """Index-based access."""
         if key > len(self) - 1:
@@ -642,13 +639,11 @@ class ElementRepository(MeshRepositoryBaseClass):
 
     def get_subset(self, *element_tags):
         """
-        Create a new ElementRepository containing only a subset of elements.
-
-        The subset contains all elements with the requested tags.
+        Create a new ElementRepositroy for a subset of elements by tags.
 
         Parameters
         ----------
-        *element_tags : Sequence
+        *element_tags : Sequence[int]
             Elements that will be contained in the new repository.
 
         Returns
@@ -661,7 +656,7 @@ class ElementRepository(MeshRepositoryBaseClass):
         # by the index mapper, thus there is no need to check for valid
         # inputs here
         indices = np.asarray([self.index_mapper[e]
-                              for e in element_tags])
+                              for e in element_tags], dtype=int)
 
         tags = self.tags[indices]
         connectivity = [self.connectivity[i] for i in indices]
@@ -682,13 +677,11 @@ class ElementRepository(MeshRepositoryBaseClass):
 
     def get_subset_by_type(self, *element_types):
         """
-        Create a new ElementRepository containing only a subset of elements.
-
-        The subset contains all elements of the requested VTK types.
+        Create a new ElementRepositroy for a subset of elements by type.
 
         Parameters
         ----------
-        *element_types : Sequence
+        *element_types : Sequence[int]
             Types of the elements that will be part of the repository.
             The element types must follow the VTK type convention.
 
@@ -722,11 +715,11 @@ class ElementRepository(MeshRepositoryBaseClass):
 
     def get_node_tags(self):
         """
-        Return an array of node tags used for the element in the repository.
+        Get the node tags of the elements in the ElementRepository.
 
         Returns
         -------
-        tags : numpy.ndarray
+        tags : numpy.ndarray[int]
             Sorted node tags.
 
         """
@@ -741,22 +734,22 @@ class NodeRepository(MeshRepositoryBaseClass):
 
     Parameters
     ----------
-    node_tags : Sequence
+    node_tags : Sequence[int]
         Tags of all nodes that will be stored in the repository.
-    node_coords : Sequence of Sequence
+    node_coords : Sequence[Sequence[float]]
         Nodal coordinates in the order defined for the node tags. The
-        coordinates can be defined in 1d-, 2d- or 3d-space as an array of shape
-        (number of nodes x number of dimensions).
+        coordinates can be defined in 1d-, 2d- or 3d-space as an array
+        of shape (number of nodes, number of dimensions).
 
     Attributes
     ----------
-    tags : numpy.ndarray
+    tags : numpy.ndarray[int]
         Tags of all nodes stored in the repository.
-    coordinates : numpy.ndarray
+    coordinates : numpy.ndarray[float]
         Coordinates of all nodes in the order defined for the node tags.
-    index_mapper : dict
+    index_mapper : dict[int, int]
         Mapping node tag -> index in list of tags.
-    groups : dict
+    groups : dict[str, numpy.ndarray[int]]
         Mapping group name -> node tags.
 
     """
@@ -771,7 +764,8 @@ class NodeRepository(MeshRepositoryBaseClass):
         super(NodeRepository, self).__init__(node_tags)
         self._index_mapper = dict(zip(node_tags, range(len(node_tags))))
 
-        node_coords = np.asarray(node_coords).reshape((len(self._tags), -1))
+        node_coords = np.asarray(node_coords, dtype=float).reshape(
+            (len(self._tags), -1))
         _, columns = node_coords.shape
         if columns not in (1, 2, 3):
             msg = "Invalid nodal coordinates."
@@ -779,7 +773,6 @@ class NodeRepository(MeshRepositoryBaseClass):
 
         self._coordinates = node_coords
 
-    # Properties
     @property
     def index_mapper(self):
         return self._index_mapper
@@ -788,7 +781,6 @@ class NodeRepository(MeshRepositoryBaseClass):
     def coordinates(self):
         return self._coordinates
 
-    # Methods
     def __getitem__(self, key):
         """Index-based access."""
         return (self.tags[key], self.coordinates[key],
@@ -796,13 +788,11 @@ class NodeRepository(MeshRepositoryBaseClass):
 
     def get_subset(self, *node_tags):
         """
-        Create a new NodeRepository containing only a subset of nodes.
-
-        The subset contains all nodes with the requested tags.
+        Create a new NodeRepository for a subset of nodes by tags.
 
         Parameters
         ----------
-        *node_tags : Sequence
+        *node_tags : Sequence[int]
             Nodes that will be contained in the new repository.
 
         Returns
@@ -822,10 +812,10 @@ class NodeRepository(MeshRepositoryBaseClass):
         # Generate a new element repository to return
         return_repo = NodeRepository(tags, coords)
 
-        # make sure the indices are coherent with the original model
+        # Make sure the indices are coherent with the original model
         return_repo._index_mapper = dict(zip(tags, indices))
 
-        # extract group elements that are present in the subset
+        # Extract group elements that are present in the subset
         for group_name, group_tags in self.groups.items():
             new_group_tags = np.intersect1d(group_tags, node_tags)
             return_repo.add_group(group_name, new_group_tags)
@@ -839,21 +829,20 @@ class FieldRepositoryBaseClass(object):
 
     Attributes
     ----------
-    fields : dict
+    fields : dict[str, Field]
         Mapping field name -> Field.
 
     """
+
     __metaclass__ = ABCMeta
 
     def __init__(self):
         self._fields = {}
 
-    # Properties
     @property
     def fields(self):
         return self._fields
 
-    # Methods
     def __getitem__(self, field_name):
         """Key-based access."""
         return self.fields[field_name]
@@ -873,11 +862,12 @@ class FieldRepositoryBaseClass(object):
         Parameters
         ----------
         field_type : ParaqusConstant
-            Type of the field, i.e. TENSOR, VECTOR or SCALAR.
+            Type of the field, i.e. ``TENSOR``, ``VECTOR`` or
+            ``SCALAR``.
 
         Returns
         -------
-        list of Field
+        list[Field]
             Fields that match the requested type.
 
         """
@@ -890,7 +880,7 @@ class FieldRepositoryBaseClass(object):
 
     @abstractmethod
     def get_subset(self, repository):
-        """Export node or element fields for a subset of nodes or elements."""
+        """Export node or element fields for a subset."""
         return
 
 
@@ -900,7 +890,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
 
     Attributes
     ----------
-    fields : dict
+    fields : dict[str, Field]
         Mapping field name -> Field.
 
     """
@@ -915,7 +905,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
         Parameters
         ----------
         field : Field
-            The field with position NODES to add to the
+            The field with position ``NODES`` to add to the
             repository.
 
         Returns
@@ -925,7 +915,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
         """
         if field.field_position == NODES:
 
-            if self.fields.get(field.field_name) != None:
+            if self.fields.get(field.field_name) is not None:
                 msg = ("Node field '{}'".format(field.field_name)
                        + " has already been stored and will be overwritten.")
                 warnings.warn(msg)
@@ -952,7 +942,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
 
         Returns
         -------
-        sub_fields : list of Field
+        sub_fields : list[Field]
             The fields matching the subset of nodes.
 
         """
@@ -974,7 +964,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
     Attributes
     ----------
-    fields : dict
+    fields : dict[str, Field]
         Mapping field name -> Field.
 
 
@@ -990,7 +980,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
         Parameters
         ----------
         field : Field
-            The field with position ELEMENTS to add to the
+            The field with position ``ELEMENTS`` to add to the
             repository.
 
         Returns
@@ -1000,7 +990,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
         """
         if field.field_position == ELEMENTS:
 
-            if self.fields.get(field.field_name, None) != None:
+            if self.fields.get(field.field_name, None) is not None:
                 msg = ("Element field '{}'".format(field.field_name)
                        + " has already been stored and will be overwritten.")
                 warnings.warn(msg)
@@ -1017,8 +1007,8 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
         Export element fields for a subset of elements.
 
         The elements are specified by an ElementRepository, which should
-        be derived from a common main model by model.elements.get_subset()
-        to ensure coherent indexing.
+        be derived from a common model via
+        ``model.elements.get_subset()`` to ensure coherent indexing.
 
         Parameters
         ----------
@@ -1027,7 +1017,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
         Returns
         -------
-        sub_fields : list of Field
+        sub_fields : list[Field]
             The fields matching the subset of elements.
 
         """
@@ -1051,24 +1041,24 @@ class Field(object):
     ----------
     field_name : str
         Name of the field.
-    field_values : Sequence
-        Values of the field. In case the field will be added to a model, the
-        values must be in the order defined for the respective node or element
-        tags.
+    field_values : Sequence[Sequence[float]]
+        Values of the field. In case the field will be added to a model,
+        the values must be in the order defined for the respective node
+        or element tags.
     field_position : ParaqusConstant
-        Position of the field, i.e. NODES or ELEMENTS.
+        Position of the field, i.e. ``NODES`` or ELEMENTS``.
     field_type : ParaqusConstant
-        Type of the field, i.e. TENSOR, VECTOR or SCALAR.
+        Type of the field, i.e. ``TENSOR``, ``VECTOR`` or ``SCALAR``.
 
     Attributes
     ----------
     field_name : str
         Name of the field.
     field_position : ParaqusConstant
-        Position of the field, i.e. NODES or ELEMENTS.
+        Position of the field, i.e. ``NODES`` or ``ELEMENTS``.
     field_type : ParaqusConstant
-        Type of the field, i.e. TENSOR, VECTOR or SCALAR.
-    field_values : numpy.ndarray
+        Type of the field, i.e. ``TENSOR``, ``VECTOR`` or ``SCALAR``.
+    field_values : numpy.ndarray[float]
         Field values of the field.
 
     """
@@ -1085,7 +1075,8 @@ class Field(object):
         if field_position not in (NODES, ELEMENTS):
             msg = "Invalid field position: {}".format(field_position)
             raise ValueError(msg)
-        self._field_position = getattr(constants, str(field_position).upper())
+        self._field_position = getattr(
+            constants, str(field_position).upper())
 
         # Add type
         if field_type not in (SCALAR, VECTOR, TENSOR):
@@ -1094,7 +1085,7 @@ class Field(object):
         self._field_type = getattr(constants, str(field_type).upper())
 
         # Add values
-        field_values = np.asarray(field_values)
+        field_values = np.asarray(field_values, dtype=float)
         if self._field_type == SCALAR:
             if np.squeeze(field_values).ndim > 1:
                 msg = "Data for scalar field is not 1d."
@@ -1103,7 +1094,6 @@ class Field(object):
         else:
             self._field_values = field_values
 
-    # Properties
     @property
     def field_name(self):
         return self._field_name
@@ -1120,7 +1110,6 @@ class Field(object):
     def field_type(self):
         return self._field_type
 
-    # Methods
     def __repr__(self):
         descr = "Field '{}' of type '{}' at position '{}'".format(
             self.field_name, self.field_type, self.field_position)
@@ -1135,11 +1124,11 @@ class Field(object):
 
         Vectors are in order (x, y, z) and tensors are in order
         (xx, yy, zz, xy, yz, xz). Non-symmetric tensors are not
-        suppurted.
+        supported.
 
         Returns
         -------
-        numpy.ndarray
+        numpy.ndarray[float]
             The 3d representation of the field values.
 
         """
