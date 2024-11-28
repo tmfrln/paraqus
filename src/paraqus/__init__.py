@@ -10,7 +10,7 @@
 #
 #    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 """
-Export simulation results to vtk format.
+Export simulation results to VTK format.
 
 """
 from paraqus.paraqusmodel import ParaqusModel
