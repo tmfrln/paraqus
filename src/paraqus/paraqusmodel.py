@@ -860,6 +860,13 @@ class FieldRepositoryBaseClass(object):
         """Repository size."""
         return len(self.fields)
 
+    def __delitem__(self, key):
+        del self.fields[key]
+
+    def keys(self):
+        """Repository keys."""
+        return self.fields.keys()
+
     def get_fields_by_type(self, field_type):
         """
         Export fields based on a requested field type.
