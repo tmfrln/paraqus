@@ -4,7 +4,7 @@ Unit tests for Paraqus.
 The unit tests are grouped in two separate modules.
 The module paraqus.tests.tests_common contains all tests that are independent
 of Abaqus, while the module paraqus.tests.tests_abaqus contains tests that
-need the Abaqus python interpreter to work.
+need the Abaqus Python interpreter to work.
 
 To run the tests, use the functions ``run_abaqus_tests()`` or
 ``run_python_tests()``, respectively. Note that ``run_abaqus_tests()``
@@ -16,7 +16,7 @@ import unittest
 
 def run_abaqus_tests():
     """
-    Run all unit tests using Abaqus python.
+    Run all unit tests using Abaqus Python.
 
     Test results are exported to a text file ``test_report_abaqus.txt`` in the
     current working directory.
@@ -39,7 +39,7 @@ def run_abaqus_tests():
         import abaqus
     except ImportError:
         raise RuntimeError("The method run_abaqus() must only be used in "
-                            "Abaqus python.")
+                            "Abaqus Python.")
 
     # import the modules with tests - tests will be discovered based on their
     # paths
@@ -59,14 +59,14 @@ def run_abaqus_tests():
 
 def run_python_tests():
     """
-    Run all unit tests using standard python.
+    Run all unit tests using standard Python.
 
     Test results are exported to a text file ``test_report_python.txt`` in the
     current working directory.
 
     This function runs only the subset of tests that does not need Abaqus to
     work. If you use Abaqus, use the function ``run_abaqus()`` in the Abaqus
-    python interpreter instead.
+    Python interpreter instead.
 
     Returns
     -------
