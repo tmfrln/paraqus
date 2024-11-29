@@ -19,6 +19,7 @@
 *.sel
 *.sta
 *.stt
+*.txt
 abaqus.rpy
 abaqus.rpy.*
 doc/build/**
