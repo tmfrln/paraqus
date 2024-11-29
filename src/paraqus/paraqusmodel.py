@@ -21,7 +21,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-import paraqus.constants as constants
+from paraqus import constants
 from paraqus.constants import USER, NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
 
 
@@ -149,6 +149,7 @@ class ParaqusModel(object):
 
     @property
     def model_name(self):
+        """The name of the main model."""
         return self._model_name
 
     @model_name.setter
@@ -157,6 +158,7 @@ class ParaqusModel(object):
 
     @property
     def part_name(self):
+        """The name of the part instance."""
         return self._part_name
 
     @part_name.setter
@@ -165,6 +167,7 @@ class ParaqusModel(object):
 
     @property
     def step_name(self):
+        """The name of the load step."""
         return self._step_name
 
     @step_name.setter
@@ -173,26 +176,32 @@ class ParaqusModel(object):
 
     @property
     def frame_time(self):
+        """Current frame time of the model frame."""
         return self._frame_time
 
     @property
     def source(self):
+        """Source of the model, e.g. ``ABAQUS`` or ``USER``."""
         return self._source
 
     @property
     def elements(self):
+        """The ElementRepository of the model."""
         return self._elements
 
     @property
     def nodes(self):
+        """The NodeRepository of the model."""
         return self._nodes
 
     @property
     def node_fields(self):
+        """The repository storing the node fields."""
         return self._node_fields
 
     @property
     def element_fields(self):
+        """The repository storing the element field."""
         return self._element_fields
 
     def __str__(self):
@@ -424,12 +433,11 @@ class ParaqusModel(object):
         if field_position == NODES:
             return self.node_fields.get_fields_by_type(field_type)
 
-        elif field_position == ELEMENTS:
+        if field_position == ELEMENTS:
             return self.element_fields.get_fields_by_type(field_type)
 
-        else:
-            msg = "Invalid field position: {}".format(field_position)
-            raise Exception(msg)
+        msg = "Invalid field position: {}".format(field_position)
+        raise ValueError(msg)
 
     def get_node_field(self, field_name):
         """
@@ -471,7 +479,6 @@ class ParaqusModel(object):
 
     def _pad_field_values(self, field_tags, field_values, pad_tags):
         """Extend a field value array with nan values for unset tags."""
-        # TODO: force sorting early to remove the need for index juggling
         field_values = field_values.reshape(len(field_values), -1)
 
         # Make sure the padded tags contain all of the field tags
@@ -523,16 +530,18 @@ class MeshRepositoryBaseClass(object):
 
     @property
     def tags(self):
+        """The node or element tags."""
         return self._tags
 
     @property
     def groups(self):
+        """The node or element groups."""
         return self._groups
 
     def __iter__(self):
         """Repository iterator."""
         for i in range(len(self)):
-            yield self[i]
+            yield self.tags[i]
 
     def __len__(self):
         """Repository size."""
@@ -610,7 +619,7 @@ class ElementRepository(MeshRepositoryBaseClass):
         # The connectivity cannot be stored as one array in case of
         # elements with different numbers of element nodes
         super(ElementRepository, self).__init__(element_tags)
-        self._index_mapper = dict(
+        self.index_mapper = dict(
             zip(element_tags, range(len(element_tags))))
         self._connectivity = [np.asarray(c, dtype=int).reshape(-1)
                               for c in connectivity]
@@ -618,15 +627,13 @@ class ElementRepository(MeshRepositoryBaseClass):
             element_types, dtype=np.uint8).reshape(-1)
 
     @property
-    def index_mapper(self):
-        return self._index_mapper
-
-    @property
     def connectivity(self):
+        """The connectivity list."""
         return self._connectivity
 
     @property
     def types(self):
+        """The element types."""
         return self._types
 
     def __getitem__(self, key):
@@ -666,7 +673,7 @@ class ElementRepository(MeshRepositoryBaseClass):
         return_repo = ElementRepository(tags, connectivity, types)
 
         # Make sure the indices are coherent with the original model
-        return_repo._index_mapper = dict(zip(tags, indices))
+        return_repo.index_mapper = dict(zip(tags, indices))
 
         # Extract group elements that are present in the subset
         for group_name, group_tags in self.groups.items():
@@ -762,7 +769,7 @@ class NodeRepository(MeshRepositoryBaseClass):
             ("The amounts of node tags and coordinate entries do not match.")
 
         super(NodeRepository, self).__init__(node_tags)
-        self._index_mapper = dict(zip(node_tags, range(len(node_tags))))
+        self.index_mapper = dict(zip(node_tags, range(len(node_tags))))
 
         node_coords = np.asarray(node_coords, dtype=float).reshape(
             (len(self._tags), -1))
@@ -774,11 +781,8 @@ class NodeRepository(MeshRepositoryBaseClass):
         self._coordinates = node_coords
 
     @property
-    def index_mapper(self):
-        return self._index_mapper
-
-    @property
     def coordinates(self):
+        """The nodal coordinates."""
         return self._coordinates
 
     def __getitem__(self, key):
@@ -813,7 +817,7 @@ class NodeRepository(MeshRepositoryBaseClass):
         return_repo = NodeRepository(tags, coords)
 
         # Make sure the indices are coherent with the original model
-        return_repo._index_mapper = dict(zip(tags, indices))
+        return_repo.index_mapper = dict(zip(tags, indices))
 
         # Extract group elements that are present in the subset
         for group_name, group_tags in self.groups.items():
@@ -830,7 +834,7 @@ class FieldRepositoryBaseClass(object):
     Attributes
     ----------
     fields : dict[str, Field]
-        Mapping field name -> Field.
+        Mapping field name -> field.
 
     """
 
@@ -841,6 +845,7 @@ class FieldRepositoryBaseClass(object):
 
     @property
     def fields(self):
+        """The mapping field name -> field."""
         return self._fields
 
     def __getitem__(self, field_name):
@@ -876,7 +881,7 @@ class FieldRepositoryBaseClass(object):
     @abstractmethod
     def add_field(self, field):
         """Add a new node or element field to the repository."""
-        pass
+        return
 
     @abstractmethod
     def get_subset(self, repository):
@@ -927,7 +932,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
                    .format(field.field_position, NODES))
             raise ValueError(msg)
 
-    def get_subset(self, node_repository):
+    def get_subset(self, repository):
         """
         Export node fields for a subset of nodes.
 
@@ -937,7 +942,7 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
 
         Parameters
         ----------
-        node_repository : NodeRepository
+        repository : NodeRepository
             Node repository containing the subset of nodes.
 
         Returns
@@ -946,8 +951,8 @@ class NodeFieldRepository(FieldRepositoryBaseClass):
             The fields matching the subset of nodes.
 
         """
-        tags = node_repository.tags
-        index_mapper = node_repository.index_mapper
+        tags = repository.tags
+        index_mapper = repository.index_mapper
         indices = np.array([index_mapper[i] for i in tags])
 
         sub_fields = [Field(f.field_name,
@@ -1002,7 +1007,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
                    .format(field.field_position, ELEMENTS))
             raise ValueError(msg)
 
-    def get_subset(self, element_repository):
+    def get_subset(self, repository):
         """
         Export element fields for a subset of elements.
 
@@ -1012,7 +1017,7 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
 
         Parameters
         ----------
-        element_repository : ElementRepository
+        repository : ElementRepository
             Element repository containing the subset of elements.
 
         Returns
@@ -1021,8 +1026,8 @@ class ElementFieldRepository(FieldRepositoryBaseClass):
             The fields matching the subset of elements.
 
         """
-        tags = element_repository.tags
-        index_mapper = element_repository.index_mapper
+        tags = repository.tags
+        index_mapper = repository.index_mapper
         indices = np.array([index_mapper[i] for i in tags])
 
         sub_fields = [Field(f.field_name,
@@ -1096,18 +1101,22 @@ class Field(object):
 
     @property
     def field_name(self):
+        """The name of the field."""
         return self._field_name
 
     @property
     def field_values(self):
+        """The values of the field."""
         return self._field_values
 
     @property
     def field_position(self):
+        """The position of the field, e.g. ``NODES`` or ``ELEMENTS``."""
         return self._field_position
 
     @property
     def field_type(self):
+        """The field type, e.g. ``SCALAR`` or ``VECTOR``."""
         return self._field_type
 
     def __repr__(self):
@@ -1135,16 +1144,15 @@ class Field(object):
         if self.field_type == SCALAR:
             return self.field_values
 
-        elif self.field_type == VECTOR:
+        if self.field_type == VECTOR:
             nvals, ndim = self.field_values.shape
             if ndim < 3:
                 return np.hstack((self.field_values, np.zeros((nvals,
                                                                3 - ndim))))
             return self.field_values
 
-        elif self.field_type == TENSOR:
-            nvals, ndim = self.field_values.shape
-            if ndim < 6:
-                return np.hstack((self.field_values, np.zeros((nvals,
-                                                               6 - ndim))))
-            return self.field_values
+        # case field_type == TENSOR
+        nvals, ndim = self.field_values.shape
+        if ndim < 6:
+            return np.hstack((self.field_values, np.zeros((nvals, 6 - ndim))))
+        return self.field_values

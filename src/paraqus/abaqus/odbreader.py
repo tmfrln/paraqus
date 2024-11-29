@@ -338,8 +338,14 @@ class OdbReader():
             model_name = self.model_name
 
         with self._odb as odb:
-            # TODO: Input checking
+            if step_name not in odb.steps.keys():
+                raise KeyError("Step '{}' not found.".format(step_name))
             step = odb.steps[step_name]
+
+            if (frame_index >= len(step.frames)
+                    or frame_index < -len(step.frames)):
+                raise IndexError("Frame index '{}' out of range"
+                                 .format(frame_index))
             frame = step.frames[frame_index]
 
             frame_time = self.time_offset + step.totalTime + frame.frameValue
@@ -494,7 +500,7 @@ class OdbReader():
         if request.group_type == NODES:
             group_type = "nodes"
             set_type = "nodeSets"
-        elif request.group_type == ELEMENTS:
+        else:  # request.group_type == ELEMENTS:
             group_type = "elements"
             set_type = "elementSets"
 
@@ -534,7 +540,7 @@ class OdbReader():
             # Remove duplicates (these do actually occur)
             return np.unique(labels)
 
-        elif request.instance_name == instance.name:
+        if request.instance_name == instance.name:
             # Instance-level set/surface
 
             # Extract an odbSet representing the surface or set
@@ -559,9 +565,8 @@ class OdbReader():
             # Remove duplicates (these do actually occur)
             return np.unique(labels)
 
-        else:
-            # The request was not for this instance
-            return None
+        # The request was not for this instance
+        return None
 
     def _get_field_output(self,
                           request,
@@ -577,11 +582,6 @@ class OdbReader():
         # Reduce to the instance
         if instance is not None:
             field_out = field_out.getSubset(region=instance)
-
-        # Output should be uniform in terms of location (node or
-        # quadrature point output)
-        # FIXME: This is propably not needed anymore
-        # assert len(field_out.locations) == 1
 
         # If an invariant is specified, apply the reduction
         if invariant is not None:
@@ -638,7 +638,7 @@ class OdbReader():
 
         position = blocks[0].position
 
-        assert all([b.position == position for b in blocks]), \
+        assert all(b.position == position for b in blocks), \
             "All data for one field must exist at the same output position."
 
         # Make sure element output is actually per element
@@ -808,7 +808,7 @@ class OdbReader():
         if request.section_point_reduction == MEAN:
             # Average data ignoring nans
             return np.nanmean(data, axis=1)
-        elif request.section_point_reduction == ABSMAX:
+        if request.section_point_reduction == ABSMAX:
             return np.nanmax(np.abs(data), axis=1)
 
         raise ValueError("Reduction method invalid.")

@@ -115,10 +115,12 @@ class VtkFileManager(object):
 
     @property
     def file_path(self):
+        """The absolute path to the VTK file."""
         return self._file_path
 
     @property
     def fmt(self):
+        """The output format for array data."""
         return self._fmt
 
     def __enter__(self):
@@ -137,7 +139,7 @@ class VtkFileManager(object):
 
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         """Close the file."""
         self._file.close()
 
@@ -198,9 +200,9 @@ class WriterBaseClass(object):
         Number of pieces each model will be split into.
     output_dir : str
         The path to the folder where all VTK files will be stored.
-    FORMAT : ParaqusConstant
-        A constant defining the type of writer, i.e. ASCII or BINARY.
-        This is only for informational purposes.
+    fmt : ParaqusConstant
+        A constant defining the type of writer, i.e. ``ASCII`` or
+        ``BINARY``. This is only for informational purposes.
 
     """
 
@@ -240,11 +242,13 @@ class WriterBaseClass(object):
                     "Could not remove directory '{}'.".format(self.output_dir))
 
     @property
-    def FORMAT(self):
+    def fmt(self):
+        """The type of the writer."""
         return self._fmt
 
     @property
     def number_of_pieces(self):
+        """Number of pieces each model will be split into."""
         return self._number_of_pieces
 
     @number_of_pieces.setter
@@ -295,7 +299,7 @@ class WriterBaseClass(object):
         """
         if self._encoding == BASE64:
             return {"format": "binary"}
-        elif self._encoding == RAW:
+        if self._encoding == RAW:
             return {"format": "appended", "offset": self._byte_offset}
         return {"format": "ascii"}
 
@@ -355,13 +359,12 @@ class WriterBaseClass(object):
         # Reset byte offset
         self._byte_offset = 0
 
-        # Connect different pieces in a pvtu file
         if self.number_of_pieces == 1:
             return vtu_file_path
 
-        if self.number_of_pieces > 1:
-            pvtu_file_path = self._write_pvtu_file(model, vtu_files)
-            return pvtu_file_path
+        # Connect different pieces in a pvtu file
+        pvtu_file_path = self._write_pvtu_file(model, vtu_files)
+        return pvtu_file_path
 
     def _add_field_data_to_pvtu_file(self, model, xml, field_position):
         """
@@ -677,8 +680,8 @@ class WriterBaseClass(object):
         None.
 
         """
-        (element_tags,
-         node_tags,
+        (_,
+         _,
          node_coords,
          element_types,
          element_offsets,
@@ -687,7 +690,7 @@ class WriterBaseClass(object):
         # The connectivity is needed as one flattened array that is
         # expressed in terms of the node indices. One big 1d array
         # will be fine for binary output
-        if self.FORMAT == BINARY:
+        if self.fmt == BINARY:
             connectivity = np.array(list(itertools.chain(*connectivity)),
                                     dtype=piece.elements.connectivity[0].dtype)
 
@@ -703,7 +706,7 @@ class WriterBaseClass(object):
 
         # Add connectivity
         xml.add_element("Cells")
-        dtype = (connectivity.dtype.name if self.FORMAT == BINARY
+        dtype = (connectivity.dtype.name if self.fmt == BINARY
                  else connectivity[0].dtype.name)
         xml.add_element("DataArray",
                         type=VTK_TYPE_MAPPER[dtype],
@@ -869,6 +872,7 @@ class BinaryWriter(WriterBaseClass):
 
     @property
     def header_type(self):
+        """The data type used for the headers of binary data blocks."""
         return self._header_type
 
     @header_type.setter
@@ -877,13 +881,13 @@ class BinaryWriter(WriterBaseClass):
 
     @property
     def encoding(self):
+        """The binary encoding used for data arrays."""
         return self._encoding
 
     @encoding.setter
     def encoding(self, encoding):
-        if not encoding in (BASE64, RAW):
+        if encoding not in (BASE64, RAW):
             raise ValueError("Invalid binary encoding.")
-
         self._encoding = encoding
 
     def _append_raw_mesh_data(self, piece, xml):
@@ -951,7 +955,7 @@ class BinaryWriter(WriterBaseClass):
             xml.add_array_data_to_element(field_vals, break_line=False)
 
         # Append group data
-        for group_name, group_tags in groups.items():
+        for _, group_tags in groups.items():
             field_vals = np.in1d(tags, group_tags).astype(np.uint8)
             xml.add_array_data_to_element(field_vals, break_line=False)
 
@@ -1176,7 +1180,7 @@ class CollectionWriter(object):
         self._initialize_collection()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         self._finalize_collection()
 
     def write(self, model):

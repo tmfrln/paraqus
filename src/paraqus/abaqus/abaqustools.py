@@ -16,6 +16,7 @@ All of these can only be executed in Abaqus Python.
 
 """
 import os
+import shutil
 
 from abaqus import session
 
@@ -51,6 +52,7 @@ class OdbObject(object):
         self.file_path = os.path.abspath(file_name)
         self.readonly = readonly
         self.already_open = False
+        self.odb = None
 
     def __enter__(self):
 
@@ -71,13 +73,14 @@ class OdbObject(object):
         # Deal with silent errors in the readonly status, this happens
         # e.g. when a lock file prevents write access
         assert odb.isReadOnly == self.readonly, \
-            "The ODB could not be opened with option readonly=%s" % self.readonly
+            "The ODB could not be opened with option readonly={}" \
+            .format(self.readonly)
 
         self.odb = odb
 
         return odb
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         # Only close the odb if it was not open before we "opened" it
         if not self.already_open:
             self.odb.close()
@@ -101,8 +104,6 @@ def upgrade_odb(odb_file):
         Whether the ODB was updated.
 
     """
-    import shutil
-
     upgrade_required = session.isUpgradeRequiredForOdb(odb_file)
 
     if upgrade_required:
@@ -127,9 +128,9 @@ def upgrade_odb(odb_file):
         session.upgradeOdb(existingOdbPath=backup_file_path,
                            upgradedOdbPath=odb_file)
 
-        print("The ODB file '%s' has been updated." % odb_file)
-        print("The original file has been stored in the path '%s'"
-              % backup_file_path)
+        print("The ODB file '{}' has been updated.".format(odb_file))
+        print("The original file has been stored in the path '{}'"
+              .format(backup_file_path))
 
         return True
 
