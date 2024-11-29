@@ -44,8 +44,7 @@ class ParaqusConstant(object):
     def __eq__(self, other):
         if not isinstance(other, ParaqusConstant):
             return str(self.name).upper() == str(other).upper()
-        else:
-            return self.name == other.name
+        return self.name == other.name
 
     def __add__(self, other):
         return str(self.name) + str(other)
