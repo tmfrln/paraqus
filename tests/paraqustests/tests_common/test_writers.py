@@ -12,7 +12,7 @@ import filecmp
 
 from paraqus.constants import BASE64, RAW, BINARY, ASCII, UINT32
 from paraqus.writers import AsciiWriter, BinaryWriter, CollectionWriter
-from paraqustests.tests_common import get_test_model
+from paraqus.tests.tests_common import get_test_model
 
 
 RESOURCE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)),
