@@ -13,5 +13,15 @@
 Export simulation results to VTK format.
 
 """
+import os
+import sys
+
 from paraqus.paraqusmodel import ParaqusModel
 from paraqus.writers import AsciiWriter, BinaryWriter, CollectionWriter
+
+TESTS_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    "tests")
+sys.path.append(TESTS_PATH)
+from paraqustests import run_python_tests as _run_python_tests
+from paraqustests import run_abaqus_tests as _run_abaqus_tests

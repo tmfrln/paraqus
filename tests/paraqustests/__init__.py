@@ -43,7 +43,7 @@ def run_abaqus_tests():
 
     # import the modules with tests - tests will be discovered based on their
     # paths
-    from paraqus.tests import tests_common, tests_abaqus
+    from paraqustests import tests_common, tests_abaqus
 
     modules = [tests_common, tests_abaqus]
 
@@ -74,7 +74,7 @@ def run_python_tests():
 
     """
     # import the tests module, discovery is based off its path
-    from paraqus.tests import tests_common
+    from paraqustests import tests_common
 
     # create a suite of tests
     suite = _find_tests(tests_common)
