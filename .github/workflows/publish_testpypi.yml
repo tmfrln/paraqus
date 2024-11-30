@@ -41,6 +41,6 @@ jobs:
         python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple paraqus
     - name: Run tests
       run: |
-        python3 -c "import paraqus; paraqus._run_python_tests()"
+        python3 -c "import paraqus; paraqus.tests.run_python_tests()"
 
 
