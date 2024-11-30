@@ -21,4 +21,4 @@ jobs:
           python -m pip install .
       - name: Run tests
         run: |
-          python -m unittest discover -s src/paraqus/tests/tests_common
+          python -m unittest discover -s tests/paraqustests/tests_common
