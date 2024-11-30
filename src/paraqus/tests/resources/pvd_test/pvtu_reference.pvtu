@@ -1,0 +1,15 @@
+<VTKFile type="PUnstructuredGrid" version="1.0" byte_order="LittleEndian">
+    <PUnstructuredGrid>
+        <PPointData>
+            <PDataArray type="Int64" Name="_node_tags" NumberOfComponents="1"/>
+        </PPointData>
+        <PCellData>
+            <PDataArray type="Int64" Name="_element_tags" NumberOfComponents="1"/>
+        </PCellData>
+        <PPoints>
+            <PDataArray type="Float64" NumberOfComponents="3"/>
+        </PPoints>
+        <Piece Source="TEST_PART_0_0.vtu"/>
+        <Piece Source="TEST_PART_1_0.vtu"/>
+    </PUnstructuredGrid>
+</VTKFile>
