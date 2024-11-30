@@ -1,13 +1,13 @@
 name: Test based on TestPyPI installation
-    
+
 on:
   workflow_dispatch:
-    
+
 jobs:
   test:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -18,6 +18,6 @@ jobs:
         python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple paraqus
     - name: Run tests
       run: |
-        python3 -c "from paraqus.tests import run_python_tests; run_python_tests()"
+        python3 -c "import paraqus; paraqus._run_python_tests()"
 
 
