@@ -20,7 +20,5 @@ from paraqus.paraqusmodel import ParaqusModel
 from paraqus.writers import AsciiWriter, BinaryWriter, CollectionWriter
 
 TESTS_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    "tests")
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "tests")
 sys.path.append(TESTS_PATH)
-import paraqustests as tests
