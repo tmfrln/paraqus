@@ -14,7 +14,8 @@ from paraqus.paraqusmodel import (ElementRepository,
                                   ElementFieldRepository,
                                   NodeFieldRepository,
                                   Field)
-import paraqus.tests.tests_common as common
+
+import paraqustests.tests_common as common
 
 
 class TestScalarField(unittest.TestCase):
