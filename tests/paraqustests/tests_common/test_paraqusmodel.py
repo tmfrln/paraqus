@@ -8,7 +8,6 @@ import unittest
 
 import numpy as np
 
-import paraqus  # this is needed such that github workflow find test module
 from paraqus.constants import NODES, ELEMENTS, SCALAR, VECTOR, TENSOR
 from paraqus.paraqusmodel import (ElementRepository,
                                   NodeRepository,

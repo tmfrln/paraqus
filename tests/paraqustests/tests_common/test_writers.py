@@ -10,7 +10,6 @@ import datetime
 import shutil
 import filecmp
 
-import paraqus  # this is needed such that github workflow find test module
 from paraqus.constants import BASE64, RAW, BINARY, ASCII, UINT32
 from paraqus.writers import AsciiWriter, BinaryWriter, CollectionWriter
 
