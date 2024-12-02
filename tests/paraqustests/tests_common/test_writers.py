@@ -37,21 +37,16 @@ def _compare_vtk_files(test_path, ref_path):
         ref_path = os.path.join(head, "int32_" + tail)
 
     test_file = open(test_path, "rb")
-    test_content = [line.strip().replace(bytes(os.sep, "ascii"), b"/")
+    test_content = [line.strip().replace(bytes("\\", "ascii"),
+                                         bytes(os.sep, "ascii"))
                     for line in test_file.readlines()]
     test_file.close()
 
     ref_file = open(ref_path, "rb")
-    ref_content = [line.strip().replace(bytes(os.sep, "ascii"), b"/")
+    ref_content = [line.strip().replace(bytes("\\", "ascii"),
+                                        bytes(os.sep, "ascii"))
                    for line in ref_file.readlines()]
     ref_file.close()
-
-    if test_content != ref_content:
-        print("")
-        print(test_content)
-        print("")
-        print(ref_content)
-        print("")
 
     assert test_content == ref_content
 
