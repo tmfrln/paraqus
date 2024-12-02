@@ -1,0 +1,37 @@
+<VTKFile type="UnstructuredGrid" version="1.0" byte_order="LittleEndian" header_type="UInt64">
+    <UnstructuredGrid>
+        <FieldData>
+            <DataArray Name="TimeValue" NumberOfTuples="1" type="Float64" format="binary">
+                CAAAAAAAAAA=AAAAAAAAAAA=
+            </DataArray>
+        </FieldData>
+        <Piece NumberOfPoints="4" NumberOfCells="2">
+            <Points>
+                <DataArray type="Float64" Name="nodes" NumberOfComponents="3" format="binary">
+                    YAAAAAAAAAA=AAAAAAAA8D8AAAAAAADwPwAAAAAAAAAAAAAAAAAAAEAAAAAAAADwPwAAAAAAAAAAAAAAAAAA4D8AAAAAAAD4PwAAAAAAAAAAAAAAAAAA+D8AAAAAAAD4PwAAAAAAAAAA
+                </DataArray>
+            </Points>
+            <Cells>
+                <DataArray type="Int32" Name="connectivity" format="binary">
+                    GAAAAAAAAAA=AAAAAAEAAAADAAAAAAAAAAMAAAACAAAA
+                </DataArray>
+                <DataArray type="Int32" Name="offsets" format="binary">
+                    CAAAAAAAAAA=AwAAAAYAAAA=
+                </DataArray>
+                <DataArray type="UInt8" Name="types" format="binary">
+                    AgAAAAAAAAA=BQU=
+                </DataArray>
+            </Cells>
+            <PointData>
+                <DataArray Name="_node_tags" NumberOfComponents="1" type="Int32" format="binary">
+                    EAAAAAAAAAA=BQAAAAYAAAAHAAAACAAAAA==
+                </DataArray>
+            </PointData>
+            <CellData>
+                <DataArray Name="_element_tags" NumberOfComponents="1" type="Int32" format="binary">
+                    CAAAAAAAAAA=BAAAAAUAAAA=
+                </DataArray>
+            </CellData>
+        </Piece>
+    </UnstructuredGrid>
+</VTKFile>
