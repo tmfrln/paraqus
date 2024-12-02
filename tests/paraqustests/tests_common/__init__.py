@@ -3,8 +3,11 @@ This init file is required to guarantee that unittest can import the
 folder as a package to discover the tests.
 
 """
+import numpy as np
+
 from paraqus.paraqusmodel import ParaqusModel
-from paraqus.constants import SCALAR, VECTOR, TENSOR, NODES, ELEMENTS
+from paraqus.constants import NODES, ELEMENTS
+
 
 def get_test_mesh():
     node_tags = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -27,6 +30,7 @@ def get_test_mesh():
 
     return node_tags, node_coords, element_tags, element_types, connectivity
 
+
 def get_test_model():
     (node_tags,
      node_coords,
@@ -48,6 +52,7 @@ def get_test_model():
                          step_name=step_name)
 
     return model
+
 
 def get_test_field_data(field_position, field_type):
     field_map = {"scalar": [1, 2, 3, 4, 5, 6, 7, 8],
