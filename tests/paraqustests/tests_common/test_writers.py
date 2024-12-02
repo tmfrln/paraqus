@@ -46,6 +46,13 @@ def _compare_vtk_files(test_path, ref_path):
                    for line in ref_file.readlines()]
     ref_file.close()
 
+    if test_content != ref_content:
+        print("")
+        print(test_content)
+        print("")
+        print(ref_content)
+        print("")
+
     assert test_content == ref_content
 
 
