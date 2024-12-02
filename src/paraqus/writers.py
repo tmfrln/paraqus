@@ -793,7 +793,7 @@ class WriterBaseClass(object):
             self._add_array_data_to_vtu_file(xml, field_vals)
             xml.finish_element()
 
-        # Add node tags as field
+        # Add node or element tags as field
         xml.add_element("DataArray",
                         Name=tags_name,
                         NumberOfComponents=1,
