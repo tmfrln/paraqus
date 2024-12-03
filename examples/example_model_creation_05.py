@@ -122,6 +122,10 @@ with CollectionWriter(vtu_writer, collection_name) as collection_writer:
         collection_writer.write(model)
 
 
-# If you open the .pvd file in paraview, the .vtu files for the
+# If you open the .pvd file in ParaView, the .vtu files for the
 # individual models are interpreted as a time series and can be played
 # as a video to visualize how the deformation changes over time
+
+# Note that you should not change the generated folder structure within
+# the parent folder 'example_model_05' to not break the links from the
+# .pvd file to the associated .vtu files
