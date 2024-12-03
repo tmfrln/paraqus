@@ -96,3 +96,7 @@ with CollectionWriter(vtu_writer, collection_name) as collection_writer:
 # the folder structure. In addition to the .vtu files for each
 # individual part, a .pvd file is created. Opening this .pvd file in
 # ParaView combines both parts in one view.
+
+# Note that you should not change the generated folder structure within
+# the parent folder 'example_model_04' to not break the links from the
+# .pvd file to the associated .vtu files
