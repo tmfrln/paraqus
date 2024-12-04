@@ -19,7 +19,6 @@ Writers
 .. autoclass:: paraqus.BinaryWriter
    :members:
    :inherited-members:
-   :special-members: __init__
 
 CollectionWriter
 ----------------
