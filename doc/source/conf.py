@@ -35,6 +35,8 @@ templates_path = ['_templates']
 
 autodoc_mock_imports = ["abaqus", "abaqusConstants", "numpy"]
 
+napoleon_use_ivar = True
+
 # -- Options for HTML output
 
 html_theme = 'sphinx_rtd_theme'
