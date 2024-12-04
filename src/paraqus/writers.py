@@ -809,24 +809,6 @@ class BinaryWriter(WriterBaseClass):
     """
     Writer for the export of paraqus models to binary .vtu file format.
 
-    Parameters
-    ----------
-    output_dir : str, optional
-        Directory, where all exported VTK files will be stored. Default:
-        ``'vtk_files'``.
-    clear_output_dir : bool, optional
-        If ``True``, the output directory will be cleared before
-        exporting any files. Default: ``False``.
-    number_of_pieces : int, optional
-        Number of pieces each model will be split into. Default: ``1``.
-    encoding : ParaqusConstant, optional
-        The binary encoding used for data arrays. Currently supported
-        are ``RAW`` and ``BASE64``. Default: ``BASE64``.
-    header_type : ParaqusConstant, optional
-        The data type used for the headers of the binary data blocks.
-        Currently supported are ``UINT32`` and ``UINT64``. Default:
-        ``UINT64``.
-
     Attributes
     ----------
     number_of_pieces : int
@@ -862,6 +844,28 @@ class BinaryWriter(WriterBaseClass):
                  number_of_pieces=1,
                  encoding=BASE64,
                  header_type=UINT64):
+        """
+        Create an instance of the BinaryWriter.
+        
+        Parameters
+        ----------
+        output_dir : str, optional
+            Directory, where all exported VTK files will be stored. Default:
+            ``'vtk_files'``.
+        clear_output_dir : bool, optional
+            If ``True``, the output directory will be cleared before
+            exporting any files. Default: ``False``.
+        number_of_pieces : int, optional
+            Number of pieces each model will be split into. Default: ``1``.
+        encoding : ParaqusConstant, optional
+            The binary encoding used for data arrays. Currently supported
+            are ``RAW`` and ``BASE64``. Default: ``BASE64``.
+        header_type : ParaqusConstant, optional
+            The data type used for the headers of the binary data blocks.
+            Currently supported are ``UINT32`` and ``UINT64``. Default:
+            ``UINT64``
+
+        """
 
         super(BinaryWriter, self).__init__(BINARY,
                                            output_dir,
