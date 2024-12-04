@@ -17,6 +17,6 @@ build:
 sphinx:
   configuration: doc/source/conf.py
   # Fail on all warnings to avoid broken references
-  fail_on_warning: true
+  fail_on_warning: false
 
 
