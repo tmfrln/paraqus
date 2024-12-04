@@ -43,7 +43,9 @@ Some software packages similar to Paraqus have been released over the last years
 
 # Contributions
 
-**Tim Furlan:** Conceptualization; Software - Design, Implementation (focus on reading Abaqus ODB files), Documentation; Writing - Original Draft; Example generation. **Jonathan Stollberg:** Conceptualization; Software - Design, Implementation (focus on writing VTK files), Documentation; Writing - Original Draft; Example generation. **Andreas Menzel:** Conceptualization; Supervision - Project direction; Writing - Review & Editing; Example generation.
+- Tim Furlan: Conceptualization; Software - Design, Implementation (focus on reading Abaqus output), Documentation; Writing - Original Draft; Example generation
+- Jonathan Stollberg: Conceptualization; Software - Design, Implementation (focus on writing .vtu files), Documentation; Writing - Original Draft; Example generation
+- Andreas Menzel: Conceptualization; Supervision - Project direction; Writing - Review & Editing; Example generation
 
 # Acknowledgements
 

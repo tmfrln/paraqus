@@ -31,5 +31,5 @@ ODBReader
 ---------
 The ODBReader class is only useable in the Abaqus Python interpreter.
 
-.. autoclass:: paraqus.abaqus.ODBReader
+.. autoclass:: paraqus.abaqus.OdbReader
    :members:
