@@ -1,5 +1,5 @@
-<VTKFile type="Collection" version="1.0" byte_order="LittleEndian">
+<VTKFile byte_order="LittleEndian" type="Collection" version="1.0">
     <Collection>
-        <DataSet timestep="0.0" part="0" file="vtu\TEST_PART_0.pvtu"/>
+        <DataSet file="vtu\TEST_PART_0.pvtu" part="0" timestep="0.0"/>
     </Collection>
 </VTKFile>

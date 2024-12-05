@@ -1,34 +1,34 @@
-<VTKFile type="UnstructuredGrid" version="1.0" byte_order="LittleEndian" header_type="UInt64">
+<VTKFile byte_order="LittleEndian" header_type="UInt64" type="UnstructuredGrid" version="1.0">
     <UnstructuredGrid>
         <FieldData>
-            <DataArray Name="TimeValue" NumberOfTuples="1" type="Float64" format="binary">
+            <DataArray Name="TimeValue" NumberOfTuples="1" format="binary" type="Float64">
                 CAAAAAAAAAA=AAAAAAAAAAA=
             </DataArray>
         </FieldData>
-        <Piece NumberOfPoints="4" NumberOfCells="2">
+        <Piece NumberOfCells="2" NumberOfPoints="4">
             <Points>
-                <DataArray type="Float64" Name="nodes" NumberOfComponents="3" format="binary">
+                <DataArray Name="nodes" NumberOfComponents="3" format="binary" type="Float64">
                     YAAAAAAAAAA=AAAAAAAA8D8AAAAAAADwPwAAAAAAAAAAAAAAAAAAAEAAAAAAAADwPwAAAAAAAAAAAAAAAAAA4D8AAAAAAAD4PwAAAAAAAAAAAAAAAAAA+D8AAAAAAAD4PwAAAAAAAAAA
                 </DataArray>
             </Points>
             <Cells>
-                <DataArray type="Int64" Name="connectivity" format="binary">
+                <DataArray Name="connectivity" format="binary" type="Int64">
                     MAAAAAAAAAA=AAAAAAAAAAABAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAIAAAAAAAAA
                 </DataArray>
-                <DataArray type="Int64" Name="offsets" format="binary">
+                <DataArray Name="offsets" format="binary" type="Int64">
                     EAAAAAAAAAA=AwAAAAAAAAAGAAAAAAAAAA==
                 </DataArray>
-                <DataArray type="UInt8" Name="types" format="binary">
+                <DataArray Name="types" format="binary" type="UInt8">
                     AgAAAAAAAAA=BQU=
                 </DataArray>
             </Cells>
             <PointData>
-                <DataArray Name="_node_tags" NumberOfComponents="1" type="Int64" format="binary">
+                <DataArray Name="_node_tags" NumberOfComponents="1" format="binary" type="Int64">
                     IAAAAAAAAAA=BQAAAAAAAAAGAAAAAAAAAAcAAAAAAAAACAAAAAAAAAA=
                 </DataArray>
             </PointData>
             <CellData>
-                <DataArray Name="_element_tags" NumberOfComponents="1" type="Int64" format="binary">
+                <DataArray Name="_element_tags" NumberOfComponents="1" format="binary" type="Int64">
                     EAAAAAAAAAA=BAAAAAAAAAAFAAAAAAAAAA==
                 </DataArray>
             </CellData>
