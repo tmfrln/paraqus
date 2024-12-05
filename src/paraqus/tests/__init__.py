@@ -38,7 +38,7 @@ def run_abaqus_tests():
     try:
         import abaqus
     except ImportError:
-        raise RuntimeError("The method run_abaqus() must only be used in "
+        raise RuntimeError("The method run_abaqus_tests() must only be used in "
                             "Abaqus Python.")
 
     # import the modules with tests - tests will be discovered based on their
@@ -54,7 +54,7 @@ def run_abaqus_tests():
     suite = unittest.TestSuite(suites)
 
     # run the actual tests
-    _run_tests(suite, "test_report_abaqus.txt")
+    _run_tests(suite, "paraqus_test_report_abaqus.txt")
 
 
 def run_python_tests():
@@ -80,7 +80,7 @@ def run_python_tests():
     suite = _find_tests(tests_common)
 
     # run the actual tests
-    _run_tests(suite, "test_report_python.txt")
+    _run_tests(suite, "paraqus_test_report_python.txt")
 
 def _find_tests(module):
     """Helper function to build a test suite of all tests in a package."""
