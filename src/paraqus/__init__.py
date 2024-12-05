@@ -16,8 +16,11 @@ Export simulation results to VTK format.
 import os
 import sys
 
-from paraqus.paraqusmodel import ParaqusModel
-from paraqus.writers import AsciiWriter, BinaryWriter, CollectionWriter
+# explicitly reexport the classes below
+from paraqus.paraqusmodel import ParaqusModel as ParaqusModel
+from paraqus.writers import AsciiWriter as AsciiWriter
+from paraqus.writers import BinaryWriter as BinaryWriter
+from paraqus.writers import CollectionWriter as CollectionWriter
 
 TESTS_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "tests")
