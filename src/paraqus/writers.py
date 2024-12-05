@@ -1368,7 +1368,11 @@ class XmlFactory(object):
 
         """
         to_write = '<{}'.format(name)
-        for key, val in attributes.items():
+        
+        # we need to guarantee a certain order here for testing
+        keys = sorted(list(attributes.keys()))
+        for key in keys():
+            val = attributes[key]
             to_write += ' {}="{}"'.format(key, val)
         to_write += '>'
 
@@ -1461,7 +1465,11 @@ class XmlFactory(object):
 
         """
         to_write = '<{}'.format(name)
-        for key, val in attributes.items():
+        
+        # we need to guarantee a defined order here for testing
+        keys = sorted(list(attributes.keys()))
+        for key in keys:
+            val = attributes[key]
             to_write += ' {}="{}"'.format(key, val)
         to_write += '/>'
 

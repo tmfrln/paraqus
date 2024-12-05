@@ -34,18 +34,25 @@ def _compare_vtk_files(test_path, ref_path):
     if np.int_ == np.int32:
         head, tail = os.path.split(ref_path)
         ref_path = os.path.join(head, "int32_" + tail)
-
+        
     test_file = open(test_path, "rb")
-    test_content = [line.strip().replace(bytes("\\", "ascii"),
-                                         bytes(os.sep, "ascii"))
+    test_content = [line.strip().replace(b'\\', b'/')
                     for line in test_file.readlines()]
     test_file.close()
 
     ref_file = open(ref_path, "rb")
-    ref_content = [line.strip().replace(bytes("\\", "ascii"),
-                                        bytes(os.sep, "ascii"))
+    ref_content = [line.strip().replace(b'\\', b'/')
                    for line in ref_file.readlines()]
     ref_file.close()
+
+    if not test_content == ref_content:
+        for line1, line2 in zip(test_content, ref_content):
+            if not line1 == line2:
+                print("Test:")
+                print(line1)
+                print("Ref:")
+                print(line2)
+                print("")
 
     assert test_content == ref_content
 
@@ -302,3 +309,4 @@ class TestCollectionWriter(unittest.TestCase):
         _compare_vtk_files(vtu_file_1, reference_vtu_1)
         _compare_vtk_files(pvtu_file, reference_pvtu)
         _compare_vtk_files(pvd_file, reference_pvd)
+
