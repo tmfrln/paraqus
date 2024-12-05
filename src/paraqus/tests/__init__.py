@@ -122,4 +122,8 @@ def _run_tests(suite, file_name):
     print(msg)
 
     if not result.wasSuccessful():
+        with open(file_name, "r") as logfile:
+            for line in logfile.readlines():
+                print(line)
+            
         raise RuntimeError("Not all tests passed.")
