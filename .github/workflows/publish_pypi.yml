@@ -40,6 +40,6 @@ jobs:
         python3 -m pip install paraqus
     - name: Run tests
       run: |
-        python3 -c "import paraqus; import paraqustests as tests; tests.run_python_tests()"
+        python3 -c "import paraqus.tests; paraqus.tests.run_python_tests()"
 
 
