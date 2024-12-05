@@ -6,11 +6,11 @@ build-backend = "setuptools.build_meta"
 where = ["src", "examples"]
 
 [tool.setuptools.package-data]
-"*" = ["*.py", "*.inp", "*.odb"]
+"*" = ["*.py", "*.inp", "*.odb", "*.vtu", "*.vtk", "*.pvd", "*.pvtu"]
 
 [project]
 name = "paraqus"
-version = "1.0.3"
+version = "1.0.4"
 authors = [
   { name="Tim Furlan", email="tim.furlan@gmx.de" },
   { name="Jonathan Stollberg", email="jonathan.stollberg@tu-dortmund.de" },
