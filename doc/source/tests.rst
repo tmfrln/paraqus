@@ -9,7 +9,7 @@ Paraqus comes with a small number of unit tests. There are two groups of tests:
 Creating test resources
 ------------------------
 
-Paraqus comes with two small example Abaqus output databases for tests. One of the databases is supposed to match your current Abaqus installation, while the other database should be from an older release. If your current Abaqus version is not Abaqus 2021, you should recreate the file ``element_test_current.odb``. If your Abaqus version is older than Abaqus 2019, you should also recreate the file ``element_test_old.odb``.
+Paraqus comes with two small example Abaqus output databases for tests. One of the databases is supposed to match your current Abaqus installation, while the other database should be from an older release. If your current Abaqus version is not Abaqus 2023, you should recreate the file ``element_test_current.odb``. If your Abaqus version is older than Abaqus 2019, you should also recreate the file ``element_test_old.odb``.
 
 To create the resources, you first need to find out where Paraqus is installed on your system. Follow the steps outlined in the :ref:`installation instructions<installation>` to find the folder containing the directory ``paraqus``.
 
@@ -21,7 +21,7 @@ To recreate the file ``element_test_old.odb``, navigate to the directory ``paraq
 Run tests using Abaqus
 ----------------------
 
-In the Python console of Abaqus  CAE, run the following commands:
+In the Python console of Abaqus CAE, run the following commands:
 
 >>> import paraqus.tests as tests
 >>> tests.run_abaqus_tests()
