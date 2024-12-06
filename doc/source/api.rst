@@ -1,7 +1,7 @@
 API
 ===
 
-The user interface of Paraqus is documented here. Classes/methods are only listed here if they are supposed to be used by the user of the program.
+The user interface of Paraqus is documented here as a reference for users who want to write their own scripts. Only public classes/methods are documented here.
 
 ParaqusModel
 ------------

@@ -34,7 +34,7 @@ Special thanks go to Lennart Sobisch for contributing this example to
 Paraqus.
 
 Note: To run the example, make sure that the Fortran file
-UMAT_VMPlasti_LargeStrain.f is present in the working directory!
+example_abaqus_extrusion_umat.f is present in the working directory!
 
 To run this example, open a terminal in the example folder and type
     abaqus cae noGUI=run_example_abaqus_extrusion.py

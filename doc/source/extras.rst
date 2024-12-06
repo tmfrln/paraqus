@@ -1,6 +1,8 @@
 Extras
 ======
 
+This section provides licensing and contact information.
+
 License
 -------
 

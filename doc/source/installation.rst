@@ -3,7 +3,9 @@
 Installation
 ============
 
-The installation procedure for Paraqus is dependent on whether you want to use it inside the software Abaqus (which is the typical use case).
+This section described the installation procedure for Paraqus, which is dependent on whether you want to use it inside the software Abaqus (which is the typical use case).
+
+.. _paraqus_outside_abaqus:
 
 Using Paraqus only outside Abaqus
 ---------------------------------
@@ -19,12 +21,12 @@ This will install Paraqus for the Python version that ``pip`` is connected to.
 Using Paraqus inside Abaqus
 ---------------------------
 
-Abaqus is shipped with its own Python interpreter (we will call it Abaqus Python in the following), which unfortunately does not allow installations through ``pip``. To use Paraqus in Abaqus, first of all, you need to install Paraqus and then let Abaqus Python know where to find it. There is a number of different ways to achieve this, and they might be dependent on your operating system.
+Abaqus is shipped with its own Python interpreter (we will call it Abaqus Python in the following), which unfortunately does not allow installations through ``pip``. To use Paraqus in Abaqus, first of all, you need to install Paraqus and then let Abaqus Python know where to find it. The steps are described below depending on whether Python is installed on your system.
 
 If you already have Python installed
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Follow the instructions above and install Paraqus outside Abaqus.
+- Follow the instructions above (:ref:`paraqus_outside_abaqus`) and install Paraqus outside Abaqus.
 - Open a Python interpreter (type ``python`` in a terminal).
 - Enter the following commands::
 
@@ -42,7 +44,7 @@ If you already have Python installed
 If you do not have Python installed
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Clone the repositroy into a directory of your choice, e.g. ``/home/user/paraqus-files/``. Alternatively download and unpack the directory manually.
+- Clone the repository into a directory of your choice, e.g. ``/home/user/paraqus-files/``. Alternatively download and unpack the directory manually.
 - Locate the ``src`` directory inside the repository folder. In the above example, this would be ``/home/user/paraqus-files/src/``. Note this path down.
 - In every Python script that is executed by Abaqus Python, before you import Paraqus, add the following lines of code (replace ``path`` with the path you noted)::
 
@@ -54,10 +56,21 @@ If you do not have Python installed
 Adding Paraqus to the Python path (advanced, but recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you would like to avoid adding the code lines above to all your Python scripts when using Paraqus, you can add the directory ``path`` to the environment variable ``PYTHONPATH``. Since this step is dependent on the operating system, it is not described here in detail, but you have to google for your system.
+If you would like to avoid adding the code lines above to all your Python scripts when using Paraqus, you can add the directory ``path`` to the environment variable ``PYTHONPATH``. Since this step is dependent on the operating system, it is not described here in detail, but you have to loom it up for your os. A starting point can be found `here <https://support.enthought.com/hc/en-us/articles/204469160-How-do-I-set-PYTHONPATH-and-other-environment-variables-for-Canopy>`_.
 
-Dependencies
-------------
+Compiling the documentation
+---------------------------
 
-The only dependency for Paraqus is NumPy. When the Abaqus Python interpreter is used, NumPy is already installed by default. If Paraqus is installed via ``pip``, NumPy will be automatically installed as well.
+We suggest that readers use the online documentation for Paraqus, located `here <https://paraqus.readthedocs.io/>`_. However, the docs can also be built from source. This requires the following additional dependencies from pip:
+
+- ``setuptools``
+- ``sphinx``
+- ``sphinx-rtd-theme``
+
+With these installed, the docs can be build by running
+
+  .. code-block::
+     
+      python -m sphinx -T -b html -d _build/doctrees -D language=en . output_dir
+
 
