@@ -27,9 +27,9 @@ CollectionWriter
    :members:
    :inherited-members:
 
-ODBReader
+OdbReader
 ---------
-The ODBReader class is only useable in the Abaqus Python interpreter.
+The OdbReader class is only useable in the Abaqus Python interpreter.
 
 .. autoclass:: paraqus.abaqus.OdbReader
    :members:
