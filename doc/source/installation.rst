@@ -12,9 +12,9 @@ Using Paraqus only outside Abaqus
 
 If you do not use Abaqus, you are in luck: the installation is pretty simple. Assuming Python is already available on your machine, Paraqus can be installed from the Python Package Index:
 
-  .. code-block:: console
+.. code-block:: console
 
-     pip install paraqus
+   pip install paraqus
 
 This will install Paraqus for the Python version that ``pip`` is connected to. 
 
@@ -36,10 +36,10 @@ If you already have Python installed
 - Take note of the output by removing the ending ``/paraqus`` term; the resulting string represents the path to the location where the Paraqus package is installed. For instance, should the output be ``['/home/user/lib/python3.11/site-packages/paraqus']``, you need to note down the path ``/home/user/lib/python3.11/site-packages``. 
 - In every Python script that is executed by Abaqus Python, before you import Paraqus, add the following lines of code (replace ``<path>`` with the path you noted)::
 
-  .. code-block:: python
+ .. code-block:: python
   
-     import sys
-     sys.path.append("<path>")
+    import sys
+    sys.path.append("<path>")
 
 If you do not have Python installed
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -48,10 +48,10 @@ If you do not have Python installed
 - Locate the ``src`` directory inside the repository folder. In the above example, this would be ``/home/user/paraqus-files/src/``. Note this path down.
 - In every Python script that is executed by Abaqus Python, before you import Paraqus, add the following lines of code (replace ``<path>`` with the path you noted)::
 
-  .. code-block:: python
+ .. code-block:: python
      
-     import sys
-     sys.path.append("<path>")
+    import sys
+    sys.path.append("<path>")
 
 Adding Paraqus to the Python path (advanced, but recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -69,8 +69,6 @@ We suggest that readers use the online documentation for Paraqus, located `here 
 
 With these installed, the docs can be build by running
 
-  .. code-block:: console
+.. code-block:: console
      
-     python -m sphinx -T -b html -d _build/doctrees -D language=en . output_dir
-
-
+   python -m sphinx -T -b html -d _build/doctrees -D language=en . output_dir
