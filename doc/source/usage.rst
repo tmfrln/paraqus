@@ -63,8 +63,9 @@ Example                                                                         
 `example_abaqus_extrusion.py <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_extrusion.py>`_                                         - User materials
                                                                                                                                                           - Exporting large numbers of frames for video animations
 
-`run_example_abaqus_extrusion.py <https://github.com/tmfrln/paraqus/blob/main/examples/run_example_abaqus_extrusion.py>`_                                 - Abaqus Python script and UMAT file required to run the simulation for ``example_abaqus_extrusion.py``
-`example_abaqus_extrusion_umat.f <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_extrusion_umat.f>`_                                 
+`run_example_abaqus_extrusion.py <https://github.com/tmfrln/paraqus/blob/main/examples/run_example_abaqus_extrusion.py>`_                                 - Abaqus Python script to run the simulation for ``example_abaqus_extrusion.py``
+
+`example_abaqus_extrusion_umat.f <https://github.com/tmfrln/paraqus/blob/main/examples/example_abaqus_extrusion_umat.f>`_                                 - UMAT file required for ``run_example_abaqus_extrusion.py``                   
 
 =====================================================================================================================================================     ===============================================================================
 
