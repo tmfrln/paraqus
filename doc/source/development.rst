@@ -3,25 +3,25 @@
 Development
 ===========
 
-Contributions to improve Paraqus are welcome and should be made as pull requests in the github repository.
-In the following, some details of the package structure, implementation, and code style are summarised to help new contributors get up to speed.
+Contributions to improve Paraqus are welcome and should be made as pull requests in the `github repository <https://github.com/tmfrln/paraqus>`_.
+In the following, some details of the package structure, implementation, and code style are summarized to help new contributors get up to speed.
 
 Python versions
 ---------------
 
-Since Paraqus is written as a tool to export Abaqus results, the code must be compatible with the Python version used by Abaqus, which is Python 2.7 for releases before Abaqus 2024. Abaqus-specific code in `paraqus.abaqus` does not habe to be compatible to Python 3.X however.
+Paraqus is intended to run in a standalone Python interpreter, as well as in the Python interpreter shipped with Abaqus (Python 2.7 for releases before Abaqus 2024). The core functionality therefore must work with Python 2.X and 3.X. Abaqus-specific code in `paraqus.abaqus` does not have to be compatible to Python 3.X however.
 
 
 Code style
 ----------
 
-The Paraqus code style is based on `PEP 8 <https://peps.python.org/pep-0008/>`_, and is documented using numpy-style docstrings - a style guide can be found e.g. `here <https://numpydoc.readthedocs.io/en/latest/format.html>`_. We refrain from enforcing linting for commmits, but encourage contributions to adapt the style in the present code.
+The Paraqus code style is based on `PEP 8 <https://peps.python.org/pep-0008/>`_, and is documented using Numpy style docstrings - a style guide can be found e.g. `here <https://numpydoc.readthedocs.io/en/latest/format.html>`_. We refrain from enforcing linting for commmits, but encourage contributions to adapt the style in the present code.
 
 
 Package structure
 -----------------
 
-Paraqus is intended to run in a standalone Python interpreter, as well as in the Python interpreter shipped with Abaqus. The core functionality therefore must work with Python 2.X and 3.X, and is imported directly from the package root, e.g.
+The core functionality is imported directly from the package root, e.g.
 
 .. code-block:: python
 
@@ -33,7 +33,7 @@ In addition to the general classes provided in the root package, the sub-package
 
    from paraqus.abaqus import OdbReader
 
-Since the sub-package imports Abaqus-specific functions, it is not intended to be imported outside of the Abaqus python interpreter (and will fail in that case).
+Since the sub-package imports Abaqus-specific functions, it is not intended to be imported outside of the Abaqus Python interpreter (and will fail in that case).
 
 For the same reason, the tests for Paraqus are implemented in a non-standard manner: They are located in another sub-package, called ``paraqus.tests``, and are executed directly from the package itself. In Abaqus Python, the tests are run as follows:
 
