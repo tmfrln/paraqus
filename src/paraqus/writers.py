@@ -837,7 +837,7 @@ class BinaryWriter(WriterBaseClass):
         The binary encoding used for data arrays.
     header_type : ParaqusConstant
         The data type used for the headers of the binary data blocks.
-    FORMAT : ParaqusConstant
+    fmt : ParaqusConstant
         This is a constant with value BINARY and is only used for
         informational purposes.
 
@@ -1067,7 +1067,7 @@ class AsciiWriter(WriterBaseClass):
         Number of pieces each model will be split into.
     output_dir : str
         The path to the folder where all VTK files will be stored.
-    FORMAT : ParaqusConstant
+    fmt : ParaqusConstant
         This is a constant with value ``ASCII`` and is only used for
         informational purposes.
 
