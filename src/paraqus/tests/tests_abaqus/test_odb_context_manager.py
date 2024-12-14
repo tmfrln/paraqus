@@ -121,8 +121,6 @@ class TestODBUpgrade(unittest.TestCase):
         upgrade_required = upgrade_odb(os.path.abspath(self.test_odb_name))
         self.assertTrue(upgrade_required)
 
-        # TODO: check that the backup folder is where it is supposed to be
-
     def test_update_in_context_manager(self):
         """The ODB updater works in the context manager."""
         with OdbObject(self.test_odb_name) as odb:
@@ -134,8 +132,3 @@ class TestODBUpgrade(unittest.TestCase):
 
         # remove the backup
         shutil.rmtree(self.backup_folder)
-
-
-
-
-

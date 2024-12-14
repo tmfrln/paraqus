@@ -45,6 +45,8 @@ class OdbObject(object):
         If ``True`` writing to the ODB is prohibited.
     already_open : bool
         A flag indicating wheter the ODB is already open or not.
+    odb : Abaqus Odb
+        The ODB to be managed.
 
     """
 

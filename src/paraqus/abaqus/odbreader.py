@@ -16,10 +16,6 @@ instantiated based on an Abaqus ODB.
 One model instance is created for each time frame that is exported.
 
 """
-# TODO: Looping over instances instead of set export requests makes it
-# hard to check if all requests were executed. Right now, no error is
-# raised when a set does not exist
-
 import os.path
 import warnings
 
@@ -733,8 +729,8 @@ class OdbReader():
                 section_points[ib] = block.sectionPoint.number
 
         # Mapping section point number -> index in data array
-        section_point_indices = {n: i
-                                 for (i, n) in enumerate(np.unique(section_points))}
+        section_point_indices = {n: i for (i, n) in
+                                 enumerate(np.unique(section_points))}
 
         # Assume there is only one data value for each
         # (element, sectionPoint)
