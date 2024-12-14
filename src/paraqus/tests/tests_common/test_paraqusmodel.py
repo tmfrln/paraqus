@@ -204,7 +204,7 @@ class TestElementRepository(unittest.TestCase):
             self.repo.add_group("WRONG_GROUP", [100, 200, 300])
 
     def test_group_with_existing_name_exception(self):
-        """AssertionError is raised in case the group tags do not exist."""
+        """AssertionError is raised in case the group names does already exist."""
         self.repo.add_group("EXISTING_GROUP", [1, 2, 3])
         with self.assertRaises(AssertionError):
             self.repo.add_group("EXISTING_GROUP", [4, 5])
@@ -372,7 +372,7 @@ class TestParaqusModelCreation(unittest.TestCase):
 
 
 class TestParaqusModelFields(unittest.TestCase):
-    """Tests for methods dealing with fields withing a ParaqusModel."""
+    """Tests for methods dealing with fields within a ParaqusModel."""
 
     def setUp(self):
         """Create a small ParaqusModel."""

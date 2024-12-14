@@ -111,7 +111,7 @@ class TestAsciiWriter(unittest.TestCase):
         _compare_vtk_files(vtu_file, reference_vtu)
 
     def test_write_pvtu_file(self):
-        """An ascii .pvtu file with corresponding .vtu files and correct contents can be can be written."""
+        """An ascii .pvtu file with corresponding .vtu files and correct contents can be written."""
         self.writer.number_of_pieces = 2
         self.writer.write(self.model)
 
@@ -167,7 +167,7 @@ class TestBinaryWriterBase64(unittest.TestCase):
         _compare_vtk_files(vtu_file, reference_vtu)
 
     def test_write_pvtu_file(self):
-        """A base64 .pvtu file with corresponding .vtu files and correct contents can be can be written."""
+        """A base64 .pvtu file with corresponding .vtu files and correct contents can be written."""
         self.writer.number_of_pieces = 2
         self.writer.write(self.model)
 
@@ -223,7 +223,7 @@ class TestBinaryWriterRaw(unittest.TestCase):
         _compare_vtk_files(vtu_file, reference_vtu)
 
     def test_write_pvtu_file(self):
-        """A raw .pvtu file with corresponding .vtu files and correct contents can be can be written."""
+        """A raw .pvtu file with corresponding .vtu files and correct contents can be written."""
         self.writer.number_of_pieces = 2
         self.writer.write(self.model)
 
