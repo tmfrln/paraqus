@@ -61,13 +61,7 @@ If you would like to avoid adding the code lines above to all your Python script
 Compiling the documentation
 ---------------------------
 
-We suggest that readers use the online documentation for Paraqus, located `here <https://paraqus.readthedocs.io/>`_. However, the docs can also be built from source. This requires the following additional dependencies from ``pip``:
-
-- ``setuptools``
-- ``sphinx``
-- ``sphinx-rtd-theme``
-
-With these installed, the docs can be build by running
+We suggest that readers use the online documentation for Paraqus, located `here <https://paraqus.readthedocs.io/>`_. However, the docs can also be built from source. This requires additional :ref:`dependencies <dependencies>` from ``pip``. With these installed, the docs can be built by running
 
 .. code-block:: console
      

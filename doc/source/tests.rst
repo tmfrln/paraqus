@@ -11,7 +11,7 @@ Creating test resources
 
 Paraqus comes with a number of reference files for tests, which are located in the directory ``paraqus/tests/resources``. Only two Abaqus-specific files are described here, since they might need to be recreated by the user for tests to pass.
 
-- ``element_test_current odb`` is supposed to match your current Abaqus installation. If your current Abaqus version is not Abaqus 2023, you should recreate the file as described below.
+- ``element_test_current.odb`` is supposed to match your current Abaqus installation. If your current Abaqus version is not Abaqus 2023, you should recreate the file as described below.
 - ``element_test_old.odb`` is supposed to be from an Abaqus version older than your current one. If your Abaqus version is older than Abaqus 2019, you should recreate the file as described below.
 
 To create the files, you first need to find out where Paraqus is installed on your system. Follow the steps outlined in the :ref:`installation instructions<installation>` to find the folder containing the directory ``paraqus``.
