@@ -43,7 +43,7 @@ Some software packages similar to Paraqus have been released over the last years
 
 # Syntax example
 
-While extensive examples for the usage of Paraqus can be found in the [documentation](https://paraqus.readthedocs.io), a short example is given in this section. After the installation procedure described in the documentation, the code below can be executed in the Abaqus Python shell or as a script file in Abaqus Python.
+While extensive examples for the usage of Paraqus can be found in the [documentation](https://paraqus.readthedocs.io), a short syntax example is given in this section. After specifying the variables for the output file path, instance name and step name, the code below can be executed in the Abaqus Python shell or as a script file in Abaqus Python. The reader is referred to the examples folder of the repository for examples that include directions to create example Abaqus output files.
 
     # import the Paraqus classes to read Abaqus output and
     # to store it as an ASCII-based vtk file
