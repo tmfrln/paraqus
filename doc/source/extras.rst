@@ -12,5 +12,5 @@ Paraqus is licensed under the `GNU GPLv3 license <https://choosealicense.com/lic
 Contact and support
 -------------------
 
-For any problems and requests, please open an issue in our `github repository <https://github.com/tmfrln/paraqus>`_.
+For any problems and requests, please open an issue in our `github repository <https://github.com/InstituteOfMechanics/Paraqus`_.
 

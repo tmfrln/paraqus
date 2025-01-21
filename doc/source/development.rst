@@ -3,7 +3,7 @@
 Development
 ===========
 
-Contributions to improve Paraqus are welcome and should be made as pull requests in the `github repository <https://github.com/tmfrln/paraqus>`_.
+Contributions to improve Paraqus are welcome and should be made as pull requests in the `github repository <https://github.com/InstituteOfMechanics/Paraqus>`_.
 In the following, some details of the package structure, implementation, and code style are summarized to help new contributors get up to speed.
 
 Python versions
