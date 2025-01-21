@@ -47,7 +47,7 @@ Some software packages similar to Paraqus have been released over the last years
 
 # Acknowledgements
 
-The authors are grateful to Isabelle Noll and Lennart Sobisch for beta-testing Paraqus and providing valuable feedback on the examples and documentation.
+The authors are grateful to Isabelle Noll and Lennart Sobisch for beta-testing Paraqus and providing valuable feedback on the examples and documentation. Furthermore, the detailed review of the paper and code by Gabriele Ottino of newcleo S.p.A. is gratefully acknowledged.
 
 # Funding
 
