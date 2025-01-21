@@ -41,6 +41,47 @@ Abaqus is an example of commercial FE software that is widely used in the academ
 
 Some software packages similar to Paraqus have been released over the last years. However, these tools suffer from great limitations and are, therefore, not as versatile and straightforward as Paraqus. A script to export Abaqus results to VTK format was published in @odb2vtk under the name ``odb2vtk``. This script offers limited options to customize the export data, and supports only a subset of the finite elements available in Abaqus. *AbaPy* is a Python package that is not aimed solely at post-processing, but also at the automatic creation of Abaqus models and run of Abaqus simluations [@abapy]. Although *AbaPy* offers the option to export field outputs to VTK format, the wider range of applications comes with increased complexity in terms of both implementation and usage. Paraqus falls between these existing options: it is organized as a package with a small and intuitive API, but allows a wide range of customization of exports, and writes the more efficient binary version of the VTK format. It also provides options to group exports from multiple simulations, time steps, or bodies, using ParaView Data (PVD) files. Furthermore, Paraqus performs exports noticeably faster than *AbaPy*, especially in case of large models.
 
+# Syntax example
+
+While extensive examples for the usage of Paraqus can be found in the [documentation](https://paraqus.readthedocs.io), a short example is given in this section. After the installation procedure described in the documentation, the code below can be executed in the Abaqus Python shell or as a script file in Abaqus Python.
+
+    # import the Paraqus classes to read Abaqus output and
+    # to store it as an ASCII-based vtk file
+    from paraqus.abaqus import OdbReader
+    from paraqus.writers import AsciiWriter
+
+    # set some constants based on the ODB that will be exported
+    ODB_PATH = "my_abaqus_output.odb"  # path to the Abaqus ODB
+    MODEL_NAME = "My Model"  # can be chosen freely for the output
+    INSTANCE_NAMES = ["PART-1-1"]  # choose which instances will be exported
+    STEP_NAME = "Step-1"  # Name of the step that will be exported
+    FRAME_INDEX = -1  # Export the final frame (timestep) of the step
+
+    # the class OdbReader is used to read results from Abaqus ODBs
+    reader = OdbReader(odb_path=ODB_PATH,
+                       model_name=MODEL_NAME,
+                       instance_names=INSTANCE_NAMES,
+                       )
+
+    # request output of displacements at node points
+    reader.add_field_export_request("U", field_position="nodes")
+    
+    # request output of temperature at element centroids
+    reader.add_field_export_request("TEMP", field_position="elements")
+
+    # the class AsciiWriter is used to write results in ASCII-based vtk format
+    vtk_writer = AsciiWriter("vtk_output_billet", clear_output_dir=True)
+
+    # there might be multiple instances, so we create a list of the models
+    # there is only one list component in this simple example
+    instance_models = list(reader.read_instances(step_name=STEP_NAME,
+                                                 frame_index=FRAME_INDEX))
+    instance_model = instance_models[0]  # this is a ParaqusModel instance
+
+    # use the writer to write instance_model to disk
+    vtk_writer.write(instance_model)
+
+
 # Contributions
 
 **Tim Furlan:** Conceptualization; Software - Design, Implementation (focus on reading Abaqus ODB files), Documentation; Writing - Original Draft; Example generation. **Jonathan Stollberg:** Conceptualization; Software - Design, Implementation (focus on writing VTK files), Documentation; Writing - Original Draft; Example generation. **Andreas Menzel:** Conceptualization; Supervision - Project direction; Writing - Review & Editing; Example generation
