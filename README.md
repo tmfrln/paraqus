@@ -1,7 +1,7 @@
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.05729/status.svg)](https://doi.org/10.21105/joss.05729)
 
-> ## [!NOTE]
-> ## Paraqus was moved to another [repository](https://github.com/InstituteOfMechanics/Paraqus).
+> [!NOTE]
+> Paraqus was moved to another [repository](https://github.com/InstituteOfMechanics/Paraqus).
 
 # Paraqus
 
